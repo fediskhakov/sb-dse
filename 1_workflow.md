@@ -183,9 +183,13 @@ Git is the version control system; GitHub hosts repositories and is where course
 materials and all homework are distributed and collected.
 
 - [Git](https://git-scm.com/) — the command line tool
-- [Git GUI clients](https://git-scm.com/downloads/guis) —
-  [GitHub Desktop](https://desktop.github.com/), [Sourcetree](https://www.sourcetreeapp.com/),
-  [Fork](https://git-fork.com), or the Git panel built into VS Code
+- [Git GUI clients](https://git-scm.com/downloads/guis) — a graphical client makes
+  branches, staging and history far easier to see than the command line does:
+  - [GitHub Desktop](https://desktop.github.com/) — simplest, free, macOS and Windows
+  - [Fork](https://git-fork.com) — fast and well designed, with an excellent diff and
+    merge-conflict view; macOS and Windows, paid with an unlimited evaluation period
+  - [Sourcetree](https://www.sourcetreeapp.com/) — free, macOS and Windows
+  - the Git panel built into VS Code, if you would rather not install anything
 - [GitHub CLI](https://cli.github.com) (`gh`) — creates pull requests, checks out
   someone else's PR, views CI logs, all from the terminal. Install it; it removes
   most of the browser round-trips from the submission workflow.
