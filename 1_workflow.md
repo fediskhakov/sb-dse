@@ -320,7 +320,7 @@ standing instructions. This is where you write down what the assistant cannot in
 # Project: Rust bus engine replacement, ECO 629
 
 - Python, numpy/scipy only. No deep learning frameworks.
-- Value functions are indexed by [state]; the two replacement-specific value is the first element of the vector; keep that order everywhere.
+- Value functions are indexed by [state]; replacement-specific value is the first element of the vector; keep that order everywhere.
 - Always check Bellman convergence with a monotonicity test before trusting output.
 - Never edit files under data/raw/.
 - Leave all git operations to me.
