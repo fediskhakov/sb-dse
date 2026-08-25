@@ -76,6 +76,22 @@ quick executed previews.
 do the same thing, so documentation at [mystmd.org](https://mystmd.org) applies
 directly.
 
+## Publishing
+
+`.github/workflows/jb_compile_pages.yml` builds the book and deploys it to GitHub
+Pages on every push to `main`, and on demand from the Actions tab. The site is
+served at <https://dse.iskh.me> (custom domain, Pages source set to *GitHub
+Actions*).
+
+The workflow runs `jupyter book build --html --execute`, so the published pages
+carry executed outputs and figures. The manual (`workflow_dispatch`) run exposes an
+**execute** checkbox — untick it for a fast text-only rebuild.
+
+Because the site sits at the root of a custom domain, no `BASE_URL` is set. If the
+custom domain is ever dropped and the book is served from
+`https://fediskhakov.github.io/sb_dse/`, set `BASE_URL: /sb_dse` on the build step,
+otherwise every asset and internal link will point at the wrong prefix.
+
 ## Replacing the logo
 
 The emblem is shown large above the left-hand menu rather than in the top bar.
@@ -123,5 +139,6 @@ the social/preview metadata stays in step.
 | `_static/` | images, PDFs and custom CSS |
 | `environment.yml` | conda environment specification |
 | `requirements.txt` | the same dependencies for pip |
+| `.github/workflows/` | GitHub Actions workflow that builds and publishes the site |
 
 `_build/` is generated output and is not tracked in git.

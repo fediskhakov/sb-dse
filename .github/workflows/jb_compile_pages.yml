@@ -1,0 +1,103 @@
+# Build the Jupyter Book 2 / MyST site and publish it to GitHub Pages.
+#
+# Pages for this repository is configured with "Source: GitHub Actions" and the
+# custom domain dse.iskh.me, so the site is served from the domain root and no
+# BASE_URL is needed. If the custom domain is ever removed and the book is served
+# from https://fediskhakov.github.io/sb_dse/ instead, set BASE_URL: /sb_dse on the
+# build step so MyST writes the right asset and link prefixes.
+name: Compile Jupyter Book and deploy to GH Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: "Execute the code cells (slow; off gives a text-only preview)"
+        type: boolean
+        default: true
+
+# Permissions needed by the GITHUB_TOKEN to deploy to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; never cancel a running production deploy
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHON_VERSION: "3.12"
+      NODE_VERSION: "20"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      # Jupyter Book 2 is a wrapper around the MyST engine, which runs on Node.
+      # Providing Node here stops the pip install from downloading its own copy.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # MyST keys executed notebook outputs by content hash under _build/execute,
+      # so an unchanged chapter is not re-run. Restoring it across runs keeps the
+      # slow %timeit cells in the algorithms chapter out of most builds.
+      - name: Restore the MyST execution cache
+        uses: actions/cache@v4
+        with:
+          path: _build/execute
+          key: myst-execute-${{ hashFiles('*.md', 'requirements.txt') }}
+          restore-keys: |
+            myst-execute-
+
+      - name: Build the book
+        env:
+          # Default (push, or a dispatch that left the box ticked) is to execute
+          EXECUTE: ${{ github.event_name != 'workflow_dispatch' || inputs.execute }}
+        run: |
+          jupyter book --version
+          if [ "$EXECUTE" = "true" ]; then
+            jupyter book build --html --execute
+          else
+            jupyter book build --html
+          fi
+
+      - name: Verify build output
+        run: |
+          if [ ! -f _build/html/index.html ]; then
+            echo "Error: _build/html/index.html not found — the MyST build failed."
+            exit 1
+          fi
+          touch _build/html/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "_build/html"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
