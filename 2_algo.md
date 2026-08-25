@@ -7,6 +7,8 @@ kernelspec:
   display_name: Python 3
 ---
 
+<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
+
 Everything later in this course — solving Bellman equations, nesting a solver inside
 a likelihood, finding all equilibria of a game — is limited by how fast the inner
 loop runs. This class is about what makes an algorithm fast, and how to tell before

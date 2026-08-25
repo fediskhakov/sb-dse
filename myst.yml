@@ -37,6 +37,7 @@ project:
     - file: index.md
     - file: 1_intro.md
     - file: 1_workflow.md
+    - file: 1_workflow_alt.md  # draft alternative to 1_workflow.md — drop this line to unpublish
     - file: 2_algo.md
     - file: 2_solvers.md
     - file: bibliography.md

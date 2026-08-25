@@ -120,6 +120,21 @@
   border: 1px solid #cfdcea;
 }
 
+/* Work-in-progress chip — <span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span> at the
+   top of a chapter that is still being written. Same chip shape as .tag, amber. */
+.tag.wip {
+  background-color: #fdf3e3;
+  color: #8a5a12;
+  border-color: #f0dcb8;
+  font-size: 2em;
+}
+
+.dark .tag.wip {
+  background-color: #3a2f1c;
+  color: #f0d08a;
+  border-color: #574728;
+}
+
 .dark .tag {
   background-color: #26313d;
   color: #cfe0f0;

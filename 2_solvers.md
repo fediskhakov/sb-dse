@@ -7,6 +7,8 @@ kernelspec:
   display_name: Python 3
 ---
 
+<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
+
 Two classic algorithms for solving $f(x)=0$, and what they become when the equation
 we are solving is the first order condition of a likelihood. Every estimator in this
 course sits on top of one of these.

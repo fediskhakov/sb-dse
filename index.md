@@ -65,7 +65,7 @@ The plan below is provisional and will be adjusted as we go.
 | :-- | :-- |
 | | **Part I — Foundations and computational toolkit** |
 | Tue Aug 25 | [Introduction to structural estimation](1_intro.md) — what a structural project consists of |
-| Thu Aug 27 | [Work environment and submission workflow](1_workflow.md); placement test; recursion |
+| Thu Aug 27 | [Work environment and submission workflow](1_workflow.md) Practical tasks on version control |
 | Tue Sep 1 | [Algorithms and complexity](2_algo.md) |
 | Thu Sep 3 | [Root finding and optimization](2_solvers.md) — bisection, Newton–Raphson, BHHH |
 | | **Part II — Dynamic programming** |
@@ -186,6 +186,7 @@ The lecture notes are published at [dse.iskh.me](https://dse.iskh.me)
 The course code and exercises repository is at [github.com/fediskhakov/sb_dse_class](github.com/fediskhakov/sb_dse_class)
 You will have access to the repository after sending me your `GitHub username` (register now if not yet).
 
+(ai-policy)=
 ## 🤖 AI policy
 
 The course is designed to be *AI-friendly* and to encourage the use of AI tools in the learning process.
@@ -195,6 +196,8 @@ You are welcome to use AI tools, but you bear all responsibility for the produce
 In particular, it implies that you have to understand deeply every line of code or prose that you let AI produce on your behalf.
 
 You have to *verify* the correctness of the code, and your understanding of the AI content and ability to modify it on the fly will be tested in the exam.
+
+In addition, you have to disclose the use of AI assistants beyond text editing: see the [disclosure policy](#disclosure-policy).
 
 See [AI adoption stages](https://claude.ai/code/artifact/bfdfaef9-bc62-4dfe-ba9e-c58a26c9accf) by [Boris Cherny](https://borischerny.com/about/), the man behind Anthropic's Claude Code.
 
