@@ -1,6 +1,6 @@
 ---
 title: 📖 Root finding and optimization
-short_title: 📖 Solvers
+short_title: 📖 Classic solvers
 subtitle: Class 4 — Thursday, September 3
 kernelspec:
   name: python3

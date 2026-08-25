@@ -104,9 +104,8 @@ The plan below is provisional and will be adjusted as we go.
 :::{div}
 :class: discussion
 We have a quite unique opportunity for course co-creation.
-
-Which topics would you add to the list?
-Which topics would you remove from the list?
+- Which topics would you add to the list?
+- Which topics would you remove from the list?
 :::
 
 
@@ -121,7 +120,7 @@ Which topics would you remove from the list?
 * - **Room**
   - SOCBEHAV SCI N601
 * - **Office hours**
-  - Tuesdays after the lecture, any time by appointment (email me)
+  - Tuesdays after the lecture, any time by appointment
 
 ```
 
@@ -164,27 +163,28 @@ with room for a live demo of the solver and estimator code, not just slides.
 
 ### Homework
 
-Homework is typically given on Tuesday and is due the following Tuesday.
+Homework is typically given on Tuesday and is due the following Thursday.
 
 - Each homework assignment will be discussed at the start of the class that follows it
-- one student chosen on random is to present the solution at the board or using slides
--the presenter rotates, so everyone presents several times over the semester
+- One student (volunteer or chosen at random) is to present the solution at the board or using slides
+- With rotation everyone presents several times over the semester
+- This is part of the grade
 
 Homework to be submitted by pull request to the course repository; the workflow is set up in the first week.
 
 ## 💻 Software
 
 The course is intended in Python, yet you can discover equivalent code online in Matlab, Julia and other languages.
-- alternative links will be given
-- particular language is less important these days (especially because we will be working with small examples)
+Particular language is less important these days because we will be working with small examples.
 
-The first class of the semester sets up the work environment; see [](1_workflow.md).
+By next time sets up the work environment, see [](1_workflow.md).
 
 Computers are expected in the lectures, you are encouraged to run the code examples in the lecture, and interact with the code and the slides in class.
 
-The lecture notes are published at [dse.iskh.me](https://dse.iskh.me) and are available in the course repository at [github.com/fediskhakov/sb_dse](https://github.com/fediskhakov/sb_dse). You will have access from the next class.
+The lecture notes are published at [dse.iskh.me](https://dse.iskh.me)
 
-- register on GitHub already, if not yet
+The course code and exercises repository is at [github.com/fediskhakov/sb_dse_class](github.com/fediskhakov/sb_dse_class)
+You will have access to the repository after sending me your `GitHub username` (register now if not yet).
 
 ## 🤖 AI policy
 

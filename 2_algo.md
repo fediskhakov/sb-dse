@@ -1,6 +1,6 @@
 ---
 title: 📖 Algorithms and complexity
-short_title: 📖 Algorithms
+short_title: 📖 Complexity of algorithms
 subtitle: Class 3 — Tuesday, September 1
 kernelspec:
   name: python3
