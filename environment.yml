@@ -1,0 +1,15 @@
+name: eco629
+channels:
+  - conda-forge
+dependencies:
+  - python >=3.11
+  # Jupyter Book 2 / MyST engine (pulls in nodejs, ipykernel, jupyter_server)
+  - jupyter-book >=2
+  # Kernel and server used to execute the code cells
+  - ipykernel
+  - jupyter_server
+  # Scientific stack used by the lecture code
+  - numpy
+  - scipy
+  - matplotlib
+  - sympy

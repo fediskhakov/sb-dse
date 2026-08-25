@@ -1,0 +1,56 @@
+version: 1
+
+project:
+  id: sbu-eco629-2026
+  title: Dynamic Structural Models
+  short_title: INDEX
+  description: >-
+    Graduate course on dynamic structural models: solution methods and
+    structural estimation of single-agent dynamic discrete and continuous
+    choice models, micro-founded equilibrium models, and dynamic games.
+  keywords:
+    - structural econometrics
+    - dynamic discrete choice
+    - dynamic programming
+    - dynamic games
+  authors:
+    - name: Fedor Iskhakov
+      email: fediskhakov@gmail.com
+      url: https://fedor.iskh.me
+      affiliations:
+        - Stony Brook University
+  copyright: "2026"
+  bibliography:
+    - references.bib
+  math:
+    '\E': '\mathbb{E}'
+    '\R': '\mathbb{R}'
+  numbering:
+    headings: false
+  # Files and folders that are not part of the book
+  exclude:
+    - README.md
+    - tools/**
+    - _build/**
+    - unpublished/**
+  toc:
+    - file: index.md
+    - file: 1_intro.md
+    - file: 1_workflow.md
+    - file: 2_algo.md
+    - file: 2_solvers.md
+    - file: bibliography.md
+
+site:
+  template: book-theme
+  title: ECO 629
+  options:
+    logo: _static/img/sbu_dse_emblem.png
+    logo_dark: _static/img/sbu_dse_emblem_dark.png
+    logo_text: ECO 629 — Studies in Quantitative Methods, Fall 2026
+    logo_url: /
+    favicon: _static/favicon/favicon.ico
+    hide_search: false
+    hide_toc: false
+    outline_maxdepth: 3
+    style: _static/custom.css

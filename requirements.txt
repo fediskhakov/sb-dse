@@ -1,0 +1,7 @@
+jupyter-book>=2
+jupyter-server
+ipykernel
+numpy
+scipy
+matplotlib
+sympy
