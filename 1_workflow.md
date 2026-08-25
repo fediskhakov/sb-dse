@@ -1,6 +1,6 @@
 ---
 title: 💻 Work environment and submission workflow
-short_title: 💻 Setup and workflow (alt)
+short_title: 💻 Setup and workflow
 subtitle: Class 2 — Thursday, August 27
 authors:
   - name: Fedor Iskhakov
@@ -29,7 +29,7 @@ new part — *collaborate with an AI assistant* on code without losing control o
 it does.
 
 This class sets up all three, plus the workflow you will use to submit every
-homework: a pull request to the course repository.
+homework: a pull request in your own course repository.
 
 ```{admonition} Three layers
 :class: hint
@@ -203,18 +203,20 @@ materials and all homework are distributed and collected.
 4. Apply for the [Student Developer Pack](https://education.github.com/pack) — it
    includes GitHub Pro, Copilot Pro, extra Codespaces hours and a long list of other
    services, free while you are a student.
-5. Send me your GitHub username so I can give you access to the course repository.
+5. Send me your GitHub username. I will create a private repository for you and
+   invite you to it, together with the repository the tasks are posted in — see
+   [](#submission) below. **Accept both invitations**; nothing works until you do.
 
 ### Commands worth knowing
 
 ```bash
-git switch -c hw1-yourname     # create and move to a branch (modern `checkout -b`)
+git pull upstream main         # collect newly posted tasks
+git switch -c hw1              # create and move to a branch (modern `checkout -b`)
 git status                     # what is changed, staged, untracked
 git add -p                     # stage selected hunks — read your own diff
 git commit -m "HW1: bisection solver"
-git push -u origin hw1-yourname
+git push -u origin hw1
 gh pr create --fill            # open the pull request without leaving the terminal
-git switch main && git pull    # get my updates
 ```
 
 ```{admonition} Things not to commit
@@ -386,7 +388,7 @@ increasingly journal policy. A complete disclosure is short:
 
 Disclosure changes nothing about responsibility. The work is yours, the errors are
 yours, and the oral exam is about your understanding of every line you submit —
-[see the AI policy](index.md#id-ai-policy). Disclosure exists so that we can talk about *how* you
+[see the AI policy](#ai-policy). Disclosure exists so that we can talk about *how* you
 worked, which is a subject of this course in its own right.
 
 :::{div}
@@ -434,23 +436,120 @@ standard your future submissions will be held to, and it is a good template now.
   cluster** — if your project needs to run many estimations, or a bootstrap, or a
   Monte Carlo, this is what it is for. Talk to me early if you want to go this route.
 
+(submission)=
 ## Homework submission workflow
 
-Every homework in this course is submitted as a **pull request** to the course
-repository. The mechanics are the same every time:
+You do not fork anything, and you never push to the course repository. Two
+repositories are involved:
 
-1. **Fork** the course repository to your own GitHub account (once, at the start of
-   the semester), or clone it directly if I have given you write access
-2. **Clone** your fork: `git clone git@github.com:yourname/sb_dse_class.git`
-3. **Branch** for each assignment: `git switch -c hw1-yourname`
-4. **Work** in your own folder — `submissions/yourname/hw1/` — so that submissions
-   never collide with each other
-5. **Restart and run all** before you commit a notebook
-6. **Commit** with a meaningful message:
-   `git add . && git commit -m "HW1: inventory model solver"`
-7. **Push** the branch: `git push -u origin hw1-yourname`
-8. **Open a pull request** against the course repository before the deadline:
-   `gh pr create --fill`, and add the AI disclosure to the description
+| Repository | What it is | Your access |
+| :-- | :-- | :-- |
+| `fediskhakov/sb_dse_class` | the **task** repository — I push each assignment here | read |
+| `fediskhakov/sb_dse_<your-username>` | **your** repository for the whole semester | write |
+
+Your repository is created as a clone of the task repository, so it shares its
+history: pulling from the task repository brings each new assignment straight into
+your working copy, all semester, without any copying by hand.
+
+### Once, at the start of the semester
+
+1. Send me your GitHub username
+2. Accept the two invitations GitHub emails you — one to your own repository, one to
+   the task repository
+3. Clone your repository and add the task repository as a second remote:
+
+```bash
+git clone git@github.com:fediskhakov/sb_dse_<your-username>.git
+cd sb_dse_<your-username>
+git remote add upstream git@github.com:fediskhakov/sb_dse_class.git
+pip install nbstripout && nbstripout --install
+```
+
+`origin` is now your repository, `upstream` is the task repository. Confirm with
+`git remote -v`.
+
+### For each assignment
+
+```bash
+git pull upstream main                    # the new task appears in tasks/hwN/
+git switch -c hw1                         # one branch per assignment
+#  ... work in solutions/hw1/ ...
+git add . && git commit -m "HW1: inventory model solver"
+git push -u origin hw1
+gh pr create --fill --reviewer fediskhakov
+```
+
+### While you work
+
+The line `git add . && git commit -m "..."` above compresses a whole assignment into
+one commit. Do not actually work that way. Commit every time something starts
+working — a function that returns the right value, a plot that comes out, a bug you
+have just fixed:
+
+```bash
+git status                      # what have I changed?
+git diff                        # what exactly did I change?
+git add solutions/hw1/vfi.py    # stage one file...
+git add -p                      # ...or stage selected hunks, reading as you go
+git commit -m "VFI converges on the deterministic case"
+git push                        # after the first push -u, plain git push is enough
+```
+
+Ten small commits over three evenings, then the pull request:
+
+- **A commit is a save point.** When an experiment goes wrong, `git restore .` puts
+  you back at the last one — cheaper and safer than undoing edits by hand.
+- **Pushing is your backup.** A laptop that dies the night before the deadline costs
+  you nothing if the branch is already on GitHub.
+- **The history shows how you worked.** Useful to you at the board, when you have to
+  explain why the estimator changed shape halfway through; useful to me, because a
+  pull request that arrives as one commit of 400 lines cannot be reviewed.
+- **Small commits get better comments.** Twelve commits with meaningful messages
+  attract useful review; one commit called "hw1" attracts none.
+
+Write messages that say what changed and why — "fix bug" is worth nothing three
+weeks later, "clip the value function at the borrowing constraint" is worth a lot.
+
+Three commands that recover from the usual mistakes:
+
+```bash
+git commit --amend    # fix the message or add a file to the last commit,
+                      # but only if you have not pushed it yet
+git restore <file>    # discard uncommitted changes to one file
+git stash             # park changes to try something else; git stash pop brings them back
+```
+
+```{admonition} Keep a cheat sheet open
+:class: hint
+
+No need to memorizes all Git commands. Everyone looks them up.
+
+- [GitHub's Git cheat sheet](https://education.github.com/git-cheat-sheet-education.pdf)
+  — one page, and every command used in this course is on it
+- [Atlassian's Git cheat sheet and tutorials](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet)
+  — the same commands with worked explanations of branching and merging
+- [Dangit, Git!?!](https://dangitgit.com) — recipes for undoing whatever you just
+  did to your repository, by symptom rather than by command name
+```
+
+### Submitting
+
+The pull request is the submission, and its creation time is the timestamp of
+record. It stays open until we have discussed the assignment in class; then it is
+merged into your `main`, so your `main` ends the semester as a record of your
+accepted work.
+
+```{admonition} The one rule
+:class: attention
+
+**Never edit anything under `tasks/`.** Your work goes in `solutions/hwN/`.
+
+Because your repository shares history with the task repository, an untouched
+`tasks/` folder makes every `git pull upstream main` a clean fast-forward. Edit a
+task file and you will be resolving merge conflicts on every future assignment
+instead of doing the assignment. If you want to modify code I handed out, copy it
+into your solutions folder first and modify the copy.
+```
 
 Homework is discussed at the start of the class that follows it, with one student
 presenting the solution at the board. The presenter rotates, so plan on presenting
@@ -461,7 +560,7 @@ usually the more instructive case.
 :class: hint
 
 - Runs top to bottom from a fresh kernel
-- Only your own folder is touched
+- Nothing under `tasks/` is touched
 - No outputs, checkpoints, `.venv/` or data dumps in the diff
 - A sentence on what the code does, and the AI disclosure if any assistant did more
   than text editing
@@ -473,11 +572,11 @@ usually the more instructive case.
 1. Install Python with uv (or Miniforge) and confirm `import numpy, scipy, sympy`
    works
 2. Enable two-factor authentication on GitHub and add an SSH key
-3. Fork and clone the course repository
-4. Install `nbstripout` in the clone
-5. Create a new file in your own submission folder, edit it in your editor
+3. Send me your GitHub username, accept both invitations, and clone your repository
+4. Add `upstream` and install `nbstripout`, as above
+5. Create a branch, add a file under `solutions/`, and edit it in your editor
 6. Stage and commit the change, and read the diff before you push
-7. Push and open a pull request
+7. Push the branch and open a pull request with me as reviewer
 8. Install one AI coding assistant, and ask it to explain one function from the
    course code back to you. Judge the explanation — it is the assistant that is being
    examined here, not the code
@@ -499,6 +598,10 @@ The first pull request of the semester is the student survey — no code require
 - Simple guide to Git [link](https://rogerdudler.github.io/git-guide/)
 
 - Full Git reference [link](https://git-scm.com/doc)
+
+- Git cheat sheet, one page [pdf](https://education.github.com/git-cheat-sheet-education.pdf)
+
+- Undoing Git mistakes by symptom [link](https://dangitgit.com)
 
 - GitHub intro [30 min online course](https://education.github.com/experiences/intro_to_github)
 

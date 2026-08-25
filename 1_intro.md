@@ -345,7 +345,7 @@ f_{jt}(z' \mid z_t)
 \right]
 $$
 
-We will see in Part II how the Bellman equation can be solved and value functions
+We will see later how the Bellman equation can be solved and value functions
 computed numerically.
 
 Define the choice-specific value:
@@ -448,7 +448,6 @@ Other estimation approaches:
 
 - Two-step methods based on *conditional choice probabilities* estimated directly
   from the data (CCP methods) (Hotz–Miller, Aguirregabiria–Mira)
-- GMM
 - Method of simulated moments (MSM)
 - Calibration (no standard errors)
 

@@ -170,7 +170,7 @@ Homework is typically given on Tuesday and is due the following Thursday.
 - With rotation everyone presents several times over the semester
 - This is part of the grade
 
-Homework to be submitted by pull request to the course repository; the workflow is set up in the first week.
+Homework is submitted as a pull request in your own private course repository, which I create for you and have access to; the workflow is set up in the first week, see [](1_workflow.md#submission).
 
 ## 💻 Software
 
@@ -183,8 +183,8 @@ Computers are expected in the lectures, you are encouraged to run the code examp
 
 The lecture notes are published at [dse.iskh.me](https://dse.iskh.me)
 
-The course code and exercises repository is at [github.com/fediskhakov/sb_dse_class](github.com/fediskhakov/sb_dse_class)
-You will have access to the repository after sending me your `GitHub username` (register now if not yet).
+Tasks and exercise code are posted in the private repository `fediskhakov/sb_dse_class`, and you work in a private repository of your own, `fediskhakov/sb_dse_<your-username>`.
+Send me your `GitHub username` (register now if not yet) and I will set both up for you — see [](1_workflow.md#submission).
 
 (ai-policy)=
 ## 🤖 AI policy

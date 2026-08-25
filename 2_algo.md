@@ -483,8 +483,8 @@ implementation empirically, as done above.
 3. Time it as a function of $n$ for fixed $M$, and as a function of $M$ for fixed $n$
 4. Plot run time on a log scale and argue what complexity class the algorithm belongs to
 
-Submit as a pull request to the course repository; we discuss the solutions at the
-start of the next class.
+Submit as a pull request in your own course repository; we discuss the solutions at
+the start of the next class.
 ````
 
 ````{admonition} What to do with models that are heavy to compute?
