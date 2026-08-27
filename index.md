@@ -182,6 +182,8 @@ By next time sets up the work environment, see [](1_workflow.md).
 Computers are expected in the lectures, you are encouraged to run the code examples in the lecture, and interact with the code and the slides in class.
 
 The lecture notes are published at [dse.iskh.me](https://dse.iskh.me)
+and can be downloaded as a single PDF: [eco629-dynamic-structural-models.pdf](/eco629-dynamic-structural-models.pdf).
+Each chapter also carries a download menu with that chapter as PDF or MyST Markdown.
 
 Tasks and exercise code are posted in the private repository `fediskhakov/sb_dse_class`, and you work in a private repository of your own, `fediskhakov/sb_dse_<your-username>`.
 Send me your `GitHub username` (register now if not yet) and I will set both up for you — see [](1_workflow.md#submission).

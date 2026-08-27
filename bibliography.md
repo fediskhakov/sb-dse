@@ -1,6 +1,12 @@
 ---
 title: 📚 Reading list
 short_title: 📚 Reading list
+exports:
+  - format: typst
+    output: exports/bibliography.pdf
+downloads:
+  - file: bibliography.md
+    title: Chapter source (MyST Markdown)
 ---
 
 The main references for the course, organized by the part in which they are used.

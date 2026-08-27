@@ -9,10 +9,15 @@ authors:
       - Stony Brook University
   - name: Claude Code
     url: https://claude.com/claude-code
+exports:
+  - format: typst
+    output: exports/1_workflow.pdf
+downloads:
+  - file: 1_workflow.md
+    title: Chapter source (MyST Markdown)
 ---
 
-```{admonition} Disclosure
-:class: note
+```{note} Disclosure
 
 This page was written by Claude Code along the draft I wrote myself.
 I have checked and edited all of the text written by the assistant.
@@ -31,8 +36,7 @@ it does.
 This class sets up all three, plus the workflow you will use to submit every
 homework: a pull request in your own course repository.
 
-```{admonition} Three layers
-:class: hint
+```{hint} Three layers
 
 1. **Run** — a Python interpreter and the scientific stack. Fails when your machine
    and mine resolve different package versions.
@@ -46,8 +50,7 @@ All are essential for your productivity, so we'll build good practices for all t
 
 ```
 
-```{admonition} Local install, or the cloud
-:class: hint
+```{hint} Local install, or the cloud
 
 This page describes a *local install*, which lets you run course code on your own
 machine and is what I recommend. Cloud environments — [Google
@@ -65,8 +68,7 @@ you control.
 - A terminal you are willing to type into — PowerShell or Windows Terminal on
   Windows, Terminal or iTerm on macOS, anything on Linux
 
-```{admonition} Software components
-:class: note
+```{note} Software components
 
 1. A **Python** environment, installed with **uv** (or conda, see below)
 2. **Git**, and optionally a graphical client for it
@@ -123,8 +125,7 @@ conda env create -f environment.yml
 conda activate eco629
 ```
 
-```{admonition} Why Miniforge rather than the Anaconda Distribution
-:class: note
+```{note} Why Miniforge rather than the Anaconda Distribution
 
 Anaconda changed its terms of service in 2024: use of the Anaconda-hosted
 `defaults` channel by larger organizations — a category that has been read to
@@ -223,8 +224,7 @@ git push -u origin hw1
 gh pr create --fill            # open the pull request without leaving the terminal
 ```
 
-```{admonition} Things not to commit
-:class: attention
+```{attention} Things not to commit
 
 - **Secrets** — API keys for AI tools, tokens, passwords. GitHub scans public pushes
   for known key formats and will alert, but assume anything pushed is public forever.
@@ -234,6 +234,109 @@ gh pr create --fill            # open the pull request without leaving the termi
   committed instead. Licensed data is never committed.
 - **Build output and environments** — `_build/`, `.venv/`, `__pycache__/`,
   `.ipynb_checkpoints/`. Start every repository with a Python `.gitignore`.
+```
+
+(windows)=
+## If you are on Windows
+
+Everything in this course runs on Windows — Python, Git, Jupyter, the assistants.
+What differs is the shell you type commands into, and a couple of defaults that
+produce baffling diffs if left alone.
+
+### Use Git Bash
+
+Git for Windows installs **Git Bash** alongside Git. Use it for everything in these
+notes, ideally inside [Windows Terminal](https://aka.ms/terminal). Every command
+block in this book then runs exactly as written.
+
+The alternative shells will bite you in small ways:
+
+- Windows PowerShell 5.1 — still the default `powershell.exe` on Windows 10 — has no
+  `&&`, so `git add . && git commit -m "..."` simply fails. PowerShell 7 (`pwsh`)
+  added it.
+- Line continuation in PowerShell is a backtick, not a backslash, so any command
+  broken across lines has to be rewritten.
+- Command Prompt has neither the Unix utilities nor the quoting rules the examples
+  assume.
+
+None of this is fatal, and if you already live in PowerShell you will be fine — but
+Git Bash is the path of least translation.
+
+### Install the GitHub CLI
+
+`gh` is a separate install; it does **not** come with Git for Windows. Pick one:
+
+```powershell
+winget install --id GitHub.cli     # preinstalled on Windows 11 and recent Windows 10
+scoop install gh
+choco install gh
+```
+
+Restart the terminal afterwards so `PATH` picks it up, then run `gh auth login`.
+
+`gh auth login` is also the easiest way through the part of setup that Windows makes
+fussiest. Choose SSH as the protocol and it generates a key, loads it into the agent,
+and uploads the public key to GitHub for you. Choose HTTPS and `gh auth setup-git`
+registers `gh` as Git's credential helper, so there is no key to manage at all.
+Either way you can skip the manual `ssh-keygen`, enable-the-service, paste-into-
+settings sequence.
+
+```{hint} Two ssh-agents
+
+Windows has an OpenSSH client of its own, and Git Bash ships a second one. A key
+loaded into the Windows `ssh-agent` service is invisible to Git Bash unless you
+configure it. Symptom: `ssh -T git@github.com` works in one terminal and asks for a
+password in the other. Cure: let `gh auth login` create the key, and stay in one
+shell.
+```
+
+### Line endings
+
+Git for Windows sets `core.autocrlf=true`, which converts line endings on checkout
+and commit. Left to itself in a mixed-OS class this produces diffs where every line
+of a file you never touched is marked as changed.
+
+The course repositories carry a `.gitattributes` that stores every text file with
+LF regardless of who commits it, which settles the question. Leave both that file
+and your `core.autocrlf` alone. If you do end up with a whole-file diff, fix it once
+with
+
+```bash
+git add --renormalize .
+```
+
+### Where to put the repository
+
+- **Not inside OneDrive, Dropbox or any synced folder.** Sync clients lock files
+  while Git is writing them, and a `.git` directory synced across machines corrupts
+  in ways that are tedious to recover from. Use a plain local path such as
+  `C:\Users\you\code\`.
+- Windows still enforces a 260-character path limit in places. One-time cure:
+
+```bash
+git config --global core.longpaths true
+```
+
+### WSL, if you want it
+
+The Windows Subsystem for Linux gives you a real Linux, and everything in this book
+then works the Linux way. It is a perfectly good choice, and it is not required.
+Two rules if you go there: install the tools *again* inside WSL — a Windows `gh` or
+`uv` is invisible from the Linux side — and keep the repository on the Linux
+filesystem, since a repository under `/mnt/c` is slow enough to notice.
+
+```{attention} Write code that runs on all three systems
+
+This class is split across Windows, macOS and Linux, and I will run your submissions
+on a Mac. Portability is therefore part of the assignment, not a nicety:
+
+- Build paths with `pathlib.Path` or `os.path.join`, never `"data\\raw.csv"` and
+  never `"C:\\Users\\you\\..."`.
+- Address files **relative to the repository**, never by absolute path.
+- Keep shell magics — `!ls`, `!cat`, `!rm` — out of notebooks. They are
+  OS-specific. Use Python.
+- If you need a package that only exists on one platform, say so in the pull
+  request.
 ```
 
 ## Notebooks, and their limits
@@ -271,8 +374,7 @@ is no excuse for fighting them:
   executable code blocks, built by [Jupyter Book 2](https://jupyterbook.org). Look at
   the source of any chapter of this book to see the format.
 
-````{admonition} Minimum viable hygiene
-:class: hint
+````{hint} Minimum viable hygiene
 
 In your project repository, before your first commit:
 
@@ -287,7 +389,7 @@ unmergeable conflicts in code-heavy coursework.
 (ai)=
 ## AI coding assistants
 
-This course is AI-friendly: see the [AI policy](#ai-policy) on the front
+This course is AI-friendly: see the [AI policy](https://dse.iskh.me/#ai-policy) on the front
 page. The policy is short — *you are responsible for everything you submit, and you
 must understand every line* — and it is examined orally.
 You also must disclose the use of AI assistants beyond text editing: see the [disclosure policy](#disclosure-policy) below.
@@ -349,8 +451,7 @@ transition matrix whose rows do not sum to one — all of these produce output, 
 and estimates. Nothing raises an exception. Assistants are fluent at producing
 plausible numerical code, which means the burden of verification is entirely yours.
 
-```{admonition} Verification habits that catch AI errors
-:class: attention
+```{attention} Verification habits that catch AI errors
 
 - **Analytic special cases.** Solve the model where you know the answer — one period,
   zero discounting, degenerate uncertainty — and compare.
@@ -369,8 +470,7 @@ plausible numerical code, which means the burden of verification is entirely you
 (disclosure-policy)=
 ### Disclosure
 
-```{admonition} Disclosure policy
-:class: attention
+```{attention} Disclosure policy
 
 **Any use of an AI assistant that goes beyond text editing must be disclosed** in the
 pull request that submits the work.
@@ -392,7 +492,7 @@ increasingly journal policy. A complete disclosure is short:
 
 Disclosure changes nothing about responsibility. The work is yours, the errors are
 yours, and the oral exam is about your understanding of every line you submit —
-[see the AI policy](#ai-policy). Disclosure exists so that we can talk about *how* you
+[see the AI policy](https://dse.iskh.me/#ai-policy). Disclosure exists so that we can talk about *how* you
 worked, which is a subject of this course in its own right.
 
 :::{div}
@@ -523,8 +623,7 @@ git restore <file>    # discard uncommitted changes to one file
 git stash             # park changes to try something else; git stash pop brings them back
 ```
 
-```{admonition} Keep a cheat sheet open
-:class: hint
+```{hint} Keep a cheat sheet open
 
 No need to memorizes all Git commands. Everyone looks them up.
 
@@ -543,8 +642,7 @@ record. It stays open until we have discussed the assignment in class; then it i
 merged into your `main`, so your `main` ends the semester as a record of your
 accepted work.
 
-```{admonition} The one rule
-:class: attention
+```{attention} The one rule
 
 **Never edit anything under `tasks/`.** Your work goes in `solutions/hwN/`.
 
@@ -560,8 +658,7 @@ presenting the solution at the board. The presenter rotates, so plan on presenti
 several times over the semester — including code that does not work yet, which is
 usually the more instructive case.
 
-```{admonition} Pull request checklist
-:class: hint
+```{hint} Pull request checklist
 
 - Runs top to bottom from a fresh kernel
 - Nothing under `tasks/` is touched
@@ -570,8 +667,7 @@ usually the more instructive case.
   than text editing
 ```
 
-````{admonition} Practical task
-:class: warning
+````{warning} Practical task
 
 1. Install Python with uv (or Miniforge) and confirm `import numpy, scipy, sympy`
    works
@@ -588,8 +684,7 @@ usually the more instructive case.
 The first pull request of the semester is the student survey — no code required.
 ````
 
-````{admonition} References and additional resources
-:class: note
+````{note} References and additional resources
 
 - QuantEcon on setting up a local environment
   [link](https://python-programming.quantecon.org/getting_started.html)

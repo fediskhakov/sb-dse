@@ -2,6 +2,12 @@
 title: 📖 Algorithms and complexity
 short_title: 📖 Complexity of algorithms
 subtitle: Class 3 — Tuesday, September 1
+exports:
+  - format: typst
+    output: exports/2_algo.pdf
+downloads:
+  - file: 2_algo.md
+    title: Chapter source (MyST Markdown)
 kernelspec:
   name: python3
   display_name: Python 3
@@ -16,8 +22,7 @@ you write it.
 
 ## Writing programs that work fast
 
-````{admonition} Example: evaluation of polynomials
-:class: tip
+````{tip} Example: evaluation of polynomials
 
 **Task:** evaluate the polynomial of the form at a given $x$
 
@@ -43,8 +48,8 @@ def calc_polynomial(qs=[0,], x=0.0):
 :::
 ````
 
-````{admonition} Example: a better approach
-:class: tip dropdown
+````{tip} Example: a better approach
+:class: dropdown
 
 ```python
 def calc_polynomial_faster(qs=[0,], x=0.0):
@@ -130,8 +135,8 @@ for n in [2,4,7,32,543,671,780]:
   print('n = {0:5d} ({0:08b}), parity={1:d}'.format(n,parity(n)))
 ```
 
-````{admonition} Some details on bitwise operations
-:class: note dropdown
+````{note} Some details on bitwise operations
+:class: dropdown
 
 **Bitwise operations in Python**
 
@@ -236,8 +241,7 @@ plt.show()
 
 Finding a discrete element between given boundaries.
 
-````{admonition} Example
-:class: tip
+````{tip} Example
 
 1. Think of a number between 1 and 100
 2. How many guesses are needed to locate it if the only answers are "below" and "above"?
@@ -325,8 +329,7 @@ plt.show()
 A very useful way to talk about the rate of growth $\leftrightarrow$ complexity of
 algorithms.
 
-````{admonition} Definition
-:class: attention
+````{attention} Definition
 
 $$f(n)=O\big(g(n)\big) \text{ as } n \to \infty \Leftrightarrow$$
 
@@ -351,8 +354,8 @@ of growth.
 - $O(\log_{2}(n))$ logarithmic time
 - $O(n)$ linear time
 - $O(n \log_{2}(n))$ quasi-linear time
-- $O(n^{k}), k>1$ quadratic, cubic, etc. **polynomial** time $\uparrow$ **tractable**
-- $O(2^{n})$ exponential time $\downarrow$ **curse of dimensionality**
+- $O(n^{k}), k>1$ quadratic, cubic, etc. **polynomial** time ↑ **tractable**
+- $O(2^{n})$ exponential time ↓ **curse of dimensionality**
 - $O(n!)$ factorial time
 
 ```{image} _static/img/bigO.png
@@ -375,8 +378,7 @@ of growth.
 
 Divide-and-conquer structure is what typically marks an *excellent* algorithm.
 
-````{admonition} Example
-:class: tip
+````{tip} Example
 
 Examples of divide-and-conquer algorithms:
 
@@ -390,15 +392,13 @@ Examples of divide-and-conquer algorithms:
 
 An example of a *bad algorithm*?
 
-````{admonition} Definition
-:class: attention
+````{attention} Definition
 
 The term **curse of dimensionality** relates to the above exponential complexity of
 an algorithm.
 ````
 
-````{admonition} Example
-:class: tip
+````{tip} Example
 
 - Many board games (checkers, chess, shogi, go) in their $n$-by-$n$ generalizations
 - Traveling salesman problem (TSP)
@@ -471,8 +471,7 @@ plt.show()
 ```
 
 (task2.1)=
-````{admonition} Practical task 2.1: compositions and complexity
-:class: warning
+````{warning} Practical task 2.1: compositions and complexity
 
 Implement the generation of discrete compositions and study the complexity of your
 implementation empirically, as done above.
@@ -487,8 +486,7 @@ Submit as a pull request in your own course repository; we discuss the solutions
 the start of the next class.
 ````
 
-````{admonition} What to do with models that are heavy to compute?
-:class: hint
+````{hint} What to do with models that are heavy to compute?
 
 1. Design better solution algorithms
 2. Analyze special classes of problems and rely on problem structure
@@ -500,8 +498,8 @@ the start of the next class.
 Points 1 and 2 are what this course is about.
 ````
 
-````{admonition} Classes of computational complexity in theoretical computer science
-:class: note dropdown
+````{note} Classes of computational complexity in theoretical computer science
+:class: dropdown
 
 Thinking of all problems there are:
 
@@ -532,8 +530,7 @@ the Clay Mathematics Institute)
 ```
 ````
 
-````{admonition} Definition
-:class: attention
+````{attention} Definition
 
 A recursive algorithm is an algorithm that calls itself in order to solve a problem.
 ````
@@ -541,8 +538,7 @@ A recursive algorithm is an algorithm that calls itself in order to solve a prob
 A surprisingly powerful technique in scientific programming — and the structure of
 every dynamic programming solver we write later in the course.
 
-````{admonition} Example
-:class: tip
+````{tip} Example
 
 Fibonacci sequence defined as
 
@@ -612,8 +608,7 @@ def main_algorithm(n,source,aux,target):
 ```
 
 (task2.2)=
-````{admonition} Practical task 2.2: Towers of Hanoi
-:class: warning
+````{warning} Practical task 2.2: Towers of Hanoi
 
 Code up the recursive solution using the algorithm above, and print the sequence of
 moves. How many moves does the solution for $n$ disks take? What is the complexity
@@ -630,8 +625,7 @@ the illustration stops at configuration 13, two moves short of the goal.
 ```
 
 (2_algo_references)=
-````{admonition} References and additional resources
-:class: note
+````{note} References and additional resources
 
 - 📖 {cite:t}`wilf2002AlgorithmsComplexity` "Algorithms and Complexity"
   — [pdf of the book](https://www2.math.upenn.edu/~wilf/AlgoComp.pdf)

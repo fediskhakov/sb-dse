@@ -20,6 +20,10 @@ project:
       affiliations:
         - Stony Brook University
   copyright: "2026"
+  github: https://github.com/fediskhakov/sb_dse
+  license: CC-BY-NC-SA-4.0
+  # In-browser execution via JupyterLite/Pyodide — no server, no Binder.
+  thebe: lite
   bibliography:
     - references.bib
   math:
@@ -33,6 +37,10 @@ project:
     - tools/**
     - _build/**
     - unpublished/**
+  # Whole-book PDF, rendered through typst (see .github/workflows).
+  exports:
+    - format: typst
+      output: exports/eco629-dynamic-structural-models.pdf
   toc:
     - file: index.md
     - file: 1_intro.md

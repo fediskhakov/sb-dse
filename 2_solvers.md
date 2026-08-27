@@ -2,6 +2,12 @@
 title: 📖 Root finding and optimization
 short_title: 📖 Classic solvers
 subtitle: Class 4 — Thursday, September 3
+exports:
+  - format: typst
+    output: exports/2_solvers.pdf
+downloads:
+  - file: 2_solvers.md
+    title: Chapter source (MyST Markdown)
 kernelspec:
   name: python3
   display_name: Python 3
@@ -91,8 +97,7 @@ Bellman equations — a robust but slow method makes an excellent fallback insid
 poly-algorithm.
 
 (task2.3)=
-````{admonition} Practical task 2.3: implementing the bisection method
-:class: warning
+````{warning} Practical task 2.3: implementing the bisection method
 
 Implement the bisection method yourself, with the signature above, including:
 
@@ -207,8 +212,7 @@ $O\big(\log(n) F(n)\big)$, where $F(n)$ is the cost of calculating $f(x)/f'(x)$ 
 $n$-digit precision.
 
 (task2.4)=
-````{admonition} Practical task 2.4: implementing Newton–Raphson
-:class: warning
+````{warning} Practical task 2.4: implementing Newton–Raphson
 
 Implement the Newton–Raphson method with the signature above, and
 
@@ -219,8 +223,7 @@ Implement the Newton–Raphson method with the signature above, and
 ````
 
 (task2.5)=
-````{admonition} Practical task 2.5 [optional]: multivariate Newton
-:class: warning
+````{warning} Practical task 2.5 [optional]: multivariate Newton
 
 Extend your Newton solver to $f: \mathbb{R}^n \to \mathbb{R}^n$ using the Jacobian
 and `numpy.linalg.solve`. Test it on a small nonlinear system of your choice.
@@ -368,8 +371,7 @@ BHHH, being based on the statistical properties of the scores, is more specific 
 econometric M-estimation problems — and for that reason it is often *not* found in
 standard optimization packages.
 
-:::{admonition} Where this comes back
-:class: note
+:::{note} Where this comes back
 
 The NFXP estimator in Part III is a Newton-type optimizer with analytical derivatives
 on the outside, and a Newton–Kantorovich solver for the Bellman equation on the
@@ -380,8 +382,7 @@ reference reading in the course — see the source notes listed below.
 :::
 
 (2_solvers_references)=
-````{admonition} References and additional resources
-:class: note
+````{note} References and additional resources
 
 - On the computational complexity of Newton's method
   [link](https://m.tau.ac.il/~tsirel/dump/Static/knowino.org/wiki/Newton's_method.html#Computational_complexity)

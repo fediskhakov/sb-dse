@@ -2,10 +2,15 @@
 title: 📖 Introduction to structural estimation
 short_title: 📖 Introduction
 subtitle: Class 1 — Tuesday, August 25
+exports:
+  - format: typst
+    output: exports/1_intro.pdf
+downloads:
+  - file: 1_intro.md
+    title: Chapter source (MyST Markdown)
 ---
 
-````{admonition} Definition
-:class: attention
+````{attention} Definition
 
 Structural estimation refers to econometric methods that estimate parameters of
 economic models derived from economic theory, often involving optimization behavior
@@ -203,8 +208,7 @@ equations models (SEM)**.
   prediction or causal inference without structural interpretation.
 
 
-````{admonition} Definition
-:class: attention
+````{attention} Definition
 
 Structural model is a disciplined abstraction for counterfactual analysis.
 ````
@@ -471,8 +475,7 @@ Other estimation approaches:
   - Markov perfect equilibrium (MPE)
   - Oblivious equilibrium, etc.
 
-````{admonition} Example of policy analysis based on structural estimation
-:class: tip
+````{tip} Example of policy analysis based on structural estimation
 
 {cite:t}`iruc2` 
 “Equilibrium Trade in Automobiles,” Journal of Political Economy
@@ -540,8 +543,7 @@ Other estimation approaches:
 ````
 
 (1_intro_references)=
-````{admonition} References and additional resources
-:class: note
+````{note} References and additional resources
 
 - 📖 "Economic Theory and Measurement: A Twenty Year Research Report, 1932–1952",
   report by the Cowles Commission, University of Chicago, 1952
