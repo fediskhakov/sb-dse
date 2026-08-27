@@ -69,7 +69,26 @@ def main_algorithm(n,source,aux,target):
 
 Code up the recursive solution using the algorithm above, and print the sequence of
 moves. How many moves does the solution for $n$ disks take? What is the complexity
-class of the algorithm?
+class of the algorithm (see next lecture)?
+
+Starter code is in the course code repository. Clone it once:
+
+```bash
+git clone https://github.com/fediskhakov/sb-dse-code.git
+cd sb-dse-code
+```
+Then fill in the missing parts in `class02-aug27/hanoi.py` and run it with
+`python hanoi.py`.
+
+This repository is **read-only for you** — I push code to it all term, you pull it:
+
+```bash
+git pull        # before each class, to get the new code
+```
+
+Nothing here is submitted, so experiment freely. But once you have edited a file in
+place, `git pull` refuses to update it — so copy anything you want to keep into your
+own repository and work on the copy there. Alternatively, make a separate branch in your local cloned repository, and work within that branch, regularly merging in new pulled changes from the main.
 ````
 
 `````{tip} Solution
