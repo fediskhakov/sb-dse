@@ -3,7 +3,7 @@
 # Pages for this repository is configured with "Source: GitHub Actions" and the
 # custom domain dse.iskh.me, so the site is served from the domain root and no
 # BASE_URL is needed. If the custom domain is ever removed and the book is served
-# from https://fediskhakov.github.io/sb_dse/ instead, set BASE_URL: /sb_dse on the
+# from https://fediskhakov.github.io/sb-dse/ instead, set BASE_URL: /sb-dse on the
 # build step so MyST writes the right asset and link prefixes.
 name: Compile Jupyter Book and deploy to GH Pages
 

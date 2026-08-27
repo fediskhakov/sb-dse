@@ -548,8 +548,8 @@ repositories are involved:
 
 | Repository | What it is | Your access |
 | :-- | :-- | :-- |
-| `fediskhakov/sb_dse_class` | the **task** repository — I push each assignment here | read |
-| `fediskhakov/sb_dse_<your-username>` | **your** repository for the whole semester | write |
+| `fediskhakov/sb-dse-class` | the **task** repository — I push each assignment here | read |
+| `fediskhakov/sb-dse-<your-username>` | **your** repository for the whole semester | write |
 
 Your repository is created as a clone of the task repository, so it shares its
 history: pulling from the task repository brings each new assignment straight into
@@ -563,9 +563,9 @@ your working copy, all semester, without any copying by hand.
 3. Clone your repository and add the task repository as a second remote:
 
 ```bash
-git clone git@github.com:fediskhakov/sb_dse_<your-username>.git
-cd sb_dse_<your-username>
-git remote add upstream git@github.com:fediskhakov/sb_dse_class.git
+git clone git@github.com:fediskhakov/sb-dse-<your-username>.git
+cd sb-dse-<your-username>
+git remote add upstream git@github.com:fediskhakov/sb-dse-class.git
 pip install nbstripout && nbstripout --install
 ```
 

@@ -20,7 +20,7 @@ project:
       affiliations:
         - Stony Brook University
   copyright: "2026"
-  github: https://github.com/fediskhakov/sb_dse
+  github: https://github.com/fediskhakov/sb-dse
   license: CC-BY-NC-SA-4.0
   # In-browser execution via JupyterLite/Pyodide — no server, no Binder.
   thebe: lite
@@ -36,7 +36,6 @@ project:
     - README.md
     - tools/**
     - _build/**
-    - unpublished/**
   # Whole-book PDF, rendered through typst (see .github/workflows).
   exports:
     - format: typst

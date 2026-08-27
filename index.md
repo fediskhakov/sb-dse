@@ -185,7 +185,7 @@ The lecture notes are published at [dse.iskh.me](https://dse.iskh.me)
 and can be downloaded as a single PDF: [eco629-dynamic-structural-models.pdf](/eco629-dynamic-structural-models.pdf).
 Each chapter also carries a download menu with that chapter as PDF or MyST Markdown.
 
-Tasks and exercise code are posted in the private repository `fediskhakov/sb_dse_class`, and you work in a private repository of your own, `fediskhakov/sb_dse_<your-username>`.
+Tasks and exercise code are posted in the private repository `fediskhakov/sb-dse-class`, and you work in a private repository of your own, `fediskhakov/sb-dse-<your-username>`.
 Send me your `GitHub username` (register now if not yet) and I will set both up for you — see [](1_workflow.md#submission).
 
 (ai-policy)=
