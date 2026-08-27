@@ -65,9 +65,9 @@ The plan below is provisional and will be adjusted as we go.
 | :-- | :-- |
 | | **Part I — Foundations and computational toolkit** |
 | Tue Aug 25 | [Introduction to structural estimation](1_intro.md) — what a structural project consists of |
-| Thu Aug 27 | [Work environment and submission workflow](1_workflow.md) Practical tasks on version control |
-| Tue Sep 1 | [Algorithms and complexity](2_algo.md) |
-| Thu Sep 3 | [Root finding and optimization](2_solvers.md) — bisection, Newton–Raphson, BHHH |
+| Thu Aug 27 | [Work environment and submission workflow](2_workflow.md) Practical tasks on version control &nbsp;·&nbsp; [Towers of Hanoi](2_recursion.md) — recursion, if time allows |
+| Tue Sep 1 | [Algorithms and complexity](3_algo.md) |
+| Thu Sep 3 | [Root finding and optimization](4_solvers.md) — bisection, Newton–Raphson, BHHH |
 | | **Part II — Dynamic programming** |
 | Tue Sep 8 | Bellman equations and backwards induction in finite horizon |
 | Thu Sep 10 | Contraction mappings, infinite horizon, value function and policy iteration |
@@ -170,14 +170,14 @@ Homework is typically given on Tuesday and is due the following Thursday.
 - With rotation everyone presents several times over the semester
 - This is part of the grade
 
-Homework is submitted as a pull request in your own private course repository, which I create for you and have access to; the workflow is set up in the first week, see [](1_workflow.md#submission).
+Homework is submitted as a pull request in your own private course repository, which I create for you and have access to; the workflow is set up in the first week, see [](2_workflow.md#submission).
 
 ## 💻 Software
 
 The course is intended in Python, yet you can discover equivalent code online in Matlab, Julia and other languages.
 Particular language is less important these days because we will be working with small examples.
 
-By next time sets up the work environment, see [](1_workflow.md).
+By next time sets up the work environment, see [](2_workflow.md).
 
 Computers are expected in the lectures, you are encouraged to run the code examples in the lecture, and interact with the code and the slides in class.
 
@@ -186,7 +186,7 @@ and can be downloaded as a single PDF: [eco629-dynamic-structural-models.pdf](/e
 Each chapter also carries a download menu with that chapter as PDF or MyST Markdown.
 
 Tasks and exercise code are posted in the private repository `fediskhakov/sb-dse-class`, and you work in a private repository of your own, `fediskhakov/sb-dse-<your-username>`.
-Send me your `GitHub username` (register now if not yet) and I will set both up for you — see [](1_workflow.md#submission).
+Send me your `GitHub username` (register now if not yet) and I will set both up for you — see [](2_workflow.md#submission).
 
 (ai-policy)=
 ## 🤖 AI policy

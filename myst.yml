@@ -43,9 +43,10 @@ project:
   toc:
     - file: index.md
     - file: 1_intro.md
-    - file: 1_workflow.md
-    - file: 2_algo.md
-    - file: 2_solvers.md
+    - file: 2_workflow.md
+    - file: 2_recursion.md
+    - file: 3_algo.md
+    - file: 4_solvers.md
     - file: bibliography.md
 
 site:

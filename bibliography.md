@@ -6,7 +6,7 @@ exports:
     output: exports/bibliography.pdf
 downloads:
   - file: bibliography.md
-    title: Chapter source (MyST Markdown)
+    title: MyST Markdown
 ---
 
 The main references for the course, organized by the part in which they are used.

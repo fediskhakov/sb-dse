@@ -4,10 +4,10 @@ short_title: 📖 Complexity of algorithms
 subtitle: Class 3 — Tuesday, September 1
 exports:
   - format: typst
-    output: exports/2_algo.pdf
+    output: exports/3_algo.pdf
 downloads:
-  - file: 2_algo.md
-    title: Chapter source (MyST Markdown)
+  - file: 3_algo.md
+    title: MyST Markdown
 kernelspec:
   name: python3
   display_name: Python 3
@@ -521,110 +521,7 @@ the Clay Mathematics Institute)
 ![Complexity classes](_static/img/complexity_classes.png)
 ````
 
-## Recursion
-
-````{margin}
-```{image} _static/img/recursion.gif
-:alt: Recursion
-:width: 90%
-```
-````
-
-````{attention} Definition
-
-A recursive algorithm is an algorithm that calls itself in order to solve a problem.
-````
-
-A surprisingly powerful technique in scientific programming — and the structure of
-every dynamic programming solver we write later in the course.
-
-````{tip} Example
-
-Fibonacci sequence defined as
-
-$$x_k = x_{k-1} + x_{k-2}, k>2, \quad x_0 = 1, \quad x_1 = 1$$
-
-Imagine a program that computes Fibonacci numbers using this definition, and calls
-itself in the process.
-````
-
-```{code-cell} python3
-def fibonacci(n):
-    if n == 0:
-        return 1
-    elif n == 1:
-        return 1
-    else:
-        return fibonacci(n - 1) + fibonacci(n - 2)
-
-for i in range(10):
-    print(fibonacci(i),end=' ')
-```
-
-:::{div}
-:class: discussion
-
-Is this an efficient algorithm? Why or why not?
-:::
-
-### Towers of Hanoi problem
-
-A classic puzzle: given a board with three pegs, move a stack of disks of different
-size from the left-most peg to the right-most peg, moving one disk at a time and
-following the rule that no larger disk can be placed on top of a smaller one.
-
-```{image} _static/img/hanoi.jpg
-:alt: Towers of Hanoi
-:width: 60%
-:align: center
-```
-
-The problem can be solved nicely by breaking it into small parts using the following
-algorithm:
-
-```
-def move(from,to):
-  move one disk from --> to
-
-def move_via(from,via,to):
-  move(from,via)
-  move(via,to)
-
-def main_algorithm(n,source,aux,target):
-  '''
-  Inputs: number of disks n
-        source peg
-        auxiliary peg
-        target peg
-  '''
-  if n==0:
-    do nothing, return
-  if n==1:
-    move(source,target)
-  if n>0:
-    main_algorithm(n-1,source,target,aux)
-    move(source,target)
-    main_algorithm(n-1,aux,source,target)
-```
-
-(task2.2)=
-````{warning} Practical task 2.2: Towers of Hanoi
-
-Code up the recursive solution using the algorithm above, and print the sequence of
-moves. How many moves does the solution for $n$ disks take? What is the complexity
-class of the algorithm?
-````
-
-The solution for $n$ disks requires $2^n-1$ moves, so 15 for the four disks below —
-the illustration stops at configuration 13, two moves short of the goal.
-
-```{image} _static/img/hanoi_solution.jpg
-:alt: Towers of Hanoi solution
-:width: 40%
-:align: center
-```
-
-(2_algo_references)=
+(3_algo_references)=
 ````{note} References and additional resources
 
 - 📖 {cite:t}`wilf2002AlgorithmsComplexity` "Algorithms and Complexity"

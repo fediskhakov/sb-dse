@@ -7,7 +7,7 @@ exports:
     output: exports/1_intro.pdf
 downloads:
   - file: 1_intro.md
-    title: Chapter source (MyST Markdown)
+    title: MyST Markdown
 ---
 
 ````{attention} Definition

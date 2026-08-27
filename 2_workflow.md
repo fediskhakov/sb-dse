@@ -11,10 +11,10 @@ authors:
     url: https://claude.com/claude-code
 exports:
   - format: typst
-    output: exports/1_workflow.pdf
+    output: exports/2_workflow.pdf
 downloads:
-  - file: 1_workflow.md
-    title: Chapter source (MyST Markdown)
+  - file: 2_workflow.md
+    title: MyST Markdown
 ---
 
 ```{note} Disclosure
@@ -216,12 +216,12 @@ materials and all homework are distributed and collected.
 
 ```bash
 git pull upstream main         # collect newly posted tasks
-git switch -c hw1              # create and move to a branch (modern `checkout -b`)
+git switch -c alpha            # create and move to a branch (modern `checkout -b`)
 git status                     # what is changed, staged, untracked
 git add -p                     # stage selected hunks — read your own diff
-git commit -m "HW1: bisection solver"
-git push -u origin hw1
-gh pr create --fill            # open the pull request without leaving the terminal
+git commit -m "alpha: bisection solver"
+git push -u origin alpha
+gh pr create                   # open the pull request without leaving the terminal
 ```
 
 ```{attention} Things not to commit
@@ -379,11 +379,16 @@ is no excuse for fighting them:
 In your project repository, before your first commit:
 
 ```bash
-pip install nbstripout && nbstripout --install
+uv tool install nbstripout && nbstripout --install    # conda: conda install -c conda-forge nbstripout
 ```
 
 That one command removes the single most common source of unreadable diffs and
 unmergeable conflicts in code-heavy coursework.
+
+`uv tool install`, not `uv pip install`: `nbstripout --install` writes the absolute
+path of the interpreter into `.git/config`, and installing into a project `.venv`
+would tie your git filter to a directory you will eventually delete and recreate.
+Every notebook commit then fails until you reinstall it.
 ````
 
 (ai)=
@@ -566,7 +571,7 @@ your working copy, all semester, without any copying by hand.
 git clone git@github.com:fediskhakov/sb-dse-<your-username>.git
 cd sb-dse-<your-username>
 git remote add upstream git@github.com:fediskhakov/sb-dse-class.git
-pip install nbstripout && nbstripout --install
+uv tool install nbstripout && nbstripout --install    # conda: conda install -c conda-forge nbstripout
 ```
 
 `origin` is now your repository, `upstream` is the task repository. Confirm with
@@ -575,12 +580,13 @@ pip install nbstripout && nbstripout --install
 ### For each assignment
 
 ```bash
-git pull upstream main                    # the new task appears in tasks/hwN/
-git switch -c hw1                         # one branch per assignment
-#  ... work in solutions/hw1/ ...
-git add . && git commit -m "HW1: inventory model solver"
-git push -u origin hw1
-gh pr create --fill --reviewer fediskhakov
+git pull upstream main                    # collect newly posted tasks
+cp -r tasks/alpha solutions/alpha         # copy the task you were given
+git switch -c alpha                       # one branch per assignment
+#  ... solve inside solutions/alpha/ ...
+git add . && git commit -m "alpha: inventory model solver"
+git push -u origin alpha
+gh pr create --reviewer fediskhakov
 ```
 
 ### While you work
@@ -593,7 +599,7 @@ have just fixed:
 ```bash
 git status                      # what have I changed?
 git diff                        # what exactly did I change?
-git add solutions/hw1/vfi.py    # stage one file...
+git add solutions/alpha/vfi.py  # stage one file...
 git add -p                      # ...or stage selected hunks, reading as you go
 git commit -m "VFI converges on the deterministic case"
 git push                        # after the first push -u, plain git push is enough
@@ -609,7 +615,7 @@ Ten small commits over three evenings, then the pull request:
   explain why the estimator changed shape halfway through; useful to me, because a
   pull request that arrives as one commit of 400 lines cannot be reviewed.
 - **Small commits get better comments.** Twelve commits with meaningful messages
-  attract useful review; one commit called "hw1" attracts none.
+  attract useful review; one commit called "alpha" attracts none.
 
 Write messages that say what changed and why — "fix bug" is worth nothing three
 weeks later, "clip the value function at the borrowing constraint" is worth a lot.
@@ -644,13 +650,19 @@ accepted work.
 
 ```{attention} The one rule
 
-**Never edit anything under `tasks/`.** Your work goes in `solutions/hwN/`.
+**Never edit anything under `tasks/`.** Copy the task folder into `solutions/`
+and work on the copy.
+
+Each assignment is a folder under `tasks/`, and I will tell you which one. Copy
+it across with `cp -r tasks/<name> solutions/<name>`, then do all of your work
+in `solutions/<name>/`. The folder names carry no order — do the one you were
+given.
 
 Because your repository shares history with the task repository, an untouched
 `tasks/` folder makes every `git pull upstream main` a clean fast-forward. Edit a
 task file and you will be resolving merge conflicts on every future assignment
-instead of doing the assignment. If you want to modify code I handed out, copy it
-into your solutions folder first and modify the copy.
+instead of doing the assignment. Working on a copy also leaves the original
+beside your version, which makes it easy to see what you changed.
 ```
 
 Homework is discussed at the start of the class that follows it, with one student

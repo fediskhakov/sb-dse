@@ -22,27 +22,32 @@ the course.
 
 ## Running the code
 
-The code in the notes is plain Python — `numpy`, `scipy`, `matplotlib`, `sympy`. To
-run it locally, clone this repository and create the course environment:
+The code in the notes is plain Python — `numpy`, `scipy`, `matplotlib`, `sympy`, and
+JupyterLab to run the notebooks. Clone this repository and set up the course
+environment either way:
+
+**uv** (the course default):
+
+```bash
+uv venv                                 # creates .venv with a suitable Python
+uv pip install -r requirements.txt
+uv run jupyter lab                      # no activation needed
+```
+
+**conda** ([Miniforge](https://conda-forge.org/download/)):
 
 ```bash
 conda env create -f environment.yml
 conda activate eco629
+jupyter lab
 ```
 
-Or, with pip:
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-```
+These are the two supported ways; the *Work environment and submission workflow*
+chapter covers both in full, including Windows.
 
 You can then copy code out of any chapter into a notebook or script, or open the
 chapter's `.md` file directly — the chapters are Jupyter notebooks in MyST Markdown
 form and run as-is in Jupyter.
-
-Setting up a working environment is covered in the *Work environment and submission
-workflow* chapter, which is where to start if any of the above is unfamiliar.
 
 ## Corrections
 

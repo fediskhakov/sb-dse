@@ -1,5 +1,6 @@
 jupyter-book>=2
 jupyter-server
+jupyterlab
 ipykernel
 numpy
 scipy

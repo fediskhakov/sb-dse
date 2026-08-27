@@ -4,10 +4,10 @@ short_title: 📖 Classic solvers
 subtitle: Class 4 — Thursday, September 3
 exports:
   - format: typst
-    output: exports/2_solvers.pdf
+    output: exports/4_solvers.pdf
 downloads:
-  - file: 2_solvers.md
-    title: Chapter source (MyST Markdown)
+  - file: 4_solvers.md
+    title: MyST Markdown
 kernelspec:
   name: python3
   display_name: Python 3
@@ -381,7 +381,7 @@ The full treatment of M-estimation, asymptotics and the information identity is
 reference reading in the course — see the source notes listed below.
 :::
 
-(2_solvers_references)=
+(4_solvers_references)=
 ````{note} References and additional resources
 
 - On the computational complexity of Newton's method
