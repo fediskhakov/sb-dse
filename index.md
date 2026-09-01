@@ -113,7 +113,6 @@ We have a quite unique opportunity for course co-creation.
 
 ```{list-table}
 :header-rows: 0
-:widths: 25 75
 
 * - **Time**
   - Tuesday and Thursday, 09:30 – 10:50

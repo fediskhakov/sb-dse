@@ -577,16 +577,17 @@ uv tool install nbstripout && nbstripout --install    # conda: conda install -c 
 `origin` is now your repository, `upstream` is the task repository. Confirm with
 `git remote -v`.
 
+(each_assignment)=
 ### For each assignment
 
 ```bash
 git pull upstream main                    # collect newly posted tasks
-cp -r tasks/alpha solutions/alpha         # copy the task you were given
-git switch -c alpha                       # one branch per assignment
-#  ... solve inside solutions/alpha/ ...
-git add . && git commit -m "alpha: inventory model solver"
-git push -u origin alpha
-gh pr create --reviewer fediskhakov
+cp -r tasks/<assignment_name> solutions/<assignment_name>  # copy 
+git switch -c <assignment_name>           # one branch per assignment
+#  ... solve inside solutions/<assignment_name>/ ...
+git add . && git commit -m "<short message describing the work you are submitting>"
+git push -u origin <assignment_name>.     # submit
+gh pr create --reviewer fediskhakov       # add me as a reviewer
 ```
 
 ### While you work
@@ -599,9 +600,9 @@ have just fixed:
 ```bash
 git status                      # what have I changed?
 git diff                        # what exactly did I change?
-git add solutions/alpha/vfi.py  # stage one file...
+git add <path/filename>         # stage one file...
 git add -p                      # ...or stage selected hunks, reading as you go
-git commit -m "VFI converges on the deterministic case"
+git commit -m "<descriptive commit message>"
 git push                        # after the first push -u, plain git push is enough
 ```
 
