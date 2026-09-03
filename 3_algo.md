@@ -614,7 +614,7 @@ composition of $M$ into $n$ parts.*
 :::
 
 
-````{tip} Rhe number of compositions
+````{tip} The number of compositions
 :class: dropdown
 
 $$
