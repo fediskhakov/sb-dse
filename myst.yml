@@ -44,9 +44,9 @@ project:
     - file: index.md
     - file: 1_intro.md
     - file: 2_workflow.md
-    - file: 2_recursion.md
     - file: 3_algo.md
-    - file: 4_solvers.md
+    - file: 4_recursion.md
+    - file: 5_solvers.md
     - file: bibliography.md
 
 site:

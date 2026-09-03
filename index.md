@@ -61,13 +61,16 @@ Homework is discussed at the start of the class that follows it on rotating basi
 
 The plan below is provisional and will be adjusted as we go.
 
+:::{div}
+:class: course-outline
+
 | Date | Topic |
 | :-- | :-- |
 | | **Part I — Foundations and computational toolkit** |
 | Tue Aug 25 | [Introduction to structural estimation](1_intro.md) — what a structural project consists of |
-| Thu Aug 27 | [Work environment and submission workflow](2_workflow.md) Practical tasks on version control &nbsp;·&nbsp; [Towers of Hanoi](2_recursion.md) — recursion, if time allows |
+| Thu Aug 27 | [Work environment and submission workflow](2_workflow.md) Practical tasks on version control &nbsp;·&nbsp; [Towers of Hanoi](4_recursion.md) — recursion, if time allows |
 | Tue Sep 1 | [Algorithms and complexity](3_algo.md) |
-| Thu Sep 3 | [Root finding and optimization](4_solvers.md) — bisection, Newton–Raphson, BHHH |
+| Thu Sep 3 | [Root finding and optimization](5_solvers.md) — bisection, Newton–Raphson, BHHH |
 | | **Part II — Dynamic programming** |
 | Tue Sep 8 | Bellman equations and backwards induction in finite horizon |
 | Thu Sep 10 | Contraction mappings, infinite horizon, value function and policy iteration |
@@ -100,6 +103,8 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Nov 26 | *Thanksgiving — no class* |
 | Tue Dec 1 | Project presentations I |
 | Thu Dec 3 | Project presentations II; course wrap-up |
+
+:::
 
 :::{div}
 :class: discussion

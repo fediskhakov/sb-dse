@@ -4,9 +4,9 @@ short_title: 📖 Classic solvers
 subtitle: Class 4 — Thursday, September 3
 exports:
   - format: typst
-    output: exports/4_solvers.pdf
+    output: exports/5_solvers.pdf
 downloads:
-  - file: 4_solvers.md
+  - file: 5_solvers.md
     title: MyST Markdown
 kernelspec:
   name: python3
@@ -1212,7 +1212,7 @@ Adjust it to show the basins of attraction of the four local maxima and other cr
 
 ````
 
-(4_solvers_references)=
+(5_solvers_references)=
 ````{note} References and additional resources
 
 - On the computational complexity of Newton's method

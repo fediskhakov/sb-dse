@@ -1,12 +1,12 @@
 ---
-title: "☕️ Beauty of coding: towers of Hanoi"
-short_title: ☕️ Towers of Hanoi
+title: "🔬 Beauty of coding: towers of Hanoi"
+short_title: 🔬 Towers of Hanoi
 subtitle: Class 2 — Thursday, August 27 (if time allows)
 exports:
   - format: typst
-    output: exports/2_recursion.pdf
+    output: exports/4_recursion.pdf
 downloads:
-  - file: 2_recursion.md
+  - file: 4_recursion.md
     title: MyST Markdown
 kernelspec:
   name: python3
@@ -134,10 +134,11 @@ the illustration stops at configuration 13, two moves short of the goal.
 :align: center
 ```
 
-(2_recursion_references)=
+(4_recursion_references)=
 ````{note} References and additional resources
 
 - 📺 Same problem in greater details by prof. Thorsten Altenkirch, University of Nottingham
   [video, 12 min](https://www.youtube.com/watch?v=8lhxIOAfDss)
 
+- To sharpen your Python skills, see numerous resources online, talk to the AI agent, and maybe check my online course [Computational Economics](https://fedor.iskh.me/compecon)
 ````
