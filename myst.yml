@@ -47,6 +47,9 @@ project:
     - file: 3_algo.md
     - file: 4_recursion.md
     - file: 5_solvers.md
+    - file: 6_logit.md
+    - file: 7_dp.md
+    - file: 8_dp_infinite.md
     - file: bibliography.md
 
 site:

@@ -16,6 +16,31 @@ kernelspec:
 Two classic algorithms for solving $f(x)=0$, either as an equation or system of equations, or as FOC of an optimization problem.
 These will be referred to in this course a countless number of times.
 
+````{hint} Running the code for this lecture
+:class: dropdown
+
+Every code example below is also a runnable notebook in the course **code repository**,
+in the folder `session05-sep8/`.
+
+You should have cloned that repository already — if not, the instructions are in the
+[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+
+Update your copy before the class. Editing a file in place makes `git pull` refuse to
+update it, so discard whatever you changed while experimenting:
+
+```bash
+cd sb-dse-code
+git reset --hard HEAD
+git pull
+```
+
+Nothing in this repository is submitted, so experiment freely — but copy anything you
+want to keep out of it first, or commit that to a branch of your own.
+
+Setting up the Python environment is covered in
+[](2_workflow.md#python-install).
+````
+
 # Bisection method
 
 Consider first the one-dimensional equations of the form
@@ -757,7 +782,7 @@ Three peaks, a ridge running over the top, and long flat plains towards the corn
 where all four exponentials have died out. A grid search over the square finds eleven
 critical points: four maxima, five saddle points and two minima. 
 
-The global maximum is $F=1.2107$ sits at $(0.5507,0.4789)$ at the central peak.
+The global maximum $F=1.2084$ sits at $(0.5500,0.4787)$, on the central peak.
 
 ## Gradient and Hessian
 
@@ -1203,12 +1228,33 @@ reference reading in the course — see the source notes listed below.
 :::
 
 (task4.1)=
-````{warning} Practical task: Newton fractals
+````{danger} Homework: Newton fractals
 
-Find the notebook `newton_fractals.ipynb` in the lecture notes code repository and 
-study the code for the simpler examples. 
+This is a graded homework assignment.
 
-Adjust it to show the basins of attraction of the four local maxima and other critical points of the function $F(x,y)$ we've been using in this section.
+Map the basins of attraction of Newton's method on the function $F(x,y)$ of this
+chapter: run the solver from a grid of starting points and color each one by the
+critical point it reaches. Two versions, side by side — plain Newton, and Newton with
+the step-halving line search.
+
+The notebook `tasks/delta_newton_fractals/newton_fractals.ipynb` in the class repository
+carries $F$ with its gradient and Hessian, and the same map worked out for the cubic of
+the first example, which is the picture to replicate:
+
+```bash
+git pull upstream main                                            # collect the task
+cp -r tasks/delta_newton_fractals solutions/delta_newton_fractals # work on the copy
+```
+
+The code shown in this class is `session05-sep8/` in the code repository, which is worth
+having beside you while you work:
+
+```bash
+cd sb-dse-code && git pull
+```
+
+Remember to follow the git workflow <https://dse.iskh.me/workflow/#submission> to submit
+your solution.
 
 ````
 

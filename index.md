@@ -70,35 +70,34 @@ The plan below is provisional and will be adjusted as we go.
 | Tue Aug 25 | [Introduction to structural estimation](1_intro.md) — what a structural project consists of |
 | Thu Aug 27 | [Work environment and submission workflow](2_workflow.md) Practical tasks on version control &nbsp;·&nbsp; [Towers of Hanoi](4_recursion.md) — recursion, if time allows |
 | Tue Sep 1 | [Algorithms and complexity](3_algo.md) |
-| Thu Sep 3 | [Root finding and optimization](5_solvers.md) — bisection, Newton–Raphson, BHHH |
-| | **Part II — Dynamic programming** |
-| Tue Sep 8 | Bellman equations and backwards induction in finite horizon |
-| Thu Sep 10 | Contraction mappings, infinite horizon, value function and policy iteration |
-| | **Part III — Single-agent dynamic discrete choice** |
-| Tue Sep 15 | The Rust bus engine replacement model |
-| Thu Sep 17 | Newton–Kantorovich iterations and the poly-algorithm |
-| Tue Sep 22 | Nested fixed point estimation (NFXP) |
-| Thu Sep 24 | Mathematical programming with equilibrium constraints (MPEC) |
-| Tue Sep 29 | Conditional choice probabilities and identification |
-| Thu Oct 1 | Two-step CCP estimation |
-| Tue Oct 6 | Nested pseudo-likelihood (NPL) |
-| Thu Oct 8 | Unobserved heterogeneity and the EM algorithm |
+| Thu Sep 3 | [Programming practice: recursion](4_recursion.md) |
+| Tue Sep 8 | [Root finding and optimization](5_solvers.md) — bisection and Newton–Raphson |
+| Thu Sep 10 | [Programming practice: static discrete choice](6_logit.md) |
+| | **Part II — Single-agent dynamic programming** |
+| Tue Sep 15 | [Bellman equations and backwards induction in finite horizon](7_dp.md) |
+| Thu Sep 17 | [Contraction mappings, infinite horizon, value function and policy iteration](8_dp_infinite.md) |
+| Tue Sep 22 | The Rust bus engine replacement model |
+| Thu Sep 24 | Newton–Kantorovich iterations and the poly-algorithm |
+| Tue Sep 29 | Nested fixed point estimation (NFXP) |
+| Thu Oct 1 | Mathematical programming with equilibrium constraints (MPEC) |
+| Tue Oct 6 | Conditional choice probabilities, identification and two-step estimator |
+| Thu Oct 8 | Nested pseudo-likelihood (NPL) |
 | Tue Oct 13 | *Fall break — no class* |
-| | **Part IV — Continuous choice and simulation-based estimation** |
+| | **Part III — Continuous choice and simulation-based estimation** |
 | Thu Oct 15 | Cake eating on a grid; function approximation |
 | Tue Oct 20 | The same model solved many ways — accuracy and speed compared |
 | Thu Oct 22 | The endogenous gridpoint method and consumption-savings models |
 | Tue Oct 27 | DC-EGM for discrete-continuous choice |
 | Thu Oct 29 | Method of simulated moments |
-| | **Part V — Equilibrium models** |
+| | **Part IV — Equilibrium models** |
 | Tue Nov 3 | Micro-founded equilibrium models — equilibrium trade in used cars &nbsp;·&nbsp; **project proposal due** |
 | Thu Nov 5 | Doubly nested fixed point estimation &nbsp;·&nbsp; **project clinic** |
-| | **Part VI — Games** |
+| | **Part V — Games** |
 | Tue Nov 10 | Static games of incomplete information and multiplicity of equilibria |
 | Thu Nov 12 | Dynamic entry games and their estimation |
 | Tue Nov 17 | Directional dynamic games — finding *all* equilibria |
 | Thu Nov 19 | Estimation of directional dynamic games |
-| | **Part VII — Guest lecture and project presentations** |
+| | **Part VI — Guest lecture and project presentations** |
 | Tue Nov 24 | Guest lecture — speaker and topic to be announced |
 | Thu Nov 26 | *Thanksgiving — no class* |
 | Tue Dec 1 | Project presentations I |

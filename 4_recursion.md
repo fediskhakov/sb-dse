@@ -13,6 +13,36 @@ kernelspec:
   display_name: Python 3
 ---
 
+````{hint} Running the code for this lecture
+:class: dropdown
+
+Every code example below is also a runnable notebook in the course **code
+repository**.
+
+Navigate to the directory you chose to save the course materials (must be different from the homework repository!), and clone the code repo once:
+
+```bash
+git clone https://github.com/fediskhakov/sb-dse-code.git
+cd sb-dse-code
+```
+
+The notebook for today is `session04-sep3/hanoi.ipynb`. Open it in VS Code directly or with
+
+```bash
+jupyter lab session04-sep3/hanoi.ipynb
+```
+
+The repository is read-only for you. Nothing in it is submitted, so experiment
+freely — but once you have edited a file in place `git pull` refuses to update it.
+So either copy anything you want to keep out of this repo, or commit to a separate branch, and remove all your changes by running
+
+```bash
+git reset --hard HEAD
+```
+Setting up the Python environment is covered in
+[](2_workflow.md#python-install).
+````
+
 # Towers of Hanoi puzzle
 
 A classic puzzle: given a board with three pegs, move a stack of disks of different

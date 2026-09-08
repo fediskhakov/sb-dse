@@ -18,6 +18,7 @@ a likelihood, finding all equilibria of a game — is limited by how fast the in
 loop runs. This class is about what makes an algorithm fast, and how to tell before
 you write it.
 
+(clone-code-repo)=
 ````{hint} Running the code for this lecture
 :class: dropdown
 

@@ -3,6 +3,7 @@ jupyter-server
 jupyterlab
 ipykernel
 numpy
+pandas
 scipy
 matplotlib
 sympy
