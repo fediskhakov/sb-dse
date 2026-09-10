@@ -1258,6 +1258,148 @@ your solution.
 
 ````
 
+
+
+## Regions of attraction of the four-hills function
+
+The solution of the homework above: every starting point of a grid covering the picture is
+iterated at once, in the same vectorized style as the cubic example in the task notebook.
+
+```{code-cell} python3
+:tags: [hide-input]
+
+from matplotlib.patches import Patch
+
+def newton_grid(X,Y,ascent=False,tol=1e-6,maxiter=100,maxhalve=25):
+    '''Newton's method for grad F = 0 from every point of the grid (X,Y) at once.
+    With ascent=True the full step is halved until F increases, so the runs always climb.
+    Returns endpoints x, y, the iteration count, and a status code for every run:
+    0 converged, 1 singular Hessian, 2 maxiter reached, 3 no ascent direction.
+    '''
+    x, y   = X.astype(float).copy(), Y.astype(float).copy()  # current position of every run
+    iters  = np.zeros(X.shape,dtype=int)
+    status = np.full(X.shape,2)                   # 'maxiter reached' unless stopped earlier
+    active = np.ones(X.shape,dtype=bool)          # runs still going
+    f0 = F(x,y) if ascent else None               # criterion at the current point
+    with np.errstate(all='ignore'):               # inf/nan on runaway points are caught below
+        for i in range(maxiter):
+            g0, g1 = G(x,y)                       # gradient: two arrays over the grid
+            (a, b), (c, d) = H(x,y)               # Hessian: four arrays over the grid
+            s = np.maximum.reduce([np.abs(a),np.abs(b),np.abs(c),np.abs(d)])  # scale of H
+            a, b, c, d, g0, g1 = a/s, b/s, c/s, d/s, g0/s, g1/s  # normalize, see the note above
+            det = a*d - b*c
+            dx = (d*g0 - b*g1)/det                # the 2x2 solve H^{-1} g written out
+            dy = (a*g1 - c*g0)/det
+            bad = active & ~(np.isfinite(dx) & np.isfinite(dy))  # det=0 or overflow
+            status[bad], iters[bad] = 1, i+1
+            active &= ~bad
+            if ascent:                            # step-halving line search, all runs at once
+                lam = np.ones(X.shape)
+                for j in range(maxhalve):
+                    x1, y1 = x - lam*dx, y - lam*dy
+                    f1 = F(x1,y1)
+                    uphill = f1 > f0
+                    if (uphill | ~active).all(): break   # every live run climbs
+                    lam[~uphill] /= 2             # halve only where it does not yet
+                else:
+                    noasc = active & ~uphill
+                    status[noasc], iters[noasc] = 3, i+1
+                    active &= ~noasc
+                dx, dy = lam*dx, lam*dy           # the step actually taken
+            else:
+                x1, y1 = x - dx, y - dy
+            err = np.maximum(np.abs(dx),np.abs(dy))   # sup norm of the step
+            done = active & (err < tol)
+            status[done], iters[done] = 0, i+1
+            x[active], y[active] = x1[active], y1[active]  # move only the live runs
+            if ascent: f0 = np.where(active,f1,f0)
+            active &= ~done
+            if not active.any(): break
+    return x, y, iters, status
+
+def critical_points(x,y,tol=1e-3):
+    '''Distinct points among the endpoints x,y, sorted maxima first then by F,
+    together with their type from the eigenvalues of the Hessian'''
+    pts = np.unique(np.round(np.column_stack([x,y]),6),axis=0)  # collapse identical endpoints
+    crit = []
+    for p in pts:                                # merge the ones within tol of each other:
+                                                 # the 1e-6 step test leaves endpoints ~1e-4 apart around a saddle
+        if not crit or np.abs(np.array(crit)-p).max(axis=1).min() > tol:
+            crit.append(p)
+    crit = np.array(crit)
+    ev = np.array([np.linalg.eigvalsh(np.asarray(H(*p))) for p in crit])
+    kind = np.where((ev<0).all(axis=1),'maximum',np.where((ev>0).all(axis=1),'minimum','saddle'))
+    rank = {'maximum':0,'saddle':1,'minimum':2}
+    order = np.lexsort((-F(*crit.T),[rank[k] for k in kind]))
+    return crit[order], kind[order]
+
+FAIL = ['singular Hessian','maxiter reached','no ascent direction']  # status codes 1,2,3
+
+def classify(x,y,status,crit):
+    '''Index of the critical point each run reached, or len(crit)+status-1 if it failed'''
+    dist = np.abs(np.stack([x,y],axis=-1)[...,None,:]-crit).max(axis=-1)  # (ny,nx,ncrit)
+    which = dist.argmin(axis=-1)
+    return np.where(status==0, which, len(crit)+status-1)
+
+xlim, ylim = (0,1.2), (0,0.72)   # the window of the contour plots in the chapter
+
+def grid(nx):
+    '''Grid of starting points covering the window with square pixels'''
+    ny = round(nx*(ylim[1]-ylim[0])/(xlim[1]-xlim[0]))
+    return np.meshgrid(np.linspace(*xlim,nx),np.linspace(*ylim,ny))
+
+def basins_plot(X,Y,x,y,iters,status,crit,kind,ax,title):
+    '''Color the grid of starting points by the critical point each run reached'''
+    which = classify(x,y,status,crit)
+    ncrit = len(crit)
+    colors = np.vstack([plt.cm.tab20(np.arange(ncrit) % 20)[:,:3],  # critical points
+                        [[.35,.35,.35],[.12,.12,.12],[.05,.05,.05]]])  # the three failure modes
+    rgb = colors[which]                                    # (ny,nx,3) image
+    conv = status==0
+    shade = np.ones(X.shape)
+    shade[conv] = 0.5 + 0.5*(1-iters[conv]/iters[conv].max())  # lighter = fewer iterations
+    ax.imshow(rgb*shade[...,None],extent=[*xlim,*ylim],origin='lower',interpolation='nearest')
+    ax.contour(X,Y,F(X,Y),levels=np.linspace(0.05,1.2,12),colors='white',linewidths=0.4,alpha=0.5)
+    for marker,k in [('*','maximum'),('o','saddle'),('v','minimum')]:
+        m = kind==k
+        ax.scatter(crit[m,0],crit[m,1],c='white',edgecolors='black',marker=marker,
+                   s=140 if k=='maximum' else 45,zorder=3)
+    ax.set_xlim(*xlim); ax.set_ylim(*ylim)
+    ax.set_title(title)
+    labels = ['%s (%.3f, %.3f)  F=%.3f'%(k,*p,F(*p)) for p,k in zip(crit,kind)] + FAIL
+    present = np.unique(which)
+    return [Patch(color=colors[i],label=labels[i]) for i in present]
+
+X, Y = grid(500)
+%time xn, yn, itn, stn = newton_grid(X,Y)               # plain Newton
+%time xa, ya, ita, sta = newton_grid(X,Y,ascent=True)   # with the line search
+
+crit, kind = critical_points(np.r_[xn[stn==0],xa[sta==0]],np.r_[yn[stn==0],ya[sta==0]])
+print('%d critical points found\n'%len(crit))
+print('%-8s %8s %8s %7s %14s %14s'%('type','x','y','F','plain Newton','line search'))
+wn, wa = classify(xn,yn,stn,crit), classify(xa,ya,sta,crit)
+for i,(p,k) in enumerate(zip(crit,kind)):
+    print('%-8s %8.4f %8.4f %7.4f %13.1f%% %13.1f%%'%(k,*p,F(*p),100*(wn==i).mean(),100*(wa==i).mean()))
+for j,f in enumerate(FAIL):
+    print('%-32s %13.1f%% %13.1f%%'%(f,100*(stn==j+1).mean(),100*(sta==j+1).mean()))
+
+fig, axes = plt.subplots(2,1,figsize=(12,16))
+handles  = basins_plot(X,Y,xn,yn,itn,stn,crit,kind,axes[0],'Plain Newton')
+handles += basins_plot(X,Y,xa,ya,ita,sta,crit,kind,axes[1],'Newton with step-halving line search')
+seen = {}                                          # one legend entry per category
+for h in handles: seen.setdefault(h.get_label(),h)
+fig.legend(seen.values(),seen.keys(),loc='upper center',bbox_to_anchor=(0.5,0.08),ncol=3,fontsize=9,framealpha=0.9)
+plt.show()
+```
+
+### Same regions at higher resolution (5000 points on x-axis)
+
+```{image} _static/img/newton_fractal5000.png
+:width: 100%
+:align: center
+```
+
+
 (5_solvers_references)=
 ````{note} References and additional resources
 
