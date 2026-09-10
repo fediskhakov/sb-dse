@@ -50,6 +50,8 @@ project:
     - file: 6_logit.md
     - file: 7_dp.md
     - file: 8_dp_infinite.md
+    - file: 9_zurcher.md
+    - file: 10_nfxp.md
     - file: bibliography.md
 
 site:

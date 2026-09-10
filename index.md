@@ -76,12 +76,12 @@ The plan below is provisional and will be adjusted as we go.
 | | **Part II — Single-agent dynamic programming** |
 | Tue Sep 15 | [Bellman equations and backwards induction in finite horizon](7_dp.md) |
 | Thu Sep 17 | [Contraction mappings, infinite horizon, value function and policy iteration](8_dp_infinite.md) |
-| Tue Sep 22 | The Rust bus engine replacement model |
-| Thu Sep 24 | Newton–Kantorovich iterations and the poly-algorithm |
-| Tue Sep 29 | Nested fixed point estimation (NFXP) |
-| Thu Oct 1 | Mathematical programming with equilibrium constraints (MPEC) |
-| Tue Oct 6 | Conditional choice probabilities, identification and two-step estimator |
-| Thu Oct 8 | Nested pseudo-likelihood (NPL) |
+| Tue Sep 22 | [The Rust bus engine replacement model and Newton-Kantorovich](9_zurcher.md) |
+| Thu Sep 24 | [Nested fixed point estimation (NFXP)](10_nfxp.md) |
+| Tue Sep 29 | Conditional choice probabilities, identification and two-step estimator |
+| Thu Oct 1 | Estimation of Zurcher model with two step CCP estimator |
+| Tue Oct 6 | Nested pseudo-likelihood (NPL) |
+| Thu Oct 8 | Mathematical programming with equilibrium constraints (MPEC) |
 | Tue Oct 13 | *Fall break — no class* |
 | | **Part III — Continuous choice and simulation-based estimation** |
 | Thu Oct 15 | Cake eating on a grid; function approximation |

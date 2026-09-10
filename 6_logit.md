@@ -15,8 +15,10 @@ kernelspec:
 
 The logit model is the workhorse of the whole course: every dynamic discrete choice model we solve and estimate later has a logit formula at its core, evaluated millions of times inside a fixed point iteration nested inside a likelihood maximization. 
 
-- we should know where the formula comes from and what it assumes.
-- we should know how to compute it so that it does not silently produce `nan` on the fifth iteration of the inner loop.
+Today we build the static logit model in code and, along the way, set up the *boilerplate* that every model in the course will reuse.
+
+- We should know the theory behind the folmulas
+- We should know how to compute it so that it does not silently produce `nan` on the fifth iteration of estimation loop
 
 ````{hint} Running the code for this lecture
 :class: dropdown
@@ -44,9 +46,9 @@ Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
 ````
 
-# Where the logit model comes from
+# Background on static discrete choice
 
-## Deterministic choice, and why levels do not matter
+## Deterministic model: the levels and scale do not matter
 
 A decision maker (DM) in state $x$ picks $d$ from a finite set $D(x)$ to maximize
 $u(x,d)$:
@@ -60,33 +62,33 @@ Two implications, used below for identification and, immediately, for numerics.
    $$d^*(x) =\arg\max_{d \in D(x)} u(x,d) = \arg\max_{d \in D(x)} \big[u(x,d) + \mathrm{const}(x) \big]$$
 
    - one alternative's utility has to be normalized, say to zero
-   - an attribute of the DM, identical across alternatives, cannot enter on its own —
-     only through cross-effects
-   - and we may subtract the largest utility before exponentiating anything, which is
-     the trick this chapter rests on
+   - an attribute of the DM are identical across alternatives $\implies$ cannot enter additively separably, only non-linearly, i.e. through cross-effects with attributes of choice
 
 2. **The scale of utility is irrelevant** — multiplying by a positive constant changes
    nothing:
 
    $$d^*(x) =\arg\max_{d \in D(x)} u(x,d) = \arg\max_{d \in D(x)} \big[ \mathrm{const}(x)\cdot u(x,d) \big], \; \mathrm{const}(x)>0$$
 
+   - when we add an additively separable random component $\epsilon(d)$ to the utility, its *scale* has to be normalized 
+
    - the variance of the random component is a normalization, not a parameter
    - it returns below as the scale parameter $\sigma$
 
 ## Probabilistic choice
 
-The econometrician cannot predict $d^*$, because the DM has private information
-$\epsilon$:
+Now assume that the DM has private information $\epsilon$ that the econometrician does not observe, and assume that it enters additively separably in the utility:
 
 $$d^*(x,\epsilon)= \arg\max_{d \in D(x)} [u(x,d)+\epsilon(d)]$$
 
-The object we work with all course is the *conditional choice probability* (CCP)
+The object of interest is then *conditional choice probability* (CCP)
 
 $$P(d|x)= \hbox{Prob}\left\{d^*(x,\epsilon)=d|x\right\} =
 \int_\epsilon I\left\{ d^*(x,\epsilon)=d\right\}q(\epsilon|x) d\epsilon,$$
 
 where $I(\cdot)$ is the indicator function and $q(\epsilon|x)$ the density of $\epsilon$
 given $x$.
+
+This is the **random utility model (RUM)** as we know it.
 
 ````{note} How the model developed
 

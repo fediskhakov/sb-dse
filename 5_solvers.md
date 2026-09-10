@@ -1272,6 +1272,10 @@ your solution.
   - [Basins of attraction](https://www.youtube.com/watch?v=zyXRo8Qjj0A)
   - [Newton fractals](https://www.youtube.com/watch?v=MWD2A0Vg2V0)
 
+- 📖 {cite:t}`judd1998NumericalMethodsEconomics` "Numerical Methods in Economics" — the
+  classic reference; chapter 4 for optimization and chapter 5 for nonlinear equations
+  and Newton's method
+
 - 📖 {cite:t}`adda2023DynamicEconomicsQuantitative` "Dynamic Economics: Quantitative
   Methods and Applications" — numerical methods appendix
 
