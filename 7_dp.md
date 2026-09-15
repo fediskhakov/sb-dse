@@ -155,6 +155,14 @@ There are many problems where DP methods are applicable, therefore it is importa
     - continuous time for cleaner theoretical models, sometimes also solved numerically
     - *not part of this course*
 
+3. Continuous time with discrete events
+
+    - continuous time dynamics, but discrete events (e.g. Poisson process) that change the state of the system
+    - appropriate in many settings such as search
+    - significant simplification is certain settings
+    - 📖 [DSE2024 lecture by Peter Arcidiacono](https://github.com/dseconf/DSE2024/tree/main/03_Arcidiacono) on the topic
+    - *also not part of this course*
+
 ### Whether horizon is finite or infinite
 
 1. Finite horizon
