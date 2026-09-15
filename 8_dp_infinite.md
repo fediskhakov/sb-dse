@@ -173,23 +173,23 @@ a.solve(verbose=True)
 ```
 
 
-### Solving infinite horizon dynamic models
+### Main solution algorithms for infinite horizon dynamic models
 
 1.  Value function iterations = successive approximations on the Bellman operator $\rightarrow$ to solve for
     the fixed point of Bellman operator
-2.  Policy iteration method = Howard\'s policy improvement algorithm,
+2.  Policy iterations = Howard\'s policy improvement algorithm,
     iterative solution for the fixed point of Bellman operator
-3.  Newton-Kantorovich method = Newton solver for the fixed point of
+3.  Newton-Kantorovich iterations = Newton solver for the fixed point of
     Bellman operator, mathematically identical to Howard\'s iterations
 
-### Convergence of infinite horizon solution methods
+## Convergence of infinite horizon solution methods
 
 - In infinite horizon all solution methods continue until convergence.
 - How can we be sure that the algorithm would terminate?
 
 The answer is given by the theory of contraction mappings:
 
-- Bellman operator is generally a contraction mapping
+- Bellman operator is generally a contraction mapping!
 - **Banach theorem** guarantees uniqueness of the fixed point, and
 - Successive approximation solver is globally convergent (works with
     any starting point)
@@ -207,11 +207,23 @@ $T: S \rightarrow S$. Then
 
 ````
 
-*In other words, the fixed point can be found by successive
-approximations from any starting point* $\rightarrow$ *VFI method
-follows*
+In other words, the fixed point can be found by successive
+approximations from any starting point!
 
-### What about Bellman operator?
+This immediately gives rise to the following solution algorithm
+
+````{attention} Value function iterations (VFI) algorithm
+
+1. Start with any initial guess $V_0$ for the value function
+2. Apply the Bellman operator to get a new guess $V_1 = T(V_0)$
+3. Repeat until convergence, i.e. $||V_{i}-V_{i-1}|| \le \varepsilon$ for some small $\varepsilon$ 
+
+Banach contraction mapping theorem guarantees convergence.
+
+````
+
+
+### So is Bellman operator a contraction?
 
 $$T(V)(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}) + \beta \mathbb{E}\big\{ V(\text{next state})  \big| \text{state},\text{decision} \big\} \big]$$
 
@@ -229,8 +241,9 @@ functions $f: X \rightarrow \mathbb{R}$ defined on $X$. Suppose that
 $T: B(X) \rightarrow B(X)$ is an operator satisfying the following
 conditions:
 
-1.  (monotonicity) For any $f,g \in B(X)$ and $f(x) \le g(x)$ for all
-    $x\in X$ implies $T(f)(x) \le T(g)(x)$ for all $x\in X$,
+1.  (monotonicity) For any $f,g \in B(X)$ 
+
+$$f(x) \le g(x) \implies T(f)(x) \le T(g)(x) \; \forall x\in X,$$
 2.  (discounting) There exists $\beta \in (0,1)$ such that
 
 $$T(f+a)(x) \le T(f)(x) + \beta a, \text{ for all } f\in B(X), a \ge 0, x\in X,$$
@@ -254,13 +267,15 @@ $\Rightarrow$
     operator
 
 
-### Why do we need other solution algorithms?
+:::{div}
+:class: discussion
 
-Although VFI is guaranteed to find the solution, it may be very
-inefficient when modulus of contraction (discount factor $\beta$) is
-close to one.
+- Why do we need other solution algorithms besides VFI?
+- What happens when the modulus of contraction is close to one?
 
-- Newton-based method converge quadratically, but are not globally convergent, have to be initialized at their domain of attraction
+:::
+
+- Newton-based method converge quadratically if started from the basin of attraction
 - Polyalgorithm would be a good idea, see NFXP in the next lecture
 
 
@@ -304,11 +319,13 @@ k &=& \max\{x-d,0\} + q
 \end{array}
 $$
 
-### Bellman equation in expected value function space
+### Trick 1: Bellman equation in expected value function space
 
-Note that similar to the bus engine replacement model, the inventory model features random variable which distribution does not depend on the previous period variables (it is *idiosyncratic*).
+Idiosyncratic random shocks lead to the possibility of rewriting the Bellman equation in expected value function space, which reduces the dimensionality of the problem!
 
-In this case it is possible to reduce the dimensionality of the fixed point problem by rewriting the Bellman operator in expected value function terms.
+This is the EV trick in dynamic programming.
+
+Define a new function, the **expected value function** $ EV(x) $ as
 
 $$
 EV(x') =  \mathbb{E}\Big[ V\big(x', d' \big) \Big| x,d,q \Big] =  \mathbb{E}\Big[ V\big(x', d' \big) \Big],
@@ -326,6 +343,8 @@ $$
 
 $$
 V(x,d) = \max_{q \ge 0} \Big\{ p \min\{x,d\} - r ( \max\{x-d,0\} + q ) - c \mathbb{1}\{q>0\}
+$$
+$$
 + \beta EV(\max\{x-d,0\} + q) \Big\}
 $$
 
@@ -333,23 +352,29 @@ Taking the expectation with respect to $ d $ on both sides, we get
 
 $$
 EV(x) = \mathbb{E}\Big[ \max_{q \ge 0} \Big\{ p \min\{x,d\} - r ( \max\{x-d,0\} + q ) - c \mathbb{1}\{q>0\}
+$$
+$$
 + \beta EV(\max\{x-d,0\} + q) \Big\} \Big]
 $$
 
-By assumption the inventory is discrete, and so it is natural to assume that the demand is also represented as a discrete random variable.  Then the expectation can be written as a sum weighted with
-the corresponding probabilities $ pr(d) $, as
+Compute the expectation by summing over all possible values of $d$ weighted by their probabilities $pr(d)$, as
 
 $$
 EV(x) = \sum_{d} \Big[ \max_{q \ge 0} \Big\{ p \min\{x,d\} - r ( \max\{x-d,0\} + q ) - c \mathbb{1}\{q>0\}
+$$
+$$
 + \beta EV(\max\{x-d,0\} + q) \Big\} \Big] pr(d)
 $$
 
 This is functional equation in $ EV $ which is also a contraction mapping!
 
-Demand is the truncated geometric of Tuesday, $ pr_i = (1-\lambda)^i \lambda $ on
+Let as before demand have the truncated geometric distribution $ pr_i = (1-\lambda)^i \lambda $ on
 $ i \in \{0,1,\dots,N\} $, with the last probability corrected for truncation.
 
-### Post-trade stock
+
+
+
+### Trick 2: Post-trade stock
 
 The order is decided after trading, so it depends on what is left rather than on $ x $
 and $ d $ separately. Let $ y = \max\{x-d,0\} = x - \min\{x,d\} $ denote the
@@ -369,67 +394,12 @@ function of *one* variable. The solution of the model is then the pair
 
 $$
 EV(x) = \sum_{d} \Big[ p \min\{x,d\} - yr + \max_{q \ge 0} \Big\{ -qr -c \mathbb{1}\{q>0\}
-+ \beta EV(y+q) \Big\} \Big] pr(d), \qquad
++ \beta EV(y+q) \Big\} \Big] pr(d)
+$$
+$$
 q^\star(y) = \arg\max_{q \ge 0} \Big\{ -qr - c \mathbb{1}\{q>0\} + \beta EV(y+q) \Big\}
 $$
 
-## Policy iterations
-
-Also known as **Howard policy improvement**. It applies to infinite horizon problems in
-discrete time, and is particularly well suited to finite state spaces. It is
-mathematically equivalent to the Newton–Raphson method for the fixed point of the
-Bellman operator, which returns in the next class as Newton–Kantorovich iterations.
-
-The idea is to break the search for the fixed point into two steps and alternate:
-
-1. **Policy evaluation** — compute the value of a *fixed* policy, which is the Bellman
-   equation without the max operation:
-
-   $$
-   V(\text{state}) = U(\text{state},\text{decision}) + \beta \mathbb{E}\big\{ V(\text{next state}) \big| \text{state},\text{decision} \big\}
-   $$
-
-   - still a functional equation, but a simpler one
-   - with discrete states it becomes a system of equations, and where the expectation is
-     a matrix multiplication, a *linear* one
-
-2. **Policy improvement** — for the value function just computed, apply the Bellman
-   operator and keep the $ \arg\max $. This is a single VFI step
-
-Repeat until the policy stops changing. Convergence is much faster than VFI — but each
-iteration costs more, so an efficient policy evaluation step is what justifies the
-method.
-
-### Policy evaluation as a linear system
-
-For the inventory model the first step is linear, and worth doing explicitly because the
-same construction returns for the bus engine model.
-
-- $ EV $ is a vector with $ N+1 $ elements, one per point of the state space
-- $ EV(y+q(y)) $ is a *re-indexing* of that vector, so it can be written as $ M \cdot EV $
-  with $ M $ a matrix of zeros and ones
-- $ C(d) = p \min\{x,d\} - (y+q(y))r - c \mathbb{1}\{q(y)>0\} $ collects everything that
-  does not involve $ EV $
-
-$$
-EV = \sum_{d} \Big[ C(d) + \beta M(d) \cdot EV \Big] pr(d)
-= \bar{C} + \beta \bar{M} \cdot EV,
-\qquad \bar{M} = \sum_{d} pr(d) M(d)
-$$
-
-which is the linear system $ (I-\beta\bar{M}) \cdot EV = \bar{C} $, solved in one call to
-`np.linalg.solve`.
-
-:::{div}
-:class: discussion
-
-- Policy iterations converge in far fewer iterations than VFI. Does that make them
-  faster?
-- What does $ \bar{M} $ mean in probabilistic terms, and why is $ I - \beta\bar{M} $
-  invertible?
-- VFI starts from a value function, policy iterations from a policy. Does the starting
-  point matter for where either of them ends up?
-:::
 
 (task8.1)=
 ````{warning} Practical task 8.1: solving the infinite horizon inventory model
@@ -441,14 +411,10 @@ We code this together in class, starting from `session08-sep17/inventory_pre.ipy
 cd sb-dse-code && git pull
 ```
 
-Nothing is collected.
-
 1. The Bellman operator in expected value function space, and the policy as a function
    of the post-trade stock $ y $
 2. A VFI solver on top of it, with a callback that plots the convergence path
-3. Policy evaluation as the linear system above, and the policy iterations solver
-4. The two solvers compared on the same model — iterations, run time, and the same
-   answer to within tolerance
+3. What happens to the solution when parameters change, in particular the discount factor $ \beta $ is close to one?
 
 ````
 

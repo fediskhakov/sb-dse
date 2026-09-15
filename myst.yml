@@ -31,6 +31,7 @@ project:
     '\R': '\mathbb{R}'
   numbering:
     headings: false
+    equation: false
   # Files and folders that are not part of the book
   exclude:
     - README.md

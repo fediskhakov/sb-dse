@@ -489,7 +489,7 @@ Apply the big-O definition to classify the complexity of each algorithm.
 `````{tip} Solution
 :class: dropdown
 
-Recall that we are evaluating the polynomial [](#eq:poly) with $k+1$ elements (coefficients) in the list `qs`.
+Recall that we are evaluating the [polynomial](#eq:poly) with $k+1$ elements (coefficients) in the list `qs`.
 
 **The first algorithm.** Each pass of the loop does
 
