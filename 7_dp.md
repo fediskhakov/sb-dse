@@ -138,59 +138,7 @@ equation as decisions which solve the maximization problem in the right hand sid
 
 ## Classification of DP models
 
-- Discrete or continuous time?
-- Finite or infinite horizon?
-- Choice space (discrete, continuous, mixed)?
-- State space (finite, discretized)?
-- Stochastic or deterministic evolution of states?
-
-### Whether choice is part of the problem at all
-
-- Computer science uses DP to solve problems without explicit decisions, but breaking big problems into a series of small ones [lecture 27 in CompEcon course](https://fedor.iskh.me/compecon)
-
-- Examples of sequential discrete/discretized choice
-  - deal or no deal problem [lecture 27 in CompEcon course](https://fedor.iskh.me/compecon)
-  - inventory management model (see below)
-  - Rust model of bus engine replacement [lecture 28, 29 in CompEcon course](https://fedor.iskh.me/compecon)
-  - cake eating problem [lecture 30, 32 in CompEcon course](https://fedor.iskh.me/compecon)
-  - consumption-savings problem [lecture 35 in CompEcon course](https://fedor.iskh.me/compecon)
-
-### Whether choice space is discrete, continuous, mixed discrete-continuous or discretized
-
-1. Problems with discrete choice
-
-    - deal or no deal problem, inventory management model [lecture 27 in CompEcon course](https://fedor.iskh.me/compecon)
-    - Rust model of bus engine replacement [lectures 28, 29 in CompEcon course](https://fedor.iskh.me/compecon)
-
-1. Problems with continuous choice
-
-    - discretized: cake eating problem [lecture 30 in CompEcon course](https://fedor.iskh.me/compecon), consumption-savings
-        models [lecture 35 in CompEcon course](https://fedor.iskh.me/compecon)
-    - treated as continuous: coming up next
-    - require interpolating of value function in Bellman equation
-
-1. Problems with discrete and continuous choice
-
-    - much more complicated: kinks in value functions, discontinuous
-        policy function
-    - require global optimization in Bellman equation which is not easy
-    - one way out is to discretize choices at the cost of reduced accuracy
-    - see our paper {cite:t}`egm` for how to smooth the kinks
-
-### What about state space?
-
-- When choice is discrete, typically state space is also finite
-- Even when state variables are continuous, by discretization it is
-    *converted* to discrete
-
-1. This is true in general when using numerical solvers: state space is
-discretized within some reasonable bounds
-
-    - choice of upper bounds, number and placement of grid points influence the (accuracy of the) solution
-
-2. Another approach to represent state space is to *project* value and/or policy function onto space of orthogonal polynomials (Chebyshev polynomials in particular)
-
-    - only works well when value function is sufficiently smooth
+There are many problems where DP methods are applicable, therefore it is important to quickly classify *your problem* to make others understand exactly what follows
 
 ### Whether time is continuous or discrete
 
@@ -204,8 +152,7 @@ discretized within some reasonable bounds
     - all entities in the model are functions of time
     - dynamics given by differential equation
     - so, math is very different
-    - continuous time for cleaner theoretical models, sometimes also
-        solved numerically
+    - continuous time for cleaner theoretical models, sometimes also solved numerically
     - *not part of this course*
 
 ### Whether horizon is finite or infinite
@@ -224,9 +171,47 @@ $$V(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}
 
     - time subscripts are dropped, primes for next period values instead
     - solution is given by fixed point of the Bellman operator
-    - have to actually solve a functional equation
+    - have to actually solve a *functional equation*
 
 *Most problems can be specified and solved in both finite or infinite horizon*
+
+### Whether choice space is discrete, continuous, mixed discrete-continuous or discretized
+
+1. Problems with discrete choice
+
+    - Rust model of bus engine replacement [next week](9_zurcher.md)
+    - Inventory management of discrete goods (later today)
+    - Thousands other problems
+    - 📖 {cite:t}`aguirregabiriaDynamicDiscreteChoice2010` "Dynamic discrete choice structural models: A survey"
+
+1. Problems with continuous choice
+
+    - cake eating and consumption-savings models (later in the course)
+    - discretized?
+    - treated as continuous?
+    - require interpolating of value function in Bellman equation!
+
+1. Problems with discrete and continuous choice
+
+    - much more complicated: kinks in value functions, discontinuous
+        policy function
+    - require global optimization in Bellman equation which is not easy
+    - one way out is to discretize choices at the cost of reduced accuracy
+    - 📖 {cite:t}`egm` DCEGM paper
+
+### What about state space?
+
+- When choice is discrete, typically state space is also finite
+- Even when state variables are continuous, by discretization it is
+    *converted* to discrete
+
+1. This is true in general when using numerical solvers: state space is discretized within some reasonable bounds
+
+    - choice of upper bounds, number and placement of grid points influence the (accuracy of the) solution
+
+2. Another approach to represent state space is to *project* value and/or policy function onto space of orthogonal polynomials (Chebyshev polynomials in particular)
+
+    - only works well when value function is sufficiently smooth
 
 ### Whether model includes stochastic processes
 
@@ -247,13 +232,112 @@ $$V(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}
     - expectation in Bellman equation has to be computed with quadrature or Monte Carlo integration
 
 
+### Whether choice is part of the problem at all
+
+- Some problems solved by the DP methods do not have explicit choices and maximization
+
+ ````{tip} Example: tiling with dominoes
+
+Given a $3 \times n$ board, find **the number of ways** to fill it with $2 \times 1$
+dominoes. There is nothing to choose and nothing to maximize, yet the problem has
+overlapping sub-problems and is solved by exactly the recursion DP is built on.
+
+These are the three possible ways to fill up a $3 \times 2$ board, and one of the
+many ways to tile a $3 \times 8$ board:
+
+```{image} _static/img/tile1.jpg
+:height: 100px
+:align: center
+```
+
+```{image} _static/img/tile2.jpg
+:height: 100px
+:align: center
+```
+
+**Breaking the big problem into sub-problems.** Observe that at any stage of filling
+up the board from the left, the last column can be in one of three configurations:
+completely filled, denoted $A_n$, top corner empty, $B_n$, or bottom corner empty,
+$C_n$, where $n$ counts the columns covered so far.
+
+```{image} _static/img/tile3.jpg
+:height: 180px
+:align: center
+```
+
+Any other configuration of the last column is impossible to reach with $2 \times 1$
+dominoes:
+
+```{image} _static/img/tile4.jpg
+:height: 150px
+:align: center
+```
+
+**Defining the recursion.** A completely filled $3 \times n$ board ends either with
+three horizontal dominoes on top of a filled $3 \times (n-2)$ board, or with a corner
+configuration on $n-1$ columns completed by one more domino:
+
+```{image} _static/img/tile5.jpg
+:height: 120px
+:align: center
+```
+
+A board with the top corner empty ends either with one vertical domino on top of a
+filled $3 \times (n-1)$ board, or with two horizontal dominoes on top of a $B_{n-2}$
+configuration:
+
+```{image} _static/img/tile6.jpg
+:height: 120px
+:align: center
+```
+
+The case of $C_n$ is the mirror image of $B_n$, so $C_n = B_n$. Therefore for any $n$
+we have
+
+$$
+\begin{aligned}
+A_n &= A_{n-2} + 2 B_{n-1} \\
+B_n &= A_{n-1} + B_{n-2}
+\end{aligned}
+$$
+
+and the answer to the whole problem is given by $A_n$. The two sequences are computed
+inductively from the initial conditions, which is the backward induction of the next
+section run forward.
+
+```{code-cell} python3
+def WaysTileDominoes(n):
+    '''Compute the number of ways to tile 3 x n area by 2x1 tiles'''
+    A, B = [0] * (n + 1), [0] * (n + 1)
+    A[0] = 1  # one way to tile 3x0
+    A[1] = 0  # no way to tile 3x1
+    B[0] = 0  # no way to tile 3x0 without a corner
+    B[1] = 1  # one way to tile 3x1 without a corner
+    for i in range(2, n+1):  # loop over 2,3,..,n
+        A[i] = A[i-2] + 2 * B[i-1]
+        B[i] = A[i-1] + B[i-2]
+    return A[n]
+```
+
+```{code-cell} python3
+for n in range(1, 20):
+    print('There are', WaysTileDominoes(n), 'ways to tile the 3 by', n, 'board')
+```
+````
+
+
 :::{div}
 :class: discussion
 
+For the last example:
+- Does it make sense that the number of tilings zero for every odd $n$?
+- What is the complexity of this algorithm in $n$?
+
+For dynamic programming classification:
+- Which of the five questions changes the *solution method* you have to write, and which only changes the code that evaluates the payoff?
 - Where does the inventory model below sit in each of these classifications?
-- Which of the five questions changes the *solution method* you have to write, and which
-  only changes the code that evaluates the payoff?
 :::
+
 
 ## Example: Inventory management model
 
@@ -268,7 +352,6 @@ The notation is:
 - $p$ is the profit per one unit of (supplied) good
 - $c$ is the fixed cost of ordering any amount of new inventory
 - $r$ is the cost of storing one unit of good
-
 
 The sales in period $t$ are given by $s_t = \min\{x_t,d_t\}$.
 
@@ -285,12 +368,7 @@ $$
 \end{array}
 $$
 
-
-Assuming all $q_t \ge 0$, let $\sigma =  \{q_t\}_{t=1,\dots,T}$ denote a
-feasible inventory policy.
-
-If $d_t$ is stochastic the policy becomes a function of the period $t$
-inventory $x_t$.
+Assuming all $q_t \ge 0$, let $\sigma =  \{q_t\}_{t=1,\dots,T}$ denote a feasible inventory policy.
 
 The expected profit maximizing problem is given by
 
@@ -300,19 +378,25 @@ where $\beta$ is discount factor.
 
 ### Bellman equation for the problem
 
-Decisions: $q_t$, how much new inventory to order
+:::{div}
+:class: discussion
 
-What is important for the inventory decision at time period $t$?
+- What are states and decisions?
+- What are the motion rules?
+- What is the instantaneous payoff/utility?
 
- - instanteneous utility (profit) contains $x_t$ and $d_t$
+When $d_t$ is stochastic the policy has to be a function of the period $t$ inventory $x_t$. What about deterministic $d_t$?
 
- - timing / sequence of events:
-    - (beginning of period)
-    1. current inventory 
-    1. demand
-    1. order (choice)
-    1. stored inventory
-    - (end of period)
+- What is the sequence of events (timing assumptions)?
+    
+- (beginning of period)
+1. current inventory 
+1. demand
+1. order (choice)
+1. stored inventory
+- (end of period)
+
+:::
 
 So, both $x_t$ and $d_t$ are taken into account for the new order to be
 made, forming the state space.
@@ -356,12 +440,18 @@ V(x_t,d_t)
 \end{array}
 $$
 
-But let's focus first on a deterministic case: let $d$ be fixed and constant over time. How does the Bellman equation change?
+
+## First deterministic demand
+
+Let's focus first on a deterministic case: let $d$ be fixed and constant over time. How does the Bellman equation change?
 
 In the deterministic case with fixed $d$, it can be simply dropped from the state space, and the Bellman equation can be simplified to
 
 $$
-V(x_t) = \max_{q_t \ge 0} \big\{ p \min\{x_t,d\} - r \big[ \max\{x_t-d,0\} + q_t \big] - c \mathbb{1}\{q_t>0\} + \beta V\big( \max\{x_t-d,0\} + q_t \big) \big\}
+V(x_t) = \max_{q_t \ge 0} \Big\{ p \min\{x_t,d\} - r \big[ \max\{x_t-d,0\} + q_t \big] - c \mathbb{1}\{q_t>0\}
+$$
+$$
++ \beta V\big( \max\{x_t-d,0\} + q_t \big) \Big\}
 $$
 
 :::{div}
@@ -559,7 +649,10 @@ when the order is placed, so the continuation value is averaged over it:
 
 $$
 V_t(x,d) = \max_{q \ge 0} \Big\{ p \min\{x,d\} - r \big[ \max\{x-d,0\} + q \big]
-- c \mathbb{1}\{q>0\} + \beta \sum_{d'} V_{t+1}\big( \max\{x-d,0\} + q, d' \big) pr(d') \Big\}
+- c \mathbb{1}\{q>0\}
+$$
+$$
++ \beta \sum_{d'} V_{t+1}\big( \max\{x-d,0\} + q, d' \big) pr(d') \Big\}
 $$
 
 with the terminal period unchanged: order nothing, collect the last period's profit,
@@ -569,7 +662,9 @@ V_T(x,d) = p \min\{x,d\} - r \max\{x-d,0\}
 $$
 
 **A distribution for demand.** Take it discrete, on the same grid as the inventory, so
-that no interpolation is needed anywhere. Demand follows a **truncated geometric**
+that no interpolation is needed anywhere. 
+
+Let demand follow a **truncated geometric**
 distribution on $ \{0,1,\dots,N\} $,
 
 $$
@@ -667,7 +762,7 @@ This is a graded homework assignment.
 Implement the stochastic version set up above: truncated geometric demand, the value
 function on the $(x,d)$ grid, and backwards induction over the finite horizon. The
 notebook `tasks/epsilon_inventory/` in the class repository carries the deterministic
-code of this class and the steps to take:
+code of this class and the task to complete.
 
 ```bash
 git pull upstream main                                    # collect the task
@@ -691,6 +786,8 @@ your solution.
 ````{note} References and additional resources
 
 - 📖 {cite:t}`Rust2016` "Dynamic programming", The New Palgrave Dictionary of Economics
+- 📖 {cite:t}`sargent2025DynamicProgrammingFinite` "Dynamic Programming: Finite States"
+- Online version of the same book on [dp.quantecon.org](https://dp.quantecon.org)
 - 📖 {cite:t}`adda2023DynamicEconomicsQuantitative`, "Dynamic Economics: Quantitative Methods and Applications", chapters 2 and 3
 - 📖 {cite:t}`aguirregabiriaDynamicDiscreteChoice2010` "Dynamic discrete choice structural models: A survey"
 - Wiki: Bellman equation https://en.wikipedia.org/wiki/Bellman_equation

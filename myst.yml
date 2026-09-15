@@ -52,6 +52,8 @@ project:
     - file: 8_dp_infinite.md
     - file: 9_zurcher.md
     - file: 10_nfxp.md
+    - file: 11_ccp.md
+    - file: 13_npl.md
     - file: bibliography.md
 
 site:

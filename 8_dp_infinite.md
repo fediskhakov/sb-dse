@@ -456,6 +456,8 @@ Nothing is collected.
 (8_dp_references)=
 ````{note} References and additional resources
 
+- 📖 {cite:t}`sargent2025DynamicProgrammingFinite` "Dynamic Programming: Finite States"
+- Online version of the same book on [dp.quantecon.org](https://dp.quantecon.org)
 - 📖 {cite:t}`adda2023DynamicEconomicsQuantitative` "Dynamic Economics: Quantitative Methods and Applications", chapters 2 and 3
 - 📖 {cite:t}`Rust2016` "Dynamic programming", The New Palgrave Dictionary of Economics
 - 📖 {cite:t}`sargent2025DynamicProgrammingFinite` "Dynamic Programming: Finite States" — contraction mappings and the two solvers, at length
