@@ -47,17 +47,17 @@ Setting up the Python environment is covered in
 ## Maximum likelihood estimation
 
 The maximum likelihood estimator is applicable when the model yields a probability
-distribution for the observable data. Let $L(x,\theta)$ denote the distribution (pdf)
-of the observables $x$ implied by the model with parameter vector $\theta$, and let
+distribution for the observable data. Let $L(z,\theta)$ denote the distribution (pdf)
+of the observables $z$ implied by the model with parameter vector $\theta$, and let
 $Z_n = (z_1,\dots,z_n)$ denote the data, consisting of $n$ independent observations,
 a random sample. MLE and MSM are the two main estimation methods for dynamic economic
 models, and the method of simulated moments comes later in the course.
 
 ### Likelihood function
 
-If $L(x,\theta)$ is a discrete distribution then $L(x,\theta)$ computed at the data
-point gives the probability of observing that data point exactly. If $L(x,\theta)$ is
-a continuous distribution then $L(x,\theta)$ computed at the data point is analogous
+If $L(z,\theta)$ is a discrete distribution then $L(z,\theta)$ computed at the data
+point gives the probability of observing that data point exactly. If $L(z,\theta)$ is
+a continuous distribution then $L(z,\theta)$ computed at the data point is analogous
 to the probability of observing it. Either way, independence across observations makes
 the joint probability of the sample a product,
 
@@ -95,19 +95,24 @@ to every term of $\ell_n(\theta)$.
 ### Asymptotic properties of MLE
 
 Under regularity conditions the MLE has four properties that make it the default
-estimator whenever a likelihood is available:
+estimator whenever a likelihood is available ({cite:t}`neweyLargeSampleEstimation1994`,
+Theorems 2.5, 3.3 and 5.1):
 
 1. Consistency: $\hat{\theta}_{MLE} \xrightarrow{p} \theta_0$
 2. Asymptotic normality:
    $\sqrt{n} ( \hat{\theta}_{MLE} - \theta_0 ) \xrightarrow{d} N(0,\mathcal{I}(\theta_0)^{-1})$
-3. Asymptotic efficiency: MLE approaches the smallest possible variance (the
-   Cramér–Rao bound) for an unbiased estimator when $n \rightarrow \infty$
+3. Asymptotic efficiency: $\mathcal{I}(\theta_0)^{-1}$ is the smallest asymptotic
+   variance attainable in the class of GMM estimators, which includes method of moments
+   and least squares — the large-sample counterpart of the Cramér–Rao bound
 4. Functional invariance: the MLE of $\gamma_0 = g(\theta_0)$ is given by
-   $g(\hat{\theta}_{MLE})$ if $g(\cdot)$ is a continuously differentiable function
+   $g(\hat{\theta}_{MLE})$ for any function $g(\cdot)$; continuous differentiability of
+   $g$ is needed only for the delta-method standard errors of $\hat{\gamma}$
 
-The price is the regularity conditions and the assumption that the model is correctly
-specified: a misspecified likelihood still produces an estimate, but the properties
-above no longer describe it.
+The price is the regularity conditions — identification, a compact parameter space,
+continuity and a dominance condition on $\ell(z,\theta)$ for consistency; an interior
+$\theta_0$, twice differentiability and a nonsingular $\mathcal{I}(\theta_0)$ for
+normality — and the assumption that the model is correctly specified: a misspecified
+likelihood still produces an estimate, but the properties above no longer describe it.
 
 ### Asymptotic variance of the MLE
 
@@ -119,13 +124,13 @@ $$
 \sqrt{\mathcal{I}_n(\theta_0)} ( \hat{\theta}_{MLE} - \theta_0 ) \xrightarrow{d} N(0,1)
 $$
 
-where the variance is given by the inverse of the **Fisher information**, computed
-from the pdf $L(x,\theta_0)$ as the expected curvature of the log-likelihood, or
-equivalently as the expected squared score:
+where, for a scalar parameter, the variance is given by the inverse of the **Fisher
+information**, computed from the pdf $L(z,\theta_0)$ as the expected curvature of the
+log-likelihood, or equivalently as the expected squared score:
 
 $$
-\mathcal{I}(\theta_0) = - \mathbb{E}\left[ \frac{\partial^2}{\partial\theta \partial\theta} \ell(x,\theta_0) \right] =
-\mathbb{E}\left[ \left( \frac{\partial}{\partial\theta} \ell(x,\theta_0) \right)^2 \right]
+\mathcal{I}(\theta_0) = - \mathbb{E}\left[ \frac{\partial^2}{\partial\theta \partial\theta} \ell(z,\theta_0) \right] =
+\mathbb{E}\left[ \left( \frac{\partial}{\partial\theta} \ell(z,\theta_0) \right)^2 \right]
 $$
 
 Alternatively, the Fisher information matrix can be computed from the log-likelihood
@@ -140,19 +145,20 @@ $$
 
 ### Estimating the Fisher information
 
-The Fisher information depends on the model pdf $L(x,\theta_0)$ and is hardly
+The Fisher information depends on the model pdf $L(z,\theta_0)$ and is hardly
 computable in closed form. It can be consistently estimated thanks to the law of large
 numbers,
-$-\tfrac{1}{n} \sum_i^n \frac{\partial^2}{\partial\theta \partial\theta} \ell(z_i,\theta) \xrightarrow{p} \mathcal{I}(\theta_0)$,
+$-\tfrac{1}{n} \sum_i^n \frac{\partial^2}{\partial\theta \partial\theta} \ell(z_i,\theta_0) \xrightarrow{p} \mathcal{I}(\theta_0)$,
 which gives the *observed* Fisher information
 
 $$
-\hat{\mathcal{J}}_n(\theta_0) = - \sum_{i=1}^n \frac{\partial^2}{\partial\theta \partial\theta} \ell(z_i,\theta) =
+\hat{\mathcal{J}}_n(\theta_0) = - \sum_{i=1}^n \frac{\partial^2}{\partial\theta \partial\theta} \ell(z_i,\theta_0) =
 - \frac{\partial^2}{\partial\theta \partial\theta} \ell_n(\theta_0)
 \approx \mathcal{I}_n(\theta_0) = n \mathcal{I}(\theta_0)
 $$
 
-Plugging in the estimate $\hat{\theta} = \hat{\theta}_{MLE}$ we have
+Plugging in the estimate $\hat{\theta} = \hat{\theta}_{MLE}$ for the unknown $\theta_0$
+does not change the limit ({cite:t}`neweyLargeSampleEstimation1994`, Theorem 4.4), so
 
 $$
 \sqrt{\hat{\mathcal{J}}_n(\hat{\theta})} ( \hat{\theta} - \theta_0 ) \xrightarrow{d} N(0,1)  \Rightarrow
@@ -160,27 +166,33 @@ $$
 $$
 
 so the standard errors of the estimates are the square roots of the diagonal of the
-inverse Hessian of the log-likelihood at the optimum. Every optimizer that uses a
+inverse of the negative Hessian of the log-likelihood at the optimum. Every optimizer that uses a
 Hessian, or an approximation to it, has the standard errors for free.
 
 ### Information equality
 
-Similar to the two equivalent definitions for the *expected* Fisher information, for
-the *observed* Fisher information it holds, assuming $\theta_0$ is a scalar, that
+Similar to the two equivalent definitions for the *expected* Fisher information, the
+*observed* Fisher information has a second sample analogue, assuming $\theta_0$ is a
+scalar: the sum of the squared scores of the individual observations,
 
 $$
 \hat{\mathcal{J}}_n(\theta_0) = - \frac{\partial^2}{\partial\theta \partial\theta} \ell_n(\theta_0)
-= \left( \frac{\partial}{\partial\theta} \ell_n(\theta_0) \right)^2
+\approx \sum_{i=1}^n \left( \frac{\partial}{\partial\theta} \ell(z_i,\theta_0) \right)^2
 $$
 
-The square on the right hand side originates in the calculation of the variance of the
-score $\frac{\partial \ell_n(\theta_0)}{\partial\theta}$, whose expectation is zero at
-the true parameters:
+The two sides are different random variables: they share the expectation
+$\mathcal{I}_n(\theta_0)$ and, divided by $n$, the probability limit $\mathcal{I}(\theta_0)$
+({cite:t}`neweyLargeSampleEstimation1994`, Theorem 4.4), but they are not equal in any
+given sample. The square on the right hand side originates in the calculation of the
+variance of the score $\frac{\partial \ell_n(\theta_0)}{\partial\theta}$, whose expectation
+is zero at the true parameters, and which by independence is the sum of the variances of
+the individual scores:
 
 $$
 Var\left( \frac{\partial \ell_n(\theta_0)}{\partial\theta} \right) =
 \mathbb{E} \Big( \frac{\partial \ell_n(\theta_0)}{\partial\theta} \Big)^2 -
 \Big( \underbrace{ \mathbb{E} \frac{\partial \ell_n(\theta_0)}{\partial\theta} }_{=0} \Big)^2
+= \sum_{i=1}^n \mathbb{E} \Big( \frac{\partial \ell(z_i,\theta_0)}{\partial\theta} \Big)^2
 $$
 
 When the parameter $\theta \in \mathbb{R}^K$ is a vector with $K$ elements, both the
@@ -210,13 +222,15 @@ $\nabla f(\theta) = \frac{\partial}{\partial\theta} f(\theta)$ denote the gradie
 $f(\theta)$, a $K \times 1$ vector, and let
 $\nabla\ell(Z_n, \theta_0) = \big( \frac{\partial}{\partial\theta} \ell(z_1,\theta_0),\dots,\frac{\partial}{\partial\theta} \ell(z_n,\theta_0) \big)$
 denote the $K \times n$ matrix of gradients of $\ell(z_i,\theta_0)$ stacked for all
-$i$. Then we have the **information matrix equality**
+$i$. Then the **information matrix equality**
+$\mathcal{I}_n(\theta_0) = - \mathbb{E}\, H(\ell_n(\theta_0)) = \mathbb{E} \sum_{i=1}^n \nabla\ell(z_i, \theta_0) \otimes \nabla\ell(z_i, \theta_0)^{T}$
+({cite:t}`neweyLargeSampleEstimation1994`, Theorem 3.3) has the sample analogue
 
 $$
 \begin{aligned}
 \hat{\mathcal{J}}_n(\theta_0) = - H(\ell_n(\theta_0))
-&= \sum_{i=1}^n \nabla\ell(z_i, \theta_0) \otimes \nabla\ell(z_i, \theta_0)^{T} \\
-&= \nabla\ell(Z_n, \theta_0) \otimes \nabla\ell(Z_n, \theta_0)^{T}
+&\approx \sum_{i=1}^n \nabla\ell(z_i, \theta_0) \otimes \nabla\ell(z_i, \theta_0)^{T} \\
+&= \nabla\ell(Z_n, \theta_0) \, \nabla\ell(Z_n, \theta_0)^{T}
 \end{aligned}
 $$
 
@@ -229,7 +243,7 @@ The information matrix equality gives an approximation of the Hessian of the
 log-likelihood function that can be used in a quasi-Newton optimization method,
 
 $$
-H(\ell_n(\theta)) \approx - \nabla\ell(Z_n, \theta) \otimes \nabla\ell(Z_n, \theta)^{T}
+H(\ell_n(\theta)) \approx - \nabla\ell(Z_n, \theta) \, \nabla\ell(Z_n, \theta)^{T}
 $$
 
 which is the **BHHH algorithm** of {cite:t}`berndtEstimationInferenceNonlinear1974`,
@@ -243,7 +257,9 @@ Where it breaks: the equality holds at $\theta_0$, in expectation, for a correct
 specified model. Far from the optimum, in small samples, or under misspecification the
 outer product is a poor Hessian, and the standard errors it implies are wrong even
 when the point estimate is fine. The **sandwich** estimator that combines both sides
-of the equality is the robust alternative.
+of the equality,
+$\hat{\mathcal{J}}_n(\hat\theta)^{-1} \, \nabla\ell(Z_n, \hat\theta) \nabla\ell(Z_n, \hat\theta)^{T} \, \hat{\mathcal{J}}_n(\hat\theta)^{-1}$,
+is the robust alternative ({cite:t}`neweyLargeSampleEstimation1994`, Section 4.2).
 
 :::{div}
 :class: discussion
@@ -363,6 +379,127 @@ NK: one more solve with the same matrix and a different right hand side.
 
 📖 John Rust "NFXP Pocket Guide" {download}`Download pdf <_static/pdf/nfxp.pdf>`
 
+## Replication of Rust (1987)
+
+The estimator is in the folder `session10-sep24/` of the
+[code repository](https://github.com/fediskhakov/sb-dse-code): `nfxp.py` is the model
+class of Tuesday with the data attached and the likelihood, its analytical score and
+BHHH on top, and `sim_zurcher.py` holds the simulator and the demand curve. Run on
+Harold Zurcher's records for bus groups 1–4, on the 175-cell mileage grid of the paper
+and with $\beta = 0.9999$:
+
+```python
+from nfxp import read_busdata, estim_zurcher
+from sim_zurcher import ergodic_distribution, demand_curve, demand_axes
+
+data = read_busdata()                       # groups 1-4, 175 cells, Rust's cell convention
+est = estim_zurcher(data)                   # the model with the data attached
+result = est.estimate()                     # frequencies, then (RC, c), then everything
+print(result)
+```
+
+```text
+NFXP estimates, beta = 0.9999, n = 175, N = 8156 bus-months
+method bhhh, converged True, 0.066 s, 82 inner solves, 262 inner iterations
+parameter     estimate        s.e.
+RC             9.76867     1.22629
+c              1.34283     0.31532
+p0             0.10705     0.00343
+p1             0.51522     0.00554
+p2             0.36216     0.00532
+p3             0.01434     0.00132
+p4             0.00086     0.00032
+log-likelihood -8607.8894
+```
+
+These are the numbers of the last row of Table X in {cite:t}`rustOptimalReplacementGMC1987`
+($\theta_{11}$ is `c`, $\theta_{30},\dots,\theta_{33}$ are the first four transition
+probabilities):
+
+```{image} _static/screenshots/Rust1987tableX.png
+:width: 100%
+:align: center
+:alt: Table X of Rust (1987)
+```
+
+The same estimator on each of the six samples of the table:
+
+```python
+for beta in (0.9999, 0.0):
+    for groups in ((1, 2, 3), (4,), (1, 2, 3, 4)):
+        r = estim_zurcher(read_busdata(groups=groups), beta=beta).estimate()
+        print(beta, groups, r.N, r.theta[:2], r.se[:2], r.loglik, r.theta[2:6])
+```
+
+```text
+  beta groups        N       RC    (se)        c      (se)     loglik  transition probabilities
+0.9999 1,2,3      3864  11.7257   2.597   2.4569    0.9122  -3993.991  0.0937 0.4475 0.4459 0.0127
+0.9999 4          4292  10.0896   1.581   1.1732    0.3265  -4495.135  0.1191 0.5762 0.2868 0.0158
+0.9999 1,2,3,4    8156   9.7687   1.226   1.3428    0.3153  -8607.889  0.1071 0.5152 0.3622 0.0143
+   0.0 1,2,3      3864   8.2969   1.048  56.1656   13.4205  -3996.353  0.0937 0.4475 0.4459 0.0127
+   0.0 4          4292   7.6423   0.720  36.6692    7.0675  -4496.997  0.1191 0.5762 0.2868 0.0158
+   0.0 1,2,3,4    8156   7.3113   0.507  36.0175    5.5145  -8614.238  0.1070 0.5152 0.3622 0.0143
+```
+
+Every entry replicates at the precision of the paper, once the data are read the way
+Rust's code read them: mileage cell $k = \lceil x \cdot 175 / 450000 \rceil$ used as a
+one-based index, so that the decision is evaluated at grid point $k-1$ and the
+transition after a replacement is recorded from cell 0 to cell $k$, one cell more than
+the model's own reset. The one exception is $RC$ for group 4 at $\beta = .9999$, which
+the paper prints as 10.896 for 10.0896: every other number in that row agrees. Two
+things to notice in the myopic rows: the cost parameter is nearly thirty times larger
+when the future is not counted, and the log-likelihood is lower by 6.3, the paper's
+test of myopia.
+
+### Counterfactuals
+
+The estimates describe Zurcher's behavior only through the model. What that behavior
+implies for the fleet is the ergodic distribution of mileage under the estimated
+replacement policy, against the mileage actually observed:
+
+```python
+_, pk, _ = est.solve()                                  # the policy at the estimates
+q, q_keep, q_replace = ergodic_distribution(est, pk)    # stationary distribution of mileage
+```
+
+```{image} _static/img/nfxp_ergodic.png
+:width: 80%
+:align: center
+:alt: Ergodic distribution of mileage at the estimates against the data
+```
+
+The data sit to the left of the stationary distribution: most buses enter the sample
+with a new engine, and the panel is too short to reach the steady state. The
+counterfactual that the paper is after is the demand for engine replacement as a
+function of its price, obtained by re-solving the model on a grid of $RC$ and reading
+the replacement rate off the ergodic distribution each time. Converting $RC$ into
+dollars with the average replacement cost of \$8062 for these groups (Table III of the
+paper) gives Figure 7 of the paper, for the dynamic and the myopic estimates:
+
+```python
+RC_grid = np.linspace(0.5, 30, 60)
+for beta in (0.9999, 0.0):
+    m = est if beta == est.beta else estim_zurcher(data, beta=beta)
+    if beta != est.beta:
+        m.estimate()                                    # the myopic model, re-estimated
+    scale = 8062 / m.RC                                 # dollars per unit of RC at the estimate
+    plt.plot(RC_grid * scale, demand_curve(m, RC_grid), label=f'beta = {beta}')
+```
+
+```{image} _static/img/nfxp_demand.png
+:width: 80%
+:align: center
+:alt: Demand for engine replacement as a function of its price, dynamic and myopic model
+```
+
+The two models fit the data equally well at the observed price and disagree
+everywhere else: the myopic bus manager reacts to a price change far more, because
+in his model the only reason to replace is today's cost. This is why the discount
+factor matters for policy even when the likelihood can barely tell $\beta = 0.9999$
+from $\beta = 0$. A known issue, inherited from the MATLAB reference code by Iskhakov,
+Schjerning and Rust: the demand curves do not exactly replicate Figure 7 of the paper,
+although the estimates they are computed from do.
+
 :::{div}
 :class: discussion
 
@@ -374,37 +511,19 @@ NK: one more solve with the same matrix and a different right hand side.
 :::
 
 (task10.1)=
-````{warning} Practical task 10.1: NFXP estimation of the bus engine model
+````{warning} Practical: NFXP estimation of the bus engine model
 
-We write this code together in class, starting from the pre-code skeleton
-`session10-sep24/nfxp_pre.ipynb`, which carries the model class of Tuesday.
 **Pull the code repository before the class:**
 
 ```bash
 cd sb-dse-code && git pull
 ```
 
-Nothing here is collected — finish what is left over at home, and keep the notebook,
-because the estimator is reused for the comparison with MPEC and CCP methods later in
-the course.
+1. Study the replication code in full details.
 
-1. **Simulator.** Add `simulate(N, T, seed)` to the model class: draw the initial
-   mileage, then for each bus and month draw the choice from $P(d|x)$ and the mileage
-   increment from $\theta_2$. Return the panel $(x_{i,t}, d_{i,t})$.
-2. **Transition parameters.** Estimate $\theta_2$ from the increment frequencies in
-   the simulated data, in closed form, and check it against the values you simulated
-   from.
-3. **Log-likelihood.** Write `loglik(theta)` for $\theta = (RC, \theta_1)$ that solves
-   the model with the poly-algorithm and sums the log choice probabilities. Use the
-   de-maxed logit of Class 6, never `np.log` of a probability.
-4. **Estimate.** Maximize with `scipy.optimize.minimize` and numerical gradients.
-   Count the calls to the inner solver, and recover the true parameters.
-5. **Analytical gradient.** Compute $\partial EV_\theta/\partial\theta$ from the
-   implicit function theorem using the Fréchet derivative, then the score of every
-   bus-month. Verify against finite differences, then pass the gradient to the
-   optimizer and count the solver calls again.
-6. **Standard errors.** Compute them from the outer product of the scores (BHHH) and
-   from a finite difference Hessian, and compare.
+2. Measure the run-time of the estimator, and how it is affected by the meta-parameters controlling the poly-algorithm.
+
+3. Get to the bottom of discrepancy between the paper and the replication code when computing the demand curve (paper Figure 7). Was an errornous figure published in Ecta?
 
 Use of AI assistance is allowed and encouraged, subject to the
 [course AI policy](https://dse.iskh.me/#ai-policy) — but you must be able to explain
@@ -420,6 +539,7 @@ every line, including where the implicit function theorem enters the code.
 - 📖 {cite:t}`ecma_comment` "Constrained optimization approaches to estimation of structural models: Comment"
 - 📖 {cite:t}`berndtEstimationInferenceNonlinear1974` "Estimation and Inference in Nonlinear Structural Models" — the original BHHH paper
 - 📖 {cite:t}`wooldridge2010EconometricAnalysisCross` "Econometric Analysis of Cross Section and Panel Data", chapters 12–13 on M-estimation and MLE
+- 📖 {cite:t}`neweyLargeSampleEstimation1994` "Large Sample Estimation and Hypothesis Testing", *Handbook of Econometrics* vol. 4, ch. 36 — the reference for every asymptotic result quoted above
 - 📺 Econometric Society Dynamic Structural Econometrics (DSE) lecture by Bertel Schjerning [YouTube video](https://youtu.be/houBb2vQFZE?si=VOIG544hnAiOx18x)
 - Matlab implementation of the full solver and the NFXP estimator [DSE 2019 GitHub repo](https://github.com/dseconf/DSE2019/tree/master/02_DDC_SchjerningIskhakov)
 - `ruspy` Python package implementing NFXP <https://github.com/OpenSourceEconomics/ruspy>

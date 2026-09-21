@@ -654,10 +654,14 @@ Algorithm:
 ```
 
 The model class below follows the course architecture: the model object holds the
-parameters and builds the transition matrix, `bellman()` is the operator with an
-optional Fréchet derivative, and three solvers share the `(maxiter, tol, callback)`
-signature. Parameter values are the estimates from Rust (1987), with mileage measured
-in thousands and the maintenance cost linear in it.
+parameters and builds the transition matrix — assigning `n` or `p` rebuilds the grid
+and the matrix, so the object is never out of date — `bellman()` is the operator with
+an optional Fréchet derivative, and three solvers share the `(maxiter, tol, callback)`
+signature. Every solver also accepts a starting point `ev0`; it defaults to zeros here,
+and on Thursday the estimator will pass the previous solution instead. Parameter
+values are the estimates from Rust (1987), with mileage measured in thousands and the
+maintenance cost linear in it. This is the class in `zurcher.py` of the code
+repository, which the rest of the course imports.
 
 ```{code-cell} python3
 :tags: [hide-input]
@@ -676,8 +680,9 @@ class zurcher():
                  p = [0.0937,0.4475,0.4459,0.0127],  # probabilities of transitions (theta_2)
                  beta = 0.9999):    # discount factor
         '''Init for the Zurcher model object'''
-        assert sum(p)<=1.0, 'Transition probability parameters must sum up to <1'
-        self.RC, self.c, self.p, self.beta, self.n= RC, c, p, beta, n
+        self.RC, self.c, self.beta = RC, c, beta
+        self.p = p   # transition probabilities, list; trpr is built by the n setter below
+        self.n = n   # builds the grid and the transition matrix
 
     @property
     def n(self):
@@ -687,9 +692,29 @@ class zurcher():
     @n.setter
     def n(self, value):
         '''Attribute n setter'''
+        if hasattr(self, '_zurcher__p'):   # p may not be set yet when n is assigned first
+            assert len(self.__p) < value, 'More transition probability parameters than grid points'
         self.__n = value
         self.grid = np.arange(self.__n)
-        self.trpr = self.__transition_probs()
+        if hasattr(self, '_zurcher__p'):
+            self.trpr = self.__transition_probs()
+
+    @property
+    def p(self):
+        '''Transition probabilities theta_2, all but the last (residual) one.
+           Returns a copy: change p by assigning a new list, so the matrix is rebuilt'''
+        return list(self.__p)
+
+    @p.setter
+    def p(self, value):
+        '''Assigning p rebuilds the transition matrix'''
+        value = [float(v) for v in value]
+        assert min(value)>=0.0, 'Transition probability parameters must be non-negative'
+        assert sum(value)<=1.0, 'Transition probability parameters must sum up to <1'
+        self.__p = value
+        if hasattr(self, '_zurcher__n'):   # n may not be set yet when p is assigned first
+            assert len(value) < self.__n, 'More transition probability parameters than grid points'
+            self.trpr = self.__transition_probs()
 
     def __repr__(self):
         '''String representation of the Zurcher model'''
@@ -723,10 +748,14 @@ class zurcher():
         dev1[:,0] += self.beta * self.trpr @ (1-pk)     # w.r.t. EV[0] special case
         return ev1, pk, dev1
 
-    def solve_vfi(self, maxiter=100, tol=1e-6, callback=None):
+    def _start(self, ev0):
+        '''Starting point for the solvers: zeros unless one is given'''
+        return np.zeros(self.n) if ev0 is None else np.asarray(ev0, dtype=float).copy()
+
+    def solve_vfi(self, maxiter=100, tol=1e-6, callback=None, ev0=None):
         '''Solves the Rust model using value function iterations
         '''
-        ev0 = np.zeros(self.n) # initial point for VFI
+        ev0 = self._start(ev0) # initial point for VFI
         err0 = 1.0 # initial lagged error
         for iter in range(maxiter):  # main loop
             ev1, pk = self.bellman(ev0)  # update approximation
@@ -741,10 +770,10 @@ class zurcher():
             raise RuntimeError('Failed to converge in %d iterations'%maxiter)
         return ev1, pk
 
-    def solve_nk(self, maxiter=100, tol=1e-6, callback=None):
+    def solve_nk(self, maxiter=100, tol=1e-6, callback=None, ev0=None):
         '''Solves the model using the Newton-Kantorovich iterations
         '''
-        ev0 = np.zeros(self.n) # initial point
+        ev0 = self._start(ev0) # initial point
         err0 = 1.0 # initial lagged error
         for iter in range(maxiter):
             ev1,pk,dev = self.bellman(ev0,deriv=True) # compute with Fréchet derivative
@@ -767,9 +796,10 @@ class zurcher():
                    sa_min=5,         # minimum number of contraction steps
                    sa_max=25,        # maximum number of contraction steps
                    switch_tol=0.025, # tolerance of the switching rule
-                   callback=None):
+                   callback=None,
+                   ev0=None):
         '''Solves the model using the poly-algorithm'''
-        ev0 = np.zeros(self.n) # initial point
+        ev0 = self._start(ev0) # initial point
         err0 = 1.0 # initial lagged error
         nk = False # start with successive approximations
         for iter in range(maxiter):
@@ -833,7 +863,7 @@ class zurcher():
             if plot:
                 ax1.plot(mod.grid,ev,color='k',alpha=0.25)
                 ax2.plot(mod.grid,pk,color='k',alpha=0.25)
-            callback.nriter = iter  # save iter in function object attribute
+            callback.nriter = iter+1  # number of iterations run, saved in function object attribute
         # run the chosen solver
         ev,pk = chosen_solver(callback=callback,**kvargs)
         if plot:
@@ -878,8 +908,8 @@ iteration counts:
 ```{code-cell} python3
 # compare SA, NK
 model = zurcher(beta=0.975)
-ev1,pk1 = model.solve_show(maxiter=1500,verbosity=1,plot=False)
-ev2,pk2 = model.solve_show(solver='nk',verbosity=1,plot=False)
+ev1,pk1 = model.solve_show(maxiter=1500,verbosity=0,plot=False)
+ev2,pk2 = model.solve_show(solver='nk',verbosity=0,plot=False)
 print()
 print('Max diff between value functions is ' ,np.amax(np.abs(ev1-ev2)))
 print('Max diff between policy functions is',np.amax(np.abs(pk1-pk2)))
@@ -898,11 +928,17 @@ Suppose the current approximation is a constant away from the fixed point,
 $EV_{k-1} = {EV}^\star + C$. Then two consecutive SA errors are
 
 $$
-err_{k} = ||EV_{k-1}-EV_{k}|| = ||{EV}^\star+C - \Gamma({EV}^\star+C)|| = ||{EV}^\star + C - {EV}^\star - \beta C|| = C (1-\beta)
+err_{k} = ||EV_{k-1}-EV_{k}|| = ||{EV}^\star+C - \Gamma({EV}^\star+C)|| = 
+$$
+$$
+= ||{EV}^\star + C - {EV}^\star - \beta C|| = C (1-\beta)
 $$
 
 $$
-err_{k+1} = ||EV_{k}-EV_{k+1}|| = ||\Gamma({EV}^\star+C) - \Gamma(\Gamma({EV}^\star+C))|| = ||{EV}^\star + \beta C - {EV}^\star - \beta^2 C|| = \beta C (1-\beta)
+err_{k+1} = ||EV_{k}-EV_{k+1}|| = ||\Gamma({EV}^\star+C) - \Gamma(\Gamma({EV}^\star+C))|| =
+$$
+$$
+= ||{EV}^\star + \beta C - {EV}^\star - \beta^2 C|| = \beta C (1-\beta)
 $$
 
 and the ratio of the two errors is $\frac{err_{k+1}}{err_{k}} = \beta$ exactly when the
