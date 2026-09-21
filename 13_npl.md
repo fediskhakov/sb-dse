@@ -13,6 +13,11 @@ kernelspec:
   display_name: Python 3
 ---
 
+:::{div}
+:class: homework-link
+[Homework: pseudo-likelihood and NPL on the bus engine model](#task13.1)
+:::
+
 The two-step estimator of Class 11 trades efficiency for never solving the model, and
 NFXP trades the other way. {cite:t}`aguirregabiriaSwappingNestedFixed2002` put the two
 on one line: rewrite the Bellman equation as a fixed point in the space of choice
@@ -92,9 +97,9 @@ u(d) + e(d)
 \right]
 $$
 
-This is policy evaluation from Class 8, with the policy given by the CCPs rather than
-by a deterministic decision rule. Recall that the correction term $e(d)$ is a function
-of the CCPs only, and therefore we can introduce an operator
+This is the policy evaluation step of policy iterations, with the policy given by the
+CCPs rather than by a deterministic decision rule. Recall that the correction term
+$e(d)$ is a function of the CCPs only, and therefore we can introduce an operator
 
 $$
 \varphi : [0,1]^{|X|\times|D|} \ni P \mapsto V_\sigma \in \mathbb{R}^{|X|}

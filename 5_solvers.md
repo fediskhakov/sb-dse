@@ -1,7 +1,7 @@
 ---
 title: 📖 Root finding and optimization
 short_title: 📖 Classic solvers
-subtitle: Class 4 — Thursday, September 3
+subtitle: Class 5 — Tuesday, September 8
 exports:
   - format: typst
     output: exports/5_solvers.pdf

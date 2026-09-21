@@ -13,10 +13,22 @@ kernelspec:
   display_name: Python 3
 ---
 
+:::{div}
+:class: homework-link
+[Homework: the bus engine model under the hood](#task9.1)
+:::
+
 The bus engine replacement model of {cite:t}`rustOptimalReplacementGMC1987` is the
 simplest dynamic discrete choice model taken to real data, and the template for every
 model we estimate later. This class builds it from the Bellman equation of Class 7 to a
 solver that converges in a handful of Newton steps.
+
+````{seealso} Key reading
+
+{cite:t}`rustOptimalReplacementGMC1987` "Optimal Replacement of GMC Bus Engines: An
+Empirical Model of Harold Zurcher", *Econometrica* 55(5), 999–1033. The model, the
+solver and the estimator of this class and the next all come from this one paper.
+````
 
 ````{hint} Running the code for this lecture
 :class: dropdown
@@ -71,22 +83,29 @@ The citation count of the paper is still growing, forty years on.
 
 The same model, with different names for the state and the choice, sits underneath
 
-- Occupational choice (Keane and Wolpin, JPE 1997)
-- Retirement (Rust and Phelan, ECMA 1997)
-- Brand choice and advertising (Erdem and Keane, Marketing Science 1996)
-- Choice of college major (Arcidiacono, JoE 2004)
-- Individual migration decisions (Kennan and Walker, ECMA 2011)
-- High school attendance and work decisions (Eckstein and Wolpin, ECMA 1999)
-- Sales and dynamics of consumer inventory behavior (Hendel and Nevo, ECMA 2006)
-- Advertising, learning, and consumer choice in experience good markets (Ackerberg,
-  IER 2003)
-- Route choice models (Fosgerau et al., Transportation Research B)
-- Fertility and labor supply decisions (Francesconi, JoLE 2002)
-- Residential and work-location choice (Buchinsky et al., ECMA 2015)
-- Equilibrium allocations under alternative waitlist designs: evidence from deceased
-  donor kidneys (Agarwal et al., ECMA 2021)
-- Equilibrium trade in automobiles (Gillingham, Iskhakov, Munk-Nielsen, Rust,
-  Schjerning, JPE 2022)
+- Occupational choice: {cite:t}`keaneCareerDecisionsYoung1997`, *JPE*
+- Retirement: {cite:t}`rustHowSocialSecurity1997`, *Econometrica*
+- Brand choice and advertising: {cite:t}`erdemDecisionMakingUnder1996`, *Marketing
+  Science*
+- Choice of college major: {cite:t}`arcidiaconoAbilitySortingReturns2004`, *Journal of
+  Econometrics*
+- Individual migration decisions: {cite:t}`kennanEffectExpectedIncome2011`,
+  *Econometrica*
+- High school attendance and work decisions: {cite:t}`ecksteinWhyYouthsDrop1999`,
+  *Econometrica*
+- Sales and dynamics of consumer inventory behavior:
+  {cite:t}`hendelMeasuringImplicationsSales2006`, *Econometrica*
+- Advertising, learning, and consumer choice in experience good markets:
+  {cite:t}`ackerbergAdvertisingLearningConsumer2003`, *IER*
+- Route choice models: {cite:t}`fosgerauLinkBasedNetwork2013`, *Transportation
+  Research B*
+- Fertility and labor supply decisions: {cite:t}`francesconiJointDynamicModel2002`,
+  *JoLE*
+- Residential and work-location choice: {cite:t}`buchinskyResidentialLocationWork2014`,
+  *Econometrica*
+- Equilibrium allocations under alternative waitlist designs, deceased donor kidneys:
+  {cite:t}`agarwalEquilibriumAllocationsUnder2021`, *Econometrica*
+- Equilibrium trade in automobiles: {cite:t}`iruc2`, *JPE*
 - ...and many more
 ````
 
@@ -135,7 +154,7 @@ where $RC$ is the replacement cost and $c(x,\theta_1)$ the cost of maintenance w
 preference parameters $\theta_1$. Replacing resets the mileage to zero, so the
 maintenance cost after replacement is $c(0,\theta_1)$.
 
-### Motion rules
+### Motion rules / transition probabilities
 
 Mileage is continuous, and the first modeling decision is how to deal with a
 *continuous* state space. Rust discretized the range of travelled miles into $n=175$
@@ -366,17 +385,17 @@ $$
 EV(x,d) = \sum_{X} \log \big( \exp[u(x',0) + \beta EV(x',0)] + \exp[u(x',1) + \beta EV(x',1)] \big) \pi(x'|x,d)
 $$
 
-which defines the operator $T^*$ in the expected value function space,
+which defines the operator $\Gamma$ in the expected value function space,
 
 $$
-T^*(EV)(x,d) \equiv \sum_{X} \log \big( \exp[u(x',0) + \beta EV(x',0)] + \exp[u(x',1) + \beta EV(x',1)] \big) \pi(x'|x,d)
+\Gamma(EV)(x,d) \equiv \sum_{X} \log \big( \exp[u(x',0) + \beta EV(x',0)] + \exp[u(x',1) + \beta EV(x',1)] \big) \pi(x'|x,d)
 $$
 
-The solution $EV(x,d)$ of the Bellman functional equation is a fixed point of $T^*$,
-$T^*(EV)(x,d)=EV(x,d)$, and this is the fixed point we compute. It is the better one for
+The solution $EV(x,d)$ of the Bellman functional equation is a fixed point of $\Gamma$,
+$\Gamma(EV)(x,d)=EV(x,d)$, and this is the fixed point we compute. It is the better one for
 four reasons:
 
-- $T^*$ is **also a contraction mapping** in the space of expected value functions, as
+- $\Gamma$ is **also a contraction mapping** in the space of expected value functions, as
   shown by {cite:t}`maDynamicProgrammingDeconstructed2021`, so VFI is guaranteed to find
   the unique solution
 - the dimensionality of this fixed point problem is smaller than the one in value
@@ -398,7 +417,7 @@ $$
 The choice probabilities are the basis for forming the likelihood function, and we
 continue with them on Thursday when talking about structural estimation.
 
-## Newton–Kantorovich iterations
+### Solution approaches
 
 The Zurcher model has the following features: infinite horizon, discretized mileage
 which is the only state in the $EV$ formulation, so a finite state space, discrete
@@ -406,36 +425,105 @@ choice, and idiosyncratic random components. Therefore the suitable solution met
 are
 
 1. value function iterations (VFI)
-2. policy iterations, from Class 8
-3. **the Newton–Kantorovich method** (NK iterations), an application of Newton's method
-   in functional spaces, numerically equivalent to policy iterations
+2. policy iterations
+    - *much faster than VFI*
+3. Newton–Kantorovich (NK) iterations = Newton-Raphson for Bellman fixed point
+    - the reason behind the fast convergence of policy iterations
+    - mathematically equivalent to NK iterations
+
+
+## Policy iterations aka Howard policy improvement algorithm
+
+Break the search of the fixed point of Bellman operator into two steps:
+
+1. Policy evaluation: compute value function for fixed policy function  
+1. Policy improvement : find best policy for given value function  
+
+Iterative (back and forth) approach instead of jointly finding the value and policy functions in the fixed point problem.
+
+$$
+V(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}) + \beta \mathbb{E}\big\{ V(\text{next state})  \big| \text{state},\text{decision} \big\} \big]
+$$
+
+### Step 1: Policy evaluation
+
+For fixed policy function $\delta$ (decisions) solve for function $ V^\delta(\text{state}) $:
+
+$$
+V^\delta(\text{state}) = U(\text{state},\text{decision}) + \beta \mathbb{E}\big\{ V^\delta(\text{next state})  \big| \text{state},\text{decision} \big\}
+$$
+
+- functional equation, although simpler than Bellman equation  
+- becomes non-linear system of equations with discrete or discretized states  
+- becomes *linear* system of equations in many applications where $ \mathbb{E}\{\cdot\} $ can be expressed as matrix multiplication
+  - Markov discrete choice problems (all randomness in transition probabilities, no interpolation)
+  - when quadrature integration and linear interpolation are used in discretized state spaces  
+
+### Step 2: Policy improvement
+
+For fixed value function $ V^{\delta_0}(\text{state}) $ find the improved optimal policy $\delta_1$ while computing:
+
+$$
+V^{\delta_1}(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}) + \beta \mathbb{E}\big\{ V^{\delta_0}(\text{next state})  \big| \text{state},\text{decision} \big\} \big]
+$$
+
+- standard evaluation of the Bellman operator  
+- any approaches for implementation of the Bellman operator are applicable (continuous, discrete or discretized choice spaces)
+
+**Policy iterations algorithm:**
+
+```
+1. Initialize policy function
+2. Compute the value of the current policy 
+    - by solving the Bellman equation without max operation
+    - assuming that current policy will be applied forever
+3. Re-compute the policy function 
+    - by applying the Bellman operator to the found value function  
+4. Repeat until convergence in policy and/or value function space
+```
+
+Why policy iterations? *Rate of convergence!*
+
+Policy iterations are equivalent to applying Newton-Raphson method to solve for the fixed point of the Bellman operator.
+
+
+## Newton–Kantorovich iterations
+
+Main idea: apply Newton-Raphson method to the fixed point equation $EV = \Gamma(EV)$
+
+- Kantorovich showed how to do this in functional spaces.
 
 Write the fixed point equation as a root finding problem for the operator
-$\Gamma = T^*$,
+$\Gamma$,
 
 $$
-EV(x,d) = T^*(EV)(x,d) = \Gamma(EV)(x,d) \quad\Leftrightarrow\quad (I - \Gamma)(EV)(x,d)=\mathbf{0}
+EV(x,d) = \Gamma(EV)(x,d) \quad\Leftrightarrow\quad (I - \Gamma)(EV)(x,d)=\mathbf{0}
 $$
 
-where $\mathbf{0}$ is the zero function. The **NK iteration** is Newton's step on that
-equation,
+- $I$ is the identity operator
+- so $I-\Gamma$ maps a function to a difference between that function and its image under $\Gamma$
+- $\mathbf{0}$ is the zero function
+
+The **NK iteration** is Newton's step on that equation,
 
 $$
 EV_{k+1} = EV_{k} - (I-\Gamma')^{-1} (I-\Gamma)(EV_k)
 $$
 
-where $I-\Gamma'$ is the Fréchet derivative of the operator $I-\Gamma$: the identity
-minus the Fréchet derivative of the Bellman operator.
+- $I-\Gamma'$ is the Fréchet derivative of the operator $I-\Gamma$
+- $\Gamma'$ is the Fréchet derivative of the Bellman operator
 
 We work with finite approximations on the discrete state space, so everything is a
-vector or a matrix. Let $n$ denote the number of state points (in mileage). Then
-$EV(x,d)$ is a vector of length $n$, with the first element reused to describe the
-expected value of replacing; $T^*(EV)(x,d) = \Gamma(EV)(x,d)$ is a non-linear
-$n$-valued multivariate function of $EV$; and the Fréchet derivative $I-\Gamma'$ is an
-$n \times n$ matrix of first order derivatives of each output of $T^*(EV)(x,d)$ with
-respect to each input. *NK iterations on finite approximations are therefore solving a
-system of $n$ equations with $n$ unknowns with Newton's method* — the algorithm of
-Class 5, in $n$ dimensions.
+vector or a matrix. 
+
+Let $n$ denote the number of state points (in mileage). 
+- $EV(x,d)$ is a vector of length $n$
+    - with the first element reused to describe the expected value of replacing
+- $\Gamma(EV)(x,d)$ is a non-linear $n$-valued multivariate function of $EV$
+- the Fréchet derivative $I-\Gamma'$ is an $n \times n$ Jacobian matrix
+
+NK iterations on finite approximations are therefore solving a
+system of $n$ equations with $n$ unknowns with Newton's method — see Class 5 — in $n$ dimensions
 
 ### Matrix expression for the finite approximation of the Bellman operator
 
@@ -810,11 +898,11 @@ Suppose the current approximation is a constant away from the fixed point,
 $EV_{k-1} = {EV}^\star + C$. Then two consecutive SA errors are
 
 $$
-err_{k} = ||EV_{k-1}-EV_{k}|| = ||{EV}^\star+C - T^*({EV}^\star+C)|| = ||{EV}^\star + C - {EV}^\star - \beta C|| = C (1-\beta)
+err_{k} = ||EV_{k-1}-EV_{k}|| = ||{EV}^\star+C - \Gamma({EV}^\star+C)|| = ||{EV}^\star + C - {EV}^\star - \beta C|| = C (1-\beta)
 $$
 
 $$
-err_{k+1} = ||EV_{k}-EV_{k+1}|| = ||T^*({EV}^\star+C) - T^*(T^*({EV}^\star+C))|| = ||{EV}^\star + \beta C - {EV}^\star - \beta^2 C|| = \beta C (1-\beta)
+err_{k+1} = ||EV_{k}-EV_{k+1}|| = ||\Gamma({EV}^\star+C) - \Gamma(\Gamma({EV}^\star+C))|| = ||{EV}^\star + \beta C - {EV}^\star - \beta^2 C|| = \beta C (1-\beta)
 $$
 
 and the ratio of the two errors is $\frac{err_{k+1}}{err_{k}} = \beta$ exactly when the
@@ -865,7 +953,7 @@ ev,pk = m.solve_show(tol=1e-10,solver='poly',**polyset)
 
 - The switching rule compares the error ratio to $\beta$. What happens if the tolerance
   `switch_tol` is too loose, and what if it is too tight?
-- NK is equivalent to policy iterations from Class 8. Where in `solve_nk` is the policy
+- NK is equivalent to policy iterations. Where in `solve_nk` is the policy
   evaluation step, and where is the policy improvement?
 - What in the model changes if the maintenance cost is made non-linear in mileage, and
   what in the code?
@@ -915,7 +1003,7 @@ your solution.
 - 📖 {cite:t}`rustNestedFixedPoint2000` "Nested Fixed Point Algorithm Documentation Manual", version 6 {download}`Download pdf <_static/pdf/nfxp_man_2000.pdf>`
 - 📖 John Rust "NFXP Pocket Guide" {download}`Download pdf <_static/pdf/nfxp.pdf>`
 - 📖 {cite:t}`ecma_comment` "Constrained optimization approaches to estimation of structural models: Comment"
-- 📖 {cite:t}`maDynamicProgrammingDeconstructed2021` "Dynamic programming deconstructed" — why $T^*$ is a contraction
+- 📖 {cite:t}`maDynamicProgrammingDeconstructed2021` "Dynamic programming deconstructed" — why $\Gamma$ is a contraction
 - 📖 {cite:t}`adda2023DynamicEconomicsQuantitative` "Dynamic Economics", pp. 83–85
 - 📺 Econometric Society Dynamic Structural Econometrics (DSE) lecture by Bertel Schjerning [YouTube video](https://youtu.be/houBb2vQFZE?si=VOIG544hnAiOx18x)
 - John Rust [wiki](https://en.wikipedia.org/wiki/John_Rust), and Google Scholar [papers citing Rust (1987)](https://scholar.google.com/scholar?oi=bibs&hl=en&cites=16527795233338248687)

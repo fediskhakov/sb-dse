@@ -288,3 +288,133 @@ img.img-thin-border {
   outline: none;
   box-shadow: none;
 }
+
+/* Key reading — the one or two papers a class is built on, placed right after the
+   opening paragraph of a chapter. Uses the `seealso` kind, which is used for nothing
+   else in these notes (MyST discards custom class names, so the kind is the handle).
+   A large book emoji sits in a column on the left, spanning header and body, and the
+   theme's small header icon is hidden so the block has one icon, not two. */
+.myst-admonition.myst-admonition-seealso {
+  position: relative;
+  border-left-width: 8px;
+  border-left-color: #5b4bb5;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 10%);
+}
+
+.myst-admonition-seealso::before {
+  content: "📖";
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.myst-admonition-seealso .myst-admonition-header > svg {
+  display: none;
+}
+
+.myst-admonition-seealso .myst-admonition-header {
+  padding-left: 4.9rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  font-size: 1.15em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #5b4bb5;
+  background-color: #efecfb;
+}
+
+.myst-admonition-seealso .myst-admonition-body {
+  padding-left: 4.9rem;
+  background-color: #f8f6fe;
+  font-size: 1.03em;
+}
+
+.dark .myst-admonition.myst-admonition-seealso {
+  border-left-color: #9a8ee6;
+}
+
+.dark .myst-admonition-seealso .myst-admonition-header {
+  color: #c9c0f5;
+  background-color: #2a2547;
+}
+
+.dark .myst-admonition-seealso .myst-admonition-body {
+  background-color: #221d3a;
+}
+
+/* on narrow screens the icon column costs too much width: shrink it */
+@media (max-width: 640px) {
+  .myst-admonition-seealso::before {
+    font-size: 2rem;
+    left: 0.6rem;
+  }
+  .myst-admonition-seealso .myst-admonition-header,
+  .myst-admonition-seealso .myst-admonition-body {
+    padding-left: 3.4rem;
+  }
+}
+
+/* Homework link — the first thing on a Tuesday chapter, right under the title: a
+   banner that jumps to the graded homework block at the end of the page. Written as
+   :::{div} with :class: homework-link around a plain same-page link, so the typst
+   export gets an ordinary link. The colors match the `danger` kind the homework block
+   itself uses; the icon and the hint on the right are added here, not in the text. */
+.homework-link {
+  margin: 0 0 1.4rem;
+}
+
+.homework-link a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid #dc2626;
+  border-left-width: 8px;
+  border-radius: 6px;
+  background-color: #fdecec;
+  color: #991b1b;
+  font-weight: 700;
+  font-size: 1.08em;
+  text-decoration: none;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 10%);
+}
+
+.homework-link a::before {
+  content: "📝";
+  font-size: 1.7em;
+  line-height: 1;
+}
+
+.homework-link a::after {
+  content: "at the end of this chapter ↓";
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.homework-link a:hover {
+  background-color: #fbd9d9;
+  text-decoration: none;
+}
+
+.dark .homework-link a {
+  border-color: #ef4444;
+  background-color: #3b1f1f;
+  color: #fca5a5;
+}
+
+.dark .homework-link a:hover {
+  background-color: #4a2626;
+}
+
+@media (max-width: 640px) {
+  .homework-link a::after {
+    display: none;
+  }
+}

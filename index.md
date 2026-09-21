@@ -75,7 +75,7 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Sep 10 | [Programming practice: static discrete choice](6_logit.md) |
 | | **Part II — Single-agent dynamic programming** |
 | Tue Sep 15 | [Bellman equations and backwards induction in finite horizon](7_dp.md) |
-| Thu Sep 17 | [Contraction mappings, infinite horizon, value function and policy iteration](8_dp_infinite.md) |
+| Thu Sep 17 | [Contraction mappings, infinite horizon, value function iterations](8_dp_infinite.md) |
 | Tue Sep 22 | [The Rust bus engine replacement model and Newton-Kantorovich](9_zurcher.md) |
 | Thu Sep 24 | [Nested fixed point estimation (NFXP)](10_nfxp.md) |
 | Tue Sep 29 | [Conditional choice probabilities, identification and two-step estimator](11_ccp.md) |

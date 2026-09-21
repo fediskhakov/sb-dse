@@ -1,7 +1,7 @@
 ---
 title: "🔬 Beauty of coding: towers of Hanoi"
 short_title: 🔬 Towers of Hanoi
-subtitle: Class 2 — Thursday, August 27 (if time allows)
+subtitle: Class 4 — Thursday, September 3
 exports:
   - format: typst
     output: exports/4_recursion.pdf

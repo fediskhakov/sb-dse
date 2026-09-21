@@ -13,6 +13,11 @@ kernelspec:
   display_name: Python 3
 ---
 
+:::{div}
+:class: homework-link
+[Homework: recovering value differences from choice data](#task11.1)
+:::
+
 NFXP solves the model inside every likelihood evaluation. This class turns the
 argument around: the conditional choice probabilities (CCPs) observed in the data pin
 down the value function differences, so the model can be estimated without ever
