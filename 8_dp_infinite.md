@@ -1,5 +1,5 @@
 ---
-title: "📖 Programming practice: infinite horizon"
+title: "📖 Practice: infinite horizon"
 short_title: 📖 Infinite horizon
 subtitle: Class 8 — Thursday, September 17
 exports:

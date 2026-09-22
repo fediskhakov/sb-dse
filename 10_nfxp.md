@@ -1,5 +1,5 @@
 ---
-title: "🔬 Programming practice: nested fixed point estimation"
+title: "🔬 Practice: nested fixed point estimation"
 short_title: 🔬 NFXP
 subtitle: Class 10 — Thursday, September 24
 exports:
@@ -124,16 +124,16 @@ $$
 \sqrt{\mathcal{I}_n(\theta_0)} ( \hat{\theta}_{MLE} - \theta_0 ) \xrightarrow{d} N(0,1)
 $$
 
-where, for a scalar parameter, the variance is given by the inverse of the **Fisher
+where, for a *scalar parameter*, the variance is given by the inverse of the **Fisher
 information**, computed from the pdf $L(z,\theta_0)$ as the expected curvature of the
-log-likelihood, or equivalently as the expected squared score:
+log-likelihood, or equivalently as the expected squared score (under regularity conditions):
 
 $$
 \mathcal{I}(\theta_0) = - \mathbb{E}\left[ \frac{\partial^2}{\partial\theta \partial\theta} \ell(z,\theta_0) \right] =
 \mathbb{E}\left[ \left( \frac{\partial}{\partial\theta} \ell(z,\theta_0) \right)^2 \right]
 $$
 
-Alternatively, the Fisher information matrix can be computed from the log-likelihood
+The Fisher information matrix can be computed also from the log-likelihood
 function $\ell_n(\theta_0)$ of $n$ i.i.d. random variables in place of the data
 $Z_n$, and it scales with the sample size:
 
@@ -143,22 +143,37 @@ $$
 n \mathcal{I}(\theta_0)
 $$
 
-### Estimating the Fisher information
 
-The Fisher information depends on the model pdf $L(z,\theta_0)$ and is hardly
-computable in closed form. It can be consistently estimated thanks to the law of large
-numbers,
-$-\tfrac{1}{n} \sum_i^n \frac{\partial^2}{\partial\theta \partial\theta} \ell(z_i,\theta_0) \xrightarrow{p} \mathcal{I}(\theta_0)$,
-which gives the *observed* Fisher information
-
+Let individual log-likelihoods and scores be
 $$
-\hat{\mathcal{J}}_n(\theta_0) = - \sum_{i=1}^n \frac{\partial^2}{\partial\theta \partial\theta} \ell(z_i,\theta_0) =
-- \frac{\partial^2}{\partial\theta \partial\theta} \ell_n(\theta_0)
-\approx \mathcal{I}_n(\theta_0) = n \mathcal{I}(\theta_0)
+\ell_i(\theta)=\ell(z_i,\theta)=\log L(z_i,\theta),
+\qquad
+s_i(\theta)=\frac{\partial \ell_i(\theta)}{\partial\theta}.
 $$
 
-Plugging in the estimate $\hat{\theta} = \hat{\theta}_{MLE}$ for the unknown $\theta_0$
-does not change the limit ({cite:t}`neweyLargeSampleEstimation1994`, Theorem 4.4), so
+Fisher information can be **consistently estimated** from a sample of $n$ observations by plugging in the MLE estimate $\hat\theta$ in two different ways:
+
+$$
+\hat{\mathcal{J}}_{n,\mathrm{OPG}}
+=
+\frac{1}{n}
+\sum_{i=1}^n
+s_i(\hat\theta)s_i(\hat\theta)^\top
+$$
+$$
+\hat{\mathcal{J}}_{n,\mathrm{H}}
+=
+-\frac{1}{n}
+\sum_{i=1}^n
+\frac{\partial^2\ell_i(\hat\theta)}
+{\partial\theta\partial\theta^\top}
+=
+-\frac{1}{n}
+\nabla_\theta^2\ell_n(\hat\theta).
+$$
+
+
+{cite:t}`neweyLargeSampleEstimation1994`, Theorem 4.4, list mild regularity condition under which both of these estimators are consistent for the true Fisher information $\mathcal{I}(\theta_0)$, leading to
 
 $$
 \sqrt{\hat{\mathcal{J}}_n(\hat{\theta})} ( \hat{\theta} - \theta_0 ) \xrightarrow{d} N(0,1)  \Rightarrow
@@ -168,36 +183,6 @@ $$
 so the standard errors of the estimates are the square roots of the diagonal of the
 inverse of the negative Hessian of the log-likelihood at the optimum. Every optimizer that uses a
 Hessian, or an approximation to it, has the standard errors for free.
-
-### Information equality
-
-Similar to the two equivalent definitions for the *expected* Fisher information, the
-*observed* Fisher information has a second sample analogue, assuming $\theta_0$ is a
-scalar: the sum of the squared scores of the individual observations,
-
-$$
-\hat{\mathcal{J}}_n(\theta_0) = - \frac{\partial^2}{\partial\theta \partial\theta} \ell_n(\theta_0)
-\approx \sum_{i=1}^n \left( \frac{\partial}{\partial\theta} \ell(z_i,\theta_0) \right)^2
-$$
-
-The two sides are different random variables: they share the expectation
-$\mathcal{I}_n(\theta_0)$ and, divided by $n$, the probability limit $\mathcal{I}(\theta_0)$
-({cite:t}`neweyLargeSampleEstimation1994`, Theorem 4.4), but they are not equal in any
-given sample. The square on the right hand side originates in the calculation of the
-variance of the score $\frac{\partial \ell_n(\theta_0)}{\partial\theta}$, whose expectation
-is zero at the true parameters, and which by independence is the sum of the variances of
-the individual scores:
-
-$$
-Var\left( \frac{\partial \ell_n(\theta_0)}{\partial\theta} \right) =
-\mathbb{E} \Big( \frac{\partial \ell_n(\theta_0)}{\partial\theta} \Big)^2 -
-\Big( \underbrace{ \mathbb{E} \frac{\partial \ell_n(\theta_0)}{\partial\theta} }_{=0} \Big)^2
-= \sum_{i=1}^n \mathbb{E} \Big( \frac{\partial \ell(z_i,\theta_0)}{\partial\theta} \Big)^2
-$$
-
-When the parameter $\theta \in \mathbb{R}^K$ is a vector with $K$ elements, both the
-second order derivative and the square of the first order derivative have to be
-adjusted: the Hessian is a $K\times K$ matrix, and the square becomes an outer product.
 
 ### Outer product of gradients
 
@@ -216,15 +201,24 @@ for all $i \ne j$.
 
 ### Information matrix equality
 
-Let $H(\ell_n(\theta_0)) = \frac{\partial^2}{\partial\theta \partial\theta} \ell_n(\theta_0)$
-denote the $K \times K$ Hessian matrix of $\ell_n(\theta_0)$, let
+- let 
+$H(\ell_n(\theta_0)) = \frac{\partial^2}{\partial\theta \partial\theta} \ell_n(\theta_0)$
+denote the $K \times K$ Hessian matrix of $\ell_n(\theta_0)$
+
+- let 
 $\nabla f(\theta) = \frac{\partial}{\partial\theta} f(\theta)$ denote the gradient of
-$f(\theta)$, a $K \times 1$ vector, and let
+$f(\theta)$, a $K \times 1$ vector, and 
+
+- let
 $\nabla\ell(Z_n, \theta_0) = \big( \frac{\partial}{\partial\theta} \ell(z_1,\theta_0),\dots,\frac{\partial}{\partial\theta} \ell(z_n,\theta_0) \big)$
 denote the $K \times n$ matrix of gradients of $\ell(z_i,\theta_0)$ stacked for all
-$i$. Then the **information matrix equality**
-$\mathcal{I}_n(\theta_0) = - \mathbb{E}\, H(\ell_n(\theta_0)) = \mathbb{E} \sum_{i=1}^n \nabla\ell(z_i, \theta_0) \otimes \nabla\ell(z_i, \theta_0)^{T}$
-({cite:t}`neweyLargeSampleEstimation1994`, Theorem 3.3) has the sample analogue
+$i$. 
+
+Then the **information matrix equality** ({cite:t}`neweyLargeSampleEstimation1994`, Theorem 3.3) 
+$$
+\mathcal{I}_n(\theta_0) = - \mathbb{E}\, H(\ell_n(\theta_0)) = \mathbb{E} \sum_{i=1}^n \nabla\ell(z_i, \theta_0) \otimes \nabla\ell(z_i, \theta_0)^{T}
+$$
+has the sample analogue
 
 $$
 \begin{aligned}
