@@ -378,13 +378,12 @@ NK: one more solve with the same matrix and a different right hand side.
 The estimator is in the folder `session10-sep24/` of the
 [code repository](https://github.com/fediskhakov/sb-dse-code): `nfxp.py` is the model
 class of Tuesday with the data attached and the likelihood, its analytical score and
-BHHH on top, and `sim_zurcher.py` holds the simulator and the demand curve. Run on
-Harold Zurcher's records for bus groups 1–4, on the 175-cell mileage grid of the paper
-and with $\beta = 0.9999$:
+BHHH on top, and the notebook `replicate_rust1987.ipynb` runs everything shown below.
+Run on Harold Zurcher's records for bus groups 1–4, on the 175-cell mileage grid of the
+paper and with $\beta = 0.9999$:
 
 ```python
 from nfxp import read_busdata, estim_zurcher
-from sim_zurcher import ergodic_distribution, demand_curve, demand_axes
 
 data = read_busdata()                       # groups 1-4, 175 cells, Rust's cell convention
 est = estim_zurcher(data)                   # the model with the data attached
@@ -452,8 +451,8 @@ implies for the fleet is the ergodic distribution of mileage under the estimated
 replacement policy, against the mileage actually observed:
 
 ```python
-_, pk, _ = est.solve()                                  # the policy at the estimates
-q, q_keep, q_replace = ergodic_distribution(est, pk)    # stationary distribution of mileage
+_, pk, _ = est.solve()                             # the policy at the estimates
+q, q_keep, q_replace = ergodic_distribution(est, pk)   # defined in replicate_rust1987.ipynb
 ```
 
 ```{image} _static/img/nfxp_ergodic.png
@@ -471,13 +470,12 @@ dollars with the average replacement cost of \$8062 for these groups (Table III 
 paper) gives Figure 7 of the paper, for the dynamic and the myopic estimates:
 
 ```python
-RC_grid = np.linspace(0.5, 30, 60)
-for beta in (0.9999, 0.0):
-    m = est if beta == est.beta else estim_zurcher(data, beta=beta)
-    if beta != est.beta:
-        m.estimate()                                    # the myopic model, re-estimated
-    scale = 8062 / m.RC                                 # dollars per unit of RC at the estimate
-    plt.plot(RC_grid * scale, demand_curve(m, RC_grid), label=f'beta = {beta}')
+RC_grid = np.linspace(0.5, 30, 60)                 # demand_curve() is in the notebook too
+myopic = estim_zurcher(data, beta=0.0)
+myopic.estimate()                                  # the myopic model, re-estimated
+for m in (est, myopic):
+    scale = 8062 / m.RC                            # dollars per unit of RC at the estimate
+    plt.plot(RC_grid * scale, demand_curve(m, RC_grid), label=f'beta = {m.beta}')
 ```
 
 ```{image} _static/img/nfxp_demand.png
@@ -490,9 +488,8 @@ The two models fit the data equally well at the observed price and disagree
 everywhere else: the myopic bus manager reacts to a price change far more, because
 in his model the only reason to replace is today's cost. This is why the discount
 factor matters for policy even when the likelihood can barely tell $\beta = 0.9999$
-from $\beta = 0$. A known issue, inherited from the MATLAB reference code by Iskhakov,
-Schjerning and Rust: the demand curves do not exactly replicate Figure 7 of the paper,
-although the estimates they are computed from do.
+from $\beta = 0$. A known issue: the demand curves do not exactly replicate Figure 7 of
+the paper, although the estimates they are computed from reproduction of its tables.
 
 :::{div}
 :class: discussion
