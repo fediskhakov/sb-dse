@@ -15,3 +15,5 @@ dependencies:
   - scipy
   - matplotlib
   - sympy
+  # line-by-line profiling in the NFXP practical
+  - line_profiler

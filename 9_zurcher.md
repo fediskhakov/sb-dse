@@ -2,9 +2,6 @@
 title: 📖 Rust bus engine replacement model
 short_title: 📖 Bus engine model
 subtitle: Class 9 — Tuesday, September 22
-exports:
-  - format: typst
-    output: exports/9_zurcher.pdf
 downloads:
   - file: 9_zurcher.md
     title: MyST Markdown
@@ -13,14 +10,9 @@ kernelspec:
   display_name: Python 3
 ---
 
-:::{div}
-:class: homework-link
-[Homework: the bus engine model under the hood](#task9.1)
-:::
-
 The bus engine replacement model of {cite:t}`rustOptimalReplacementGMC1987` is the
 simplest dynamic discrete choice model taken to real data, and the template for every
-model we estimate later. This class builds it from the Bellman equation of Class 7 to a
+model we estimate later. This class builds it from the [Bellman equation of Class 7](7_dp.md#bellman-equation) to a
 solver that converges in a handful of Newton steps.
 
 ````{seealso} Key reading
@@ -37,7 +29,7 @@ Every code example below is also a runnable notebook in the course **code reposi
 in the folder `session09-sep22/`.
 
 You should have cloned that repository already — if not, the instructions are in the
-[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
 
 Update your copy before the class. Editing a file in place makes `git pull` refuse to
 update it, so discard whatever you changed while experimenting:
@@ -53,6 +45,39 @@ want to keep out of it first, or commit that to a branch of your own.
 
 Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
+````
+
+````{danger} Homework zeta_zurcher: the bus engine model under the hood
+:class: dropdown
+
+(homework-zeta_zurcher)=
+Graded homework: task `zeta_zurcher` in the class repository. Collect it and work on a
+copy in your own repository:
+
+```bash
+git pull upstream main                           # collect the task
+cp -r tasks/zeta_zurcher solutions/zeta_zurcher  # work on the copy
+```
+
+The notebook in the task folder carries the model class of this class. The steps:
+
+1. Verify the Fréchet derivative: compare `dev1` returned by `bellman()` to a finite
+   difference approximation of $\partial\Gamma/\partial EV$ at a random point, and report
+   the maximum absolute discrepancy.
+2. Break NK: at $\beta = 0.9999$ start `solve_nk` from $EV_0 = 0$ and from a few other
+   starting points, such as a large constant or random noise. Record where it converges,
+   where it diverges or stalls, and how many SA steps the poly-algorithm needs before its
+   NK steps succeed from the same points.
+3. Ergodic distribution: under the optimal policy the mileage follows a Markov chain
+   with transition matrix $\bar{\Pi} = \text{diag}(P)\,\Pi(d=0) + \text{diag}(\bar P)\,\Pi(d=1)$.
+   Compute its stationary distribution and plot it against the replacement
+   probability on the same mileage grid. This is the distribution of the data the model
+   generates, and we simulate from it [on Thursday](10_nfxp.md).
+
+The code of this class, `session09-sep22/zurcher.ipynb` in the code repository, is
+worth having beside you while you work.
+
+Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](10_nfxp.md).
 ````
 
 ## Rust (1987) and Harold Zurcher
@@ -154,6 +179,7 @@ where $RC$ is the replacement cost and $c(x,\theta_1)$ the cost of maintenance w
 preference parameters $\theta_1$. Replacing resets the mileage to zero, so the
 maintenance cost after replacement is $c(0,\theta_1)$.
 
+(zurcher-transitions)=
 ### Motion rules / transition probabilities
 
 Mileage is continuous, and the first modeling decision is how to deal with a
@@ -244,7 +270,7 @@ T(V)(x) \equiv \max_{d \in \{\text{keep},\text{replace}\}} \big\{ u(x,d) + \beta
 $$
 
 The Bellman equation is then $V(x) = T(V)(x)$, with the solution given by the fixed
-point $T(V) = V$. Everything from [Class 8](8_dp_infinite.md) on contraction mappings
+point $T(V) = V$. Everything from [Class 8 on contraction mappings](8_dp_infinite.md#dptheory)
 applies.
 
 :::{div}
@@ -267,7 +293,7 @@ them the model predicts the same choice every time a bus shows up with a given
 mileage, and one observation to the contrary makes the likelihood zero.
 
 We therefore need **error terms** in the model, denoted $\varepsilon$, and we are back to
-the random utility framework $u(x,d)+\varepsilon(d)$ of Class 6, now in a dynamic
+the random utility framework $u(x,d)+\varepsilon(d)$ of [Class 6](6_logit.md#probabilistic-choice), now in a dynamic
 setting.
 
 :::{div}
@@ -354,8 +380,7 @@ V(x,\varepsilon) = \max_{d\in \{0,1\}} \big\{ \underbrace{u(x,d) + \beta
 $$
 
 so that $V(x',\varepsilon') = \max_{d\in \{0,1\}} \big\{ v(x',d) + \varepsilon'_d \big\}$
-is the maximum of choice specific values plus EV1 shocks. The third step is the logsum
-formula of Class 6 for the expectation of that maximum:
+is the maximum of choice specific values plus EV1 shocks. The third step is the [logsum formula of Class 6](6_logit.md#max-stability) for the expectation of that maximum:
 
 $$
 \mathbb{E}\big[ V(x',\varepsilon')\big|x,d\big] =
@@ -365,6 +390,7 @@ $$
 The $\varepsilon$ has been integrated out analytically, and what is left is a function
 of the mileage grid only.
 
+(zurcher-ev-bellman)=
 ### Bellman equation in expected value function space
 
 Let $\mathbb{E}\big[ V(x',\varepsilon')\big|x,d\big] = EV(x,d)$. Then the model is
@@ -405,6 +431,7 @@ four reasons:
 - it opens very nice numerical optimization possibilities, which is the rest of this
   class
 
+(zurcher-choice-probabilities)=
 ### Choice probabilities
 
 Once the fixed point is found, the *optimal* choice probability $P(d|x)$ is given by
@@ -414,8 +441,7 @@ $$
 P(d|x) = \frac{\exp[v(x,d)]}{\sum_{d'\in \{0,1\}} \exp[v(x,d')]}
 $$
 
-The choice probabilities are the basis for forming the likelihood function, and we
-continue with them on Thursday when talking about structural estimation.
+The choice probabilities are the basis for forming the likelihood function, and we continue with them [on Thursday](10_nfxp.md) when talking about structural estimation.
 
 ### Solution approaches
 
@@ -430,7 +456,6 @@ are
 3. Newton–Kantorovich (NK) iterations = Newton-Raphson for Bellman fixed point
     - the reason behind the fast convergence of policy iterations
     - mathematically equivalent to NK iterations
-
 
 ## Policy iterations aka Howard policy improvement algorithm
 
@@ -486,7 +511,7 @@ Why policy iterations? *Rate of convergence!*
 
 Policy iterations are equivalent to applying Newton-Raphson method to solve for the fixed point of the Bellman operator.
 
-
+(nk-iterations)=
 ## Newton–Kantorovich iterations
 
 Main idea: apply Newton-Raphson method to the fixed point equation $EV = \Gamma(EV)$
@@ -523,8 +548,9 @@ Let $n$ denote the number of state points (in mileage).
 - the Fréchet derivative $I-\Gamma'$ is an $n \times n$ Jacobian matrix
 
 NK iterations on finite approximations are therefore solving a
-system of $n$ equations with $n$ unknowns with Newton's method — see Class 5 — in $n$ dimensions
+system of $n$ equations with $n$ unknowns with Newton's method — see [Class 5](5_solvers.md#multivariate-newton) — in $n$ dimensions
 
+(zurcher-bellman-matrix)=
 ### Matrix expression for the finite approximation of the Bellman operator
 
 On the grid, the sum over future states is a matrix product:
@@ -543,6 +569,7 @@ $$
 Only $\Pi(d=0)$ appears: replacing sends every bus to the first row, which is why the
 replacement value uses the single element $EV[0]$.
 
+(zurcher-frechet)=
 ### Implementation of the Fréchet derivative
 
 With the finite approximation of the Bellman operator
@@ -653,12 +680,13 @@ Algorithm:
   4. Repeat from 2 until ||EV_{k+1} - EV_k|| < tolerance
 ```
 
+(zurcher-model-class)=
 The model class below follows the course architecture: the model object holds the
 parameters and builds the transition matrix — assigning `n` or `p` rebuilds the grid
 and the matrix, so the object is never out of date — `bellman()` is the operator with
 an optional Fréchet derivative, and three solvers share the `(maxiter, tol, callback)`
 signature. Every solver also accepts a starting point `ev0`; it defaults to zeros here,
-and on Thursday the estimator will pass the previous solution instead. Parameter
+and [on Thursday](10_nfxp.md#nfxp-estimation) the estimator will pass the previous solution instead. Parameter
 values are the estimates from Rust (1987), with mileage measured in thousands and the
 maintenance cost linear in it. This is the class in `zurcher.py` of the code
 repository, which the rest of the course imports.
@@ -915,6 +943,7 @@ print('Max diff between value functions is ' ,np.amax(np.abs(ev1-ev2)))
 print('Max diff between policy functions is',np.amax(np.abs(pk1-pk2)))
 ```
 
+(poly-algorithm)=
 ### Poly-algorithm
 
 The NK method may not be convergent at the initial point, whereas successive
@@ -970,7 +999,7 @@ ev,pk = m.solve_show(tol=1e-10,verbosity=2,solver='poly',**polyset)
 
 At Rust's original $\beta = 0.9999$ pure VFI would need tens of thousands of iterations,
 and the poly-algorithm solves the model in milliseconds — which is what makes it
-possible to put the solver inside a likelihood on Thursday:
+possible to put the solver inside a likelihood [on Thursday](10_nfxp.md#nfxp-estimation):
 
 ```{code-cell} python3
 # original parameters from Rust 1987
@@ -995,46 +1024,9 @@ ev,pk = m.solve_show(tol=1e-10,solver='poly',**polyset)
   what in the code?
 :::
 
-(task9.1)=
-````{danger} Homework: the bus engine model under the hood
-
-This is a graded homework assignment.
-
-The notebook `tasks/zeta_zurcher/` in the class repository carries the model class of
-this class and the steps to take:
-
-```bash
-git pull upstream main                              # collect the task
-cp -r tasks/zeta_zurcher solutions/zeta_zurcher     # work on the copy
-```
-
-1. Verify the Fréchet derivative: compare `dev1` returned by `bellman()` to a finite
-   difference approximation of $\partial\Gamma/\partial EV$ at a random point, and report
-   the maximum absolute discrepancy.
-2. Break NK: at $\beta = 0.9999$ start `solve_nk` from $EV_0 = 0$ and from a few other
-   starting points, such as a large constant or random noise. Record where it converges,
-   where it diverges or stalls, and how many SA steps the poly-algorithm needs before its
-   NK steps succeed from the same points.
-3. Ergodic distribution: under the optimal policy the mileage follows a Markov chain
-   with transition matrix $\bar{\Pi} = \text{diag}(P)\,\Pi(d=0) + \text{diag}(\bar P)\,\Pi(d=1)$.
-   Compute its stationary distribution and plot it against the replacement
-   probability on the same mileage grid. This is the distribution of the data the model
-   generates, and we simulate from it on Thursday.
-
-The code shown in this class is `session09-sep22/zurcher.ipynb` in the code
-repository, which is worth having beside you while you work:
-
-```bash
-cd sb-dse-code && git pull
-```
-
-Remember to follow the git workflow <https://dse.iskh.me/workflow/#submission> to submit
-your solution.
-````
-
-(9_zurcher_references)=
 ````{note} References and additional resources
 
+(9_zurcher_references)=
 - 📖 {cite:t}`rustOptimalReplacementGMC1987` "Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher"
 - 📖 {cite:t}`rustNestedFixedPoint2000` "Nested Fixed Point Algorithm Documentation Manual", version 6 {download}`Download pdf <_static/pdf/nfxp_man_2000.pdf>`
 - 📖 John Rust "NFXP Pocket Guide" {download}`Download pdf <_static/pdf/nfxp.pdf>`

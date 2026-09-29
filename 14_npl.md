@@ -1,27 +1,51 @@
 ---
 title: 📖 Nested pseudo-likelihood (NPL)
 short_title: 📖 NPL
-subtitle: Class 13 — Tuesday, October 6
-exports:
-  - format: typst
-    output: exports/13_npl.pdf
+subtitle: Class 14 — Thursday, October 8
 downloads:
-  - file: 13_npl.md
+  - file: 14_npl.md
     title: MyST Markdown
 kernelspec:
   name: python3
   display_name: Python 3
 ---
 
-:::{div}
-:class: homework-link
-[Homework: pseudo-likelihood and NPL on the bus engine model](#task13.1)
-:::
-
-The two-step estimator of Class 11 trades efficiency for never solving the model, and
+The [two-step estimator of Class 12](12_ccp.md#ccp-estimation) trades efficiency for never solving the model, and
 NFXP trades the other way. {cite:t}`aguirregabiriaSwappingNestedFixed2002` put the two
 on one line: rewrite the Bellman equation as a fixed point in the space of choice
 probabilities, and iterate on it only as many times as the data deserve.
+
+````{danger} Homework theta_npl: pseudo-likelihood and NPL on the bus engine model
+:class: dropdown
+
+(homework-theta_npl)=
+Graded homework: task `theta_npl` in the class repository. Collect it and work on a
+copy in your own repository:
+
+```bash
+git pull upstream main                     # collect the task
+cp -r tasks/theta_npl solutions/theta_npl  # work on the copy
+```
+
+The notebook in the task folder carries the model class, the simulator and the [NFXP estimator of Class 10](10_nfxp.md). The steps:
+
+1. Implement the operator $\Psi(P,\theta)$ for the Zurcher model: the correction terms
+   $e(d)$, the policy evaluation $\varphi(P)$ as a linear solve, and the logit
+   $\Lambda$. Verify that the model's own choice probabilities from the solver are a
+   fixed point of $\Psi$ at the true parameters.
+2. Write the pseudo-likelihood $\ell_n(\theta)$ for $\theta = (RC,\theta_1)$ given
+   frequency-estimated CCPs on simulated data, and maximize it. Compare the estimate
+   and its standard errors to NFXP on the same sample.
+3. Implement the NPL iterations and record $\hat\theta_K$ and
+   $\|\hat P_K - \hat P_{K-1}\|$ for $K = 1,2,\dots$ until convergence. Plot the path of
+   the estimates against the NFXP estimate, and count solver-equivalent operations for
+   both methods.
+4. Repeat 2–3 on a panel ten times smaller. Report which $K$ removes most of the
+   finite sample bias, and whether the iterations still converge.
+
+Submit it as a pull request, following the [git workflow](2_workflow.md#submission). One of you presents a solution at the
+start of the next Tuesday class.
+````
 
 ## From value space to probability space
 
@@ -86,7 +110,7 @@ $$
 $$
 
 be the $|X|\times|X|$ *unconditional* transition matrix, the same Markov chain whose
-stationary distribution was computed in the homework of Class 9, and denote by $I$
+stationary distribution was computed in homework [`zeta_zurcher`](9_zurcher.md#homework-zeta_zurcher), and denote by $I$
 again the identity matrix of the same size. Then the linear system solves as
 
 $$
@@ -111,8 +135,7 @@ $$
 \Lambda: \mathbb{R}^{|X|} \ni V_\sigma \mapsto \{P(d|x)\} \in \mathbb{R}^{|X|\times|D|}
 $$
 
-the mapping from the integrated value functions to the CCPs given by the choice
-probability formulas of Class 11, which in the simple EV1 case take the form of the
+the mapping from the integrated value functions to the CCPs given by the [choice probability formulas of Class 12](12_ccp.md#ccp-choice-probabilities), which in the simple EV1 case take the form of the
 multinomial logit
 
 $$
@@ -150,8 +173,7 @@ approximations $P_{k+1} = \Psi(P_k,\theta)$ converge as fast as policy iteration
 
 - $\varphi$ needs $e(d)$, and $e(d)$ needs $\log P(d|x)$. What does $\Psi$ do with a
   CCP vector that has a zero in it?
-- $\Psi$ inverts an $|X|\times|X|$ matrix. Compare its cost to one Newton–Kantorovich
-  step of Class 9. Is that a coincidence?
+- $\Psi$ inverts an $|X|\times|X|$ matrix. Compare its cost to one Newton–Kantorovich step of [Class 9](9_zurcher.md#nk-iterations). Is that a coincidence?
 :::
 
 ## Pseudo-maximum likelihood estimation
@@ -172,8 +194,7 @@ $$
 $$
 
 The pseudo-likelihood is the likelihood of a model that has been solved for one policy
-iteration only, starting from the data. The resulting algorithm is a two-step
-estimator in the sense of Class 11, with a particular choice of criterion:
+iteration only, starting from the data. The resulting algorithm is a two-step estimator in the sense of [Class 12](12_ccp.md#ccp-estimation), with a particular choice of criterion:
 
 ```
 Input: panel data (x_it, d_it)
@@ -189,7 +210,7 @@ Every evaluation of $\ell_n(\theta)$ costs one application of $\Psi$, which is o
 linear solve, instead of a full solution of the model. Because $\hat{P}$ is held fixed
 inside the maximization, the gradient of $\ell_n(\theta)$ is the gradient of a static
 logit with the value function differences $\beta\Pi(d)\varphi(\hat P)$ treated as a
-fixed regressor, and BHHH from Class 10 applies unchanged.
+fixed regressor, and [BHHH from Class 10](10_nfxp.md#bhhh) applies unchanged.
 
 Where it breaks: exactly where the two-step estimator breaks. The criterion is a
 likelihood only in name, since the probabilities are computed at $\hat{P}$ and not at
@@ -245,7 +266,7 @@ Stopping the iteration after $K$ steps gives a whole class of estimators, which
 estimators**. They bridge the gap between the two-step CCP estimator and NFXP:
 
 - $K=1$ is the pseudo-maximum likelihood estimator above, and with a frequency
-  first stage it coincides with the Hotz–Miller estimator of Class 11
+  first stage it coincides with the [Hotz–Miller estimator of Class 12](12_ccp.md#ccp-estimation)
 - every $K$-stage estimator is $\sqrt{n}$-consistent and asymptotically normal, with a
   known variance-covariance matrix, so standard inference applies at any $K$
 - for $K \geqslant 2$ the estimators are asymptotically equivalent to the MLE, and the
@@ -257,7 +278,7 @@ The trade-off is between finite sample precision and computational cost. In the 
 Carlo of {cite:t}`aguirregabiriaSwappingNestedFixed2002` on Rust's bus model the
 first stage is noisy, the second stage removes most of the finite sample bias, and the
 full NPL fixed point is reached in a handful of iterations at 5 to 10 times the speed of
-NFXP, though NFXP in that comparison ran without the poly-algorithm of Class 9.
+NFXP, though NFXP in that comparison ran without the [poly-algorithm of Class 9](9_zurcher.md#poly-algorithm).
 
 Where it breaks: the NPL iterations are successive approximations on
 $(\theta,P) \mapsto (\hat\theta(P), \Psi(P,\hat\theta(P)))$, and nothing guarantees
@@ -280,40 +301,9 @@ part of the course returns to the question of which fixed point an estimator fin
   points at $\hat\theta$, which one does the data pick?
 :::
 
-(task13.1)=
-````{danger} Homework: pseudo-likelihood and NPL on the bus engine model
-
-This is a graded homework assignment.
-
-The notebook `tasks/theta_npl/` in the class repository carries the model class, the
-simulator and the NFXP estimator of Class 10 and the steps to take:
-
-```bash
-git pull upstream main                              # collect the task
-cp -r tasks/theta_npl solutions/theta_npl           # work on the copy
-```
-
-1. Implement the operator $\Psi(P,\theta)$ for the Zurcher model: the correction terms
-   $e(d)$, the policy evaluation $\varphi(P)$ as a linear solve, and the logit
-   $\Lambda$. Verify that the model's own choice probabilities from the solver are a
-   fixed point of $\Psi$ at the true parameters.
-2. Write the pseudo-likelihood $\ell_n(\theta)$ for $\theta = (RC,\theta_1)$ given
-   frequency-estimated CCPs on simulated data, and maximize it. Compare the estimate
-   and its standard errors to NFXP on the same sample.
-3. Implement the NPL iterations and record $\hat\theta_K$ and
-   $\|\hat P_K - \hat P_{K-1}\|$ for $K = 1,2,\dots$ until convergence. Plot the path of
-   the estimates against the NFXP estimate, and count solver-equivalent operations for
-   both methods.
-4. Repeat 2–3 on a panel ten times smaller. Report which $K$ removes most of the
-   finite sample bias, and whether the iterations still converge.
-
-Remember to follow the git workflow <https://dse.iskh.me/workflow/#submission> to submit
-your solution.
-````
-
-(13_npl_references)=
 ````{note} References and additional resources
 
+(14_npl_references)=
 - 📖 {cite:t}`aguirregabiriaSwappingNestedFixed2002` "Swapping the Nested Fixed Point Algorithm: A Class of Estimators for Discrete Markov Decision Models"
 - 📖 {cite:t}`aguirregabiriaSequentialEstimationDynamic2007` "Sequential Estimation of Dynamic Discrete Games"
 - 📖 {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` "Conditional Choice Probabilities and the Estimation of Dynamic Models"

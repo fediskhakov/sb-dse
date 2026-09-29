@@ -2,9 +2,6 @@
 title: 📖 Introduction to structural estimation
 short_title: 📖 Introduction
 subtitle: Class 1 — Tuesday, August 25
-exports:
-  - format: typst
-    output: exports/1_intro.pdf
 downloads:
   - file: 1_intro.md
     title: MyST Markdown
@@ -542,9 +539,9 @@ Other estimation approaches:
 {download}`Download complete slide deck <_static/pdf/eqb_ESAM.pdf>`
 ````
 
-(1_intro_references)=
 ````{note} References and additional resources
 
+(1_intro_references)=
 - 📖 "Economic Theory and Measurement: A Twenty Year Research Report, 1932–1952",
   report by the Cowles Commission, University of Chicago, 1952
   — [download pdf](https://cowles.yale.edu/sites/default/files/2022-08/r1932-52.pdf)

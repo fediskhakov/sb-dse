@@ -55,9 +55,11 @@ How many days have I spent on Long Island before coming to this lecture?
 (schedule)=
 ## 📆 Course outline
 
-Seven parts over 15 weeks, including two of project presentations.
+Five parts over 15 weeks, including two of project presentations.
 Each class may combine theory with live code.
-Homework is discussed at the start of the class that follows it on rotating basis.
+From September 29 on, Tuesdays are practical sessions and Thursdays are theory.
+Homework is given on Thursday, and one of you presents a solution at the start of the
+following Tuesday, on a rotating basis.
 
 The plan below is provisional and will be adjusted as we go.
 
@@ -78,27 +80,26 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Sep 17 | [Contraction mappings, infinite horizon, value function iterations](8_dp_infinite.md) |
 | Tue Sep 22 | [The Rust bus engine replacement model and Newton-Kantorovich](9_zurcher.md) |
 | Thu Sep 24 | [Nested fixed point estimation (NFXP)](10_nfxp.md) |
-| Tue Sep 29 | [Conditional choice probabilities, identification and two-step estimator](11_ccp.md) |
-| Thu Oct 1 | Estimation of Zurcher model with two step CCP estimator |
-| Tue Oct 6 | [Nested pseudo-likelihood (NPL)](13_npl.md) |
-| Thu Oct 8 | Mathematical programming with equilibrium constraints (MPEC) |
+| Tue Sep 29 | [Practical session on NFXP estimation](11_practical_nfxp.md) |
+| Thu Oct 1 | [Conditional choice probabilities, identification and two-step estimator](12_ccp.md) |
+| Tue Oct 6 | Estimation of Zurcher model with two step CCP estimator **@ 11:30 instead of 9:30** |
+| Thu Oct 8 | [Nested pseudo-likelihood (NPL)](14_npl.md) |
 | Tue Oct 13 | *Fall break — no class* |
 | | **Part III — Continuous choice and simulation-based estimation** |
 | Thu Oct 15 | Cake eating on a grid; function approximation |
 | Tue Oct 20 | The same model solved many ways — accuracy and speed compared |
-| Thu Oct 22 | The endogenous gridpoint method and consumption-savings models |
+| Thu Oct 22 | The endogenous gridpoint methods |
 | Tue Oct 27 | DC-EGM for discrete-continuous choice |
 | Thu Oct 29 | Method of simulated moments |
+| Tue Nov 3 | Simulation-based estimation of a consumption-savings-retirement model |
 | | **Part IV — Equilibrium models** |
-| Tue Nov 3 | Micro-founded equilibrium models — equilibrium trade in used cars &nbsp;·&nbsp; **project proposal due** |
-| Thu Nov 5 | Doubly nested fixed point estimation &nbsp;·&nbsp; **project clinic** |
+| Thu Nov 5 | Micro-founded equilibrium models — equilibrium trade in used cars &nbsp;·&nbsp; **project proposal due** |
+| Tue Nov 10 | Implementation of the doubly NFXP estimation &nbsp;·&nbsp; **project clinic** |
 | | **Part V — Games** |
-| Tue Nov 10 | Static games of incomplete information and multiplicity of equilibria |
-| Thu Nov 12 | Dynamic entry games and their estimation |
-| Tue Nov 17 | Directional dynamic games — finding *all* equilibria |
-| Thu Nov 19 | Estimation of directional dynamic games |
-| | **Part VI — Guest lecture and project presentations** |
-| Tue Nov 24 | Guest lecture — speaker and topic to be announced |
+| Thu Nov 12 | Static games of incomplete information and multiplicity of equilibria |
+| Tue Nov 17 | Mathematical programming with equilibrium constraints (MPEC) |
+| Thu Nov 19 | Directional dynamic games — finding *all* equilibria |
+| Tue Nov 24 | Estimation of directional dynamic games |
 | Thu Nov 26 | *Thanksgiving — no class* |
 | Tue Dec 1 | Project presentations I |
 | Thu Dec 3 | Project presentations II; course wrap-up |
@@ -155,9 +156,9 @@ structural estimation project:
 
 The model may be one of your own interest, or an extension/modification of one of the models covered in class — the bus engine replacement model, the inventory management model, the consumption-savings model, or one of the entry games.
 
-**Project proposal** is due **Tuesday, November 3**, and should give a brief (max 2 pages) description of the project you intend to carry out together with a roadmap of the
+**Project proposal** is due **Thursday, November 5**, and should give a brief (max 2 pages) description of the project you intend to carry out together with a roadmap of the
 steps you intend to take. All proposals are discussed in the project clinic on
-**Thursday, November 5**.
+**Tuesday, November 10**.
 
 **Presentations** take place on **December 1 and 3**, approximately 30 minutes each,
 with room for a live demo of the solver and estimator code, not just slides.
@@ -186,7 +187,7 @@ Computers are expected in the lectures, you are encouraged to run the code examp
 
 The lecture notes are published at [dse.iskh.me](https://dse.iskh.me)
 and can be downloaded as a single PDF: [eco629-dynamic-structural-models.pdf](/eco629-dynamic-structural-models.pdf).
-Each chapter also carries a download menu with that chapter as PDF or MyST Markdown.
+Each chapter also carries a download menu with its MyST Markdown source.
 
 Tasks and exercise code are posted in the private repository `fediskhakov/sb-dse-class`, and you work in a private repository of your own, `fediskhakov/sb-dse-<your-username>`.
 Send me your `GitHub username` (register now if not yet) and I will set both up for you — see [](2_workflow.md#submission).

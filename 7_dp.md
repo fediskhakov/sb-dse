@@ -2,9 +2,6 @@
 title: 📖 Dynamic programming
 short_title: 📖 Dynamic programming
 subtitle: Class 7 — Tuesday, September 15
-exports:
-  - format: typst
-    output: exports/7_dp.pdf
 downloads:
   - file: 7_dp.md
     title: MyST Markdown
@@ -24,7 +21,7 @@ Every code example below is also a runnable notebook in the course **code reposi
 in the folder `session07-sep15/`.
 
 You should have cloned that repository already — if not, the instructions are in the
-[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
 
 Update your copy before the class. Editing a file in place makes `git pull` refuse to
 update it, so discard whatever you changed while experimenting:
@@ -40,6 +37,27 @@ want to keep out of it first, or commit that to a branch of your own.
 
 Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
+````
+
+````{danger} Homework epsilon_inventory: the inventory model with stochastic demand
+:class: dropdown
+
+(homework-epsilon_inventory)=
+Graded homework: task `epsilon_inventory` in the class repository. Collect it and work on a
+copy in your own repository:
+
+```bash
+git pull upstream main                                     # collect the task
+cp -r tasks/epsilon_inventory solutions/epsilon_inventory  # work on the copy
+```
+
+Implement the stochastic version set up in this chapter: truncated geometric demand,
+the value function on the $(x,d)$ grid, and backwards induction over the finite
+horizon. The notebook in the task folder carries the deterministic code of this class
+and the task to complete. The code of this class, `session07-sep15/inventory.ipynb` in
+the code repository, is worth having beside you while you work.
+
+Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](8_dp_infinite.md).
 ````
 
 ## What is dynamic programming?
@@ -88,7 +106,6 @@ where $\mathbb{E}_{\delta}$ denotes expectation with respect to the controlled s
 - The difficulty is that we are **looking for a set of functions** $\mathbf{\delta} = \{\delta_0,...,\delta_T\}$, not just for a set of numbers $\mathbf{d} = \{d_0,...,d_T\}$ 
 - DP simplifies the DDC problem, allowing us to find $\mathbf{\delta} = \{\delta_0,...,\delta_T\}$ using a recursive procedure. 
 
-
 ### Bellman's Principle of Optimality
 
 > An optimal policy has a property that whatever the initial state and
@@ -103,6 +120,7 @@ policy with regard to the state resulting from the first decision.
 - The solution can be computed through **backward induction**, i.e. solving a sequential decision problem from the later periods
 - Embodiment of the recursive way of modeling sequential decisions is **Bellman equation**
 
+(bellman-equation)=
 ## Bellman equation
 
 ````{attention} Definition
@@ -233,12 +251,11 @@ $$V(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}
 2. Stochastic models with idiosyncratic shocks
 
     - expectation does not have to be conditioned on current period shocks
-    - which opens a cheaper way of writing the fixed point, and we use it on Thursday
+    - which opens a cheaper way of writing the fixed point, and we use it [on Thursday](8_dp_infinite.md#ev-space-trick)
 
 3. General form stochastic models
 
     - expectation in Bellman equation has to be computed with quadrature or Monte Carlo integration
-
 
 ### Whether choice is part of the problem at all
 
@@ -333,7 +350,6 @@ for n in range(1, 20):
 ```
 ````
 
-
 :::{div}
 :class: discussion
 
@@ -345,7 +361,6 @@ For dynamic programming classification:
 - Which of the five questions changes the *solution method* you have to write, and which only changes the code that evaluates the payoff?
 - Where does the inventory model below sit in each of these classifications?
 :::
-
 
 ## Example: Inventory management model
 
@@ -409,7 +424,6 @@ When $d_t$ is stochastic the policy has to be a function of the period $t$ inven
 So, both $x_t$ and $d_t$ are taken into account for the new order to be
 made, forming the state space.
 
-
 $$
 \begin{array}{rcl}
 V(x_t,d_t) &=& \max_{q_t \ge 0} \Big\{ \pi_t + \beta \mathbb{E}\Big[ V\big(x_{t+1} , d_{t+1} \big) \Big| x_t,d_t,q_t \Big] \Big\} \\
@@ -424,7 +438,6 @@ s_t &=& \min\{x_t,d_t\} \\
 k_t &=& \max\{x_t-d_t,0\} + q_t
 \end{array}
 $$
-
 
 The expectation in the Bellman equation is taken over the distribution
 of the next period demand $d_{t+1}$, which we assume is independent of
@@ -448,7 +461,6 @@ V(x_t,d_t)
 \end{array}
 $$
 
-
 ## First deterministic demand
 
 Let's focus first on a deterministic case: let $d$ be fixed and constant over time. How does the Bellman equation change?
@@ -467,7 +479,6 @@ $$
 
 How does this convert to code? What is in rows, what is in columns?
 :::
-
 
 ```{code-cell} python3
 :tags: [hide-input]
@@ -535,8 +546,6 @@ print('Current profits\n',model.profit(model.x,model.demand,q))
 
 ```
 
-
-
 ## Backwards induction
 
 **Backwards induction algorithm** is used to solve finite horizon models
@@ -547,7 +556,6 @@ Solver for the finite horizon dynamic programming problems
 1. Start at t=T
 1. Solve Bellman equation at t, record optimal choice  
 1. Decrease t unless t=1, and return to previous step.  
-
 
 As result, for all t=1,..,T have found the optimal choice (as a function of state)
 ```
@@ -738,8 +746,6 @@ fixed weights.
   combination of them? Look at the timing of events again.
 :::
 
-
-
 ## Origin of the term *Dynamic Programming*
 
 > The 1950's were not good years for mathematical research. We had a very interesting gentleman in Washington named Wilson. He was Secretary of Defence, and he actually had a pathological fear and hatred of the word "research".
@@ -762,37 +768,9 @@ not even a Congressman could object to. So I used it as an umbrella for my activ
 > 
 > --- 📖 Bellman's autobiography "The Eye of the Hurricane"
 
-(task7.1)=
-````{danger} Homework: the inventory model with stochastic demand
-
-This is a graded homework assignment.
-
-Implement the stochastic version set up above: truncated geometric demand, the value
-function on the $(x,d)$ grid, and backwards induction over the finite horizon. The
-notebook `tasks/epsilon_inventory/` in the class repository carries the deterministic
-code of this class and the task to complete.
-
-```bash
-git pull upstream main                                    # collect the task
-cp -r tasks/epsilon_inventory solutions/epsilon_inventory # work on the copy
-```
-
-The code shown in this class is `session07-sep15/inventory.ipynb` in the code
-repository, which is worth having beside you while you work:
-
-```bash
-cd sb-dse-code && git pull
-```
-
-Remember to follow the git workflow <https://dse.iskh.me/workflow/#submission> to submit
-your solution.
-
-````
-
-
-(7_dp_references)=
 ````{note} References and additional resources
 
+(7_dp_references)=
 - 📖 {cite:t}`Rust2016` "Dynamic programming", The New Palgrave Dictionary of Economics
 - 📖 {cite:t}`sargent2025DynamicProgrammingFinite` "Dynamic Programming: Finite States"
 - Online version of the same book on [dp.quantecon.org](https://dp.quantecon.org)

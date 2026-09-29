@@ -2,9 +2,6 @@
 title: "🔬 Coding static discrete choice"
 short_title: 🔬 Static logit
 subtitle: Class 6 — Thursday, September 10
-exports:
-  - format: typst
-    output: exports/6_logit.pdf
 downloads:
   - file: 6_logit.md
     title: MyST Markdown
@@ -28,7 +25,7 @@ repository**. Today is a practical, so that folder holds the pre-code skeleton w
 in together, and the completed version appears there afterwards.
 
 You should have cloned that repository already — if not, the instructions are in the
-[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
 
 Update your copy before the class. Editing a file in place makes `git pull` refuse to
 update it, so discard whatever you changed while experimenting:
@@ -74,6 +71,7 @@ Two implications, used below for identification and, immediately, for numerics.
    - the variance of the random component is a normalization, not a parameter
    - it returns below as the scale parameter $\sigma$
 
+(probabilistic-choice)=
 ## Probabilistic choice
 
 Now assume that the DM has private information $\epsilon$ that the econometrician does not observe, and assume that it enters additively separably in the utility:
@@ -138,6 +136,7 @@ $$P(d|x) = \frac{\exp v(d,x)}{\sum_{d' \in D(x)} \exp v(d',x)}$$
 The logit structure thus comes out with no distributional assumption anywhere, and
 without specifying $v(d,x)$ at all.
 
+(max-stability)=
 ## Extreme value distribution and max-stability
 
 Luce's structure comes out of a RUM when the unobserved components have the type I
@@ -239,9 +238,9 @@ $$d^*(x,\epsilon)= \arg\max_{d \in D(x)} [u(x,d)+\epsilon(d)], \; \epsilon(d) \s
 The direct derivation — condition on $\epsilon(d)$, use max-stability for the rest, then
 substitute $t = -\exp(-\xi)$ — is in the reading. The general route for any RUM:
 
-(wdz-theorem)=
 ````{attention} Definition
 
+(wdz-theorem)=
 **Williams–Daly–Zachary theorem.** For a RUM with an absolutely continuous distribution
 of the random terms,
 
@@ -388,6 +387,7 @@ with np.errstate(over='ignore', invalid='ignore'):
     print('naive :', logit_naive(v))
 ```
 
+(demaxing)=
 ## De-maxing
 
 The fix follows from the fact that only utility *differences* matter. For any constant
@@ -443,6 +443,7 @@ The de-maxed version returns the same numbers a hand calculation would: utility
 differences of $1$ and $2$ give probabilities $0.245, 0.665, 0.090$ regardless of the
 level $1000$.
 
+(log-of-probability)=
 ## Never take the log of a probability
 
 The log-likelihood needs $\log P_i$, and the obvious `np.log(logit(v))` is a bad idea:
@@ -627,7 +628,7 @@ project later in the semester, has the same six parts:
 2. a **solver** that maps parameters into the model solution
 3. a **simulator** that generates data from a solved model
 4. a **graphical module** that shows what the model and the data look like
-5. an **estimator** that recovers parameters from data (from the NFXP class onwards)
+5. an **estimator** that recovers parameters from data (from the [NFXP class](10_nfxp.md) onwards)
 6. a **counterfactual simulator** that changes something and re-solves (later still)
 
 Keep these separate from the *run scripts* that call them. A run script is throwaway; the
@@ -977,9 +978,9 @@ mF = model(nalt=nalt, nattr=nattr, attr=attr, param=mA.param, util_type='log', l
 compare([mA, mF])
 ```
 
-(task6.1)=
-````{warning} Practical task 6.1: a static logit model, end to end
+````{warning} Practical task: a static logit model, end to end
 
+(task-logit)=
 We write this code together in class, starting from the pre-code skeleton
 `session06-sep10/logit_pre.ipynb`. **Pull the code repository before the class:**
 
@@ -1022,13 +1023,13 @@ because the same skeleton is reused for the dynamic models later in the course.
 13. Do your answers to 9–12 change in the log utility specification?
 
 Use of AI assistance is allowed and encouraged, subject to the
-[course AI policy](https://dse.iskh.me/#ai-policy) — but you must be able to explain
+[course AI policy](index.md) — but you must be able to explain
 every line, including why the max is subtracted.
 ````
 
-(6_logit_references)=
 ````{note} References and additional resources
 
+(6_logit_references)=
 - 📖 {cite:t}`train2009DiscreteChoiceMethods` "Discrete Choice Methods with Simulation",
   chapters 2–3 for logit and IIA, chapter 4 for GEV
   [online book](https://eml.berkeley.edu/books/choice2.html)

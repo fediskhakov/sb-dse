@@ -2,9 +2,6 @@
 title: 📖 Algorithms and complexity
 short_title: 📖 Complexity of algorithms
 subtitle: Class 3 — Tuesday, September 1
-exports:
-  - format: typst
-    output: exports/3_algo.pdf
 downloads:
   - file: 3_algo.md
     title: MyST Markdown
@@ -18,10 +15,10 @@ a likelihood, finding all equilibria of a game — is limited by how fast the in
 loop runs. This class is about what makes an algorithm fast, and how to tell before
 you write it.
 
-(clone-code-repo)=
 ````{hint} Running the code for this lecture
 :class: dropdown
 
+(clone-code-repo)=
 Every code example below is also a runnable notebook in the course **code
 repository**.
 
@@ -47,6 +44,23 @@ git reset --hard HEAD
 ```
 Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
+````
+
+````{danger} Homework gamma_compositions: compositions and complexity
+:class: dropdown
+
+(homework-gamma_compositions)=
+Graded homework: task `gamma_compositions` in the class repository. Collect it and work on a
+copy in your own repository:
+
+```bash
+git pull upstream main                                       # collect the task
+cp -r tasks/gamma_compositions solutions/gamma_compositions  # work on the copy
+```
+
+Write your own composition generator and measure its complexity empirically.
+
+Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](4_recursion.md).
 ````
 
 ## Writing programs that work fast
@@ -356,6 +370,7 @@ plt.title("Run times for binary search as function of the LOG of array length",f
 plt.show()
 ```
 
+(big-o)=
 ## Rate of growth and big-O notation
 
 A very useful way to talk about the rate of growth $\leftrightarrow$ complexity of
@@ -462,7 +477,6 @@ One caveat in this practical test is that the complexity is measured at the limi
 Points 1 and 2 are what this course is about.
 ````
 
-
 ## Theoretical analysis of algorithm complexity
 
 Essentially boils down to counting the number of operations as a function of the input size $n$, and then analyzing the limiting behavior of that function.
@@ -471,9 +485,9 @@ It is important to properly define what is meant by an "operation" — in princi
 
 Second important component is to define the input size $n$ — for example, the number of elements in a list, or the number of bits in an integer.
 
-(task2.1)=
 ````{warning} Practical task: by-hand computation of algorithm complexity
 
+(task-complexity-by-hand)=
 Go back to the two algorithms of computing the value of a polynomial in the beginning of this lecture.
 
 Assume that the power is computed by repeated multiplication of $x$ i.e. $x^k = x \cdot x \cdot ... \cdot x$ and so $x^n$ requires $n-1$ multiplications.
@@ -539,7 +553,6 @@ method, and no algorithm can do better than $O(n)$ here — every coefficient ha
 read at least once.
 `````
 
-
 ## Classes of computational complexity 
 
 Theoretical computer science has a well-developed framework for classifying problems by their complexity.
@@ -563,7 +576,6 @@ Unresolved question of whether **P = NP** or **P** $\ne$ **NP** (\$1 mln. prize 
 the Clay Mathematics Institute)
 
 ![Complexity classes](_static/img/complexity_classes.png)
-
 
 ## Optimal allocation of a discrete good
 
@@ -614,7 +626,6 @@ composition of $M$ into $n$ parts.*
 - What is total number of compositions of $M$ into $n$ parts?
 :::
 
-
 ````{tip} The number of compositions
 :class: dropdown
 
@@ -630,7 +641,6 @@ This is the
 curse of dimensionality arriving in a problem that looked entirely innocent — nothing
 about "split a good between agents" hints that adding one more agent could double the
 work.
-
 
 ### The enumeration algorithm
 
@@ -687,24 +697,9 @@ Here is the list of all compositions of 5 into 3 parts:
 for c in compositions(5,3) : print(c)
 ```
 
-
-(task2.2)=
-````{danger} Homework: compositions and complexity
-
-This is a graded homework assignment.
-
-Write your own composition generator and measure its complexity empirically — task
-`gamma_compositions` in the class repository. 
-We will discuss the solutions at the start of the next class.
-
-Remember to follow the [git workflow](#submission) to submit your solution. Assuming you have already cloned and set up the class repository, you only have to do the steps for [each assignment](#each_assignment).
-
-````
-
-
-(3_algo_references)=
 ````{note} References and additional resources
 
+(3_algo_references)=
 - 📖 {cite:t}`wilf2002AlgorithmsComplexity` "Algorithms and Complexity"
   — [pdf of the book](https://www2.math.upenn.edu/~wilf/AlgoComp.pdf)
 

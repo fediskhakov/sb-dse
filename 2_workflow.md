@@ -9,9 +9,6 @@ authors:
       - Stony Brook University
   - name: Claude Code
     url: https://claude.com/claude-code
-exports:
-  - format: typst
-    output: exports/2_workflow.pdf
 downloads:
   - file: 2_workflow.md
     title: MyST Markdown
@@ -394,7 +391,7 @@ Every notebook commit then fails until you reinstall it.
 (ai)=
 ## AI coding assistants
 
-This course is AI-friendly: see the [AI policy](https://dse.iskh.me/#ai-policy) on the front
+This course is AI-friendly: see the [AI policy](index.md) on the front
 page. The policy is short — *you are responsible for everything you submit, and you
 must understand every line* — and it is examined orally.
 You also must disclose the use of AI assistants beyond text editing: see the [disclosure policy](#disclosure-policy) below.
@@ -497,7 +494,7 @@ increasingly journal policy. A complete disclosure is short:
 
 Disclosure changes nothing about responsibility. The work is yours, the errors are
 yours, and the oral exam is about your understanding of every line you submit —
-[see the AI policy](https://dse.iskh.me/#ai-policy). Disclosure exists so that we can talk about *how* you
+[see the AI policy](index.md). Disclosure exists so that we can talk about *how* you
 worked, which is a subject of this course in its own right.
 
 :::{div}
@@ -680,8 +677,9 @@ usually the more instructive case.
   than text editing
 ```
 
-````{warning} Practical task
+````{warning} Practical task: setting up the work environment
 
+(task-work-environment)=
 1. Install Python with uv (or Miniforge) and confirm `import numpy, scipy, sympy`
    works
 2. Enable two-factor authentication on GitHub and add an SSH key

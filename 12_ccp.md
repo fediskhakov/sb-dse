@@ -1,22 +1,14 @@
 ---
 title: 📖 Conditional choice probabilities, identification and two-step estimator
 short_title: 📖 CCP estimation
-subtitle: Class 11 — Tuesday, September 29
-exports:
-  - format: typst
-    output: exports/11_ccp.pdf
+subtitle: Class 12 — Thursday, October 1
 downloads:
-  - file: 11_ccp.md
+  - file: 12_ccp.md
     title: MyST Markdown
 kernelspec:
   name: python3
   display_name: Python 3
 ---
-
-:::{div}
-:class: homework-link
-[Homework: recovering value differences from choice data](#task11.1)
-:::
 
 NFXP solves the model inside every likelihood evaluation. This class turns the
 argument around: the conditional choice probabilities (CCPs) observed in the data pin
@@ -24,10 +16,42 @@ down the value function differences, so the model can be estimated without ever
 solving it. The same result of {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` also
 says exactly what the data can and cannot identify.
 
+````{danger} Homework eta_ccp: recovering value differences from choice data
+:class: dropdown
+
+(homework-eta_ccp)=
+Graded homework: task `eta_ccp` in the class repository. Collect it and work on a
+copy in your own repository:
+
+```bash
+git pull upstream main                 # collect the task
+cp -r tasks/eta_ccp solutions/eta_ccp  # work on the copy
+```
+
+The notebook in the task folder carries the model class and the simulator of [Class 10](10_nfxp.md).
+The steps:
+
+1. Simulate a panel from the Zurcher model at known parameters, and estimate the CCPs
+   $P(\text{replace}|x)$ by frequency counts on the mileage grid. Plot them against the
+   model's own $P(\text{replace}|x)$ from the solver, and mark the grid points that are
+   never visited.
+2. Apply the logit inverse map to recover $\Delta v(x)$ from the estimated CCPs, and
+   compare to the value differences from the solver. Report where the two disagree and
+   explain why in terms of the first-stage sample sizes per state.
+3. Compute $\psi(x,d_0)$ and the integrated value function
+   $V^\sigma = [I - \beta \Pi(d_0)]^{-1}\psi(d_0)$ from the first-stage estimates alone,
+   and compare to the solver's $V^\sigma(x)$.
+4. Repeat 1–3 with a panel ten times smaller and ten times larger, and report how the
+   discrepancies scale.
+
+Submit it as a pull request, following the [git workflow](2_workflow.md#submission). One of you presents a solution at the
+start of the next Tuesday class.
+````
+
 ## Integrated $\ne$ expected value function
 
 Maintain the setup of the Zurcher engine replacement model of
-{cite:t}`rustOptimalReplacementGMC1987` from Class 9, leaning to more generality. The
+{cite:t}`rustOptimalReplacementGMC1987` from [Class 9](9_zurcher.md), leaning to more generality. The
 Bellman equation of the Zurcher problem is
 
 $$V(x,\varepsilon) = \max_{d\in D(x)} \Big\{ \underbrace{u(x,d) + \beta
@@ -62,34 +86,34 @@ conditional value function, and $EV(x,d)$ is commonly referred to as the **expec
 value function** and sometimes as the ex-post value function.
 
 Here is a new object and yet another representation. The **integrated value function**
-$V_\sigma(x)$, also known as the ex-ante value function, is the value function with the
+$V^\sigma(x)$, also known as the ex-ante value function, is the value function with the
 taste shock integrated out,
 
 $$
-V_\sigma(x) = \int_{\Omega} V(x,\varepsilon) q(\varepsilon|x) d\varepsilon,
+V^\sigma(x) = \int_{\Omega} V(x,\varepsilon) q(\varepsilon|x) d\varepsilon,
 \qquad
-EV(x,d) = \int_{X} V_\sigma(x') \pi(x'|x,d) dx'
+EV(x,d) = \int_{X} V^\sigma(x') \pi(x'|x,d) dx'
 $$
 
 The subscript $\sigma$ follows the notation of
 {cite:t}`aguirregabiriaSequentialEstimationDynamic2007`, who define it as the value
 function under a strategy profile $\sigma$.
 
-```{figure} _static/img/bellman_circle.jpg
+```{figure} _static/img/bellman_circle.png
 :width: 80%
 :align: center
 
-The Bellman circle of value functions: plain value function $V(x,\varepsilon)$, integrated value function $V_\sigma(x)$, expected value function $EV(x,d)$ and choice-specific value function $v(x,d)$
+The Bellman circle of value functions: plain value function $V(x,\varepsilon)$, integrated value function $V^\sigma(x)$, expected value function $EV(x,d)$ and choice-specific value function $v(x,d)$
 ```
 
 We could write the Bellman equation in the space of integrated value functions
-$V_\sigma(x)$ by cutting the *circle of Bellman* at a different point:
-$V(x,\varepsilon) \rightarrow V_\sigma(x) \rightarrow EV(x,d) \rightarrow v(x,d) \rightarrow V(x,\varepsilon) \rightarrow \dots$
+$V^\sigma(x)$ by cutting the *circle of Bellman* at a different point:
+$V(x,\varepsilon) \rightarrow V^\sigma(x) \rightarrow EV(x,d) \rightarrow v(x,d) \rightarrow V(x,\varepsilon) \rightarrow \dots$
 The new representation of the Bellman equation is
 
 $$
-V_\sigma(x) = \int_{\Omega} \max_{d'\in D(x)} \Big\{ \underbrace{u(x,d') + \beta
-\int_{X} V_\sigma(x')
+V^\sigma(x) = \int_{\Omega} \max_{d'\in D(x)} \Big\{ \underbrace{u(x,d') + \beta
+\int_{X} V^\sigma(x')
 \pi(x'|x,d') dx'}_{v(x,d')}
 + \varepsilon_{d'} \Big\} q(\varepsilon|x) d\varepsilon
 =
@@ -99,13 +123,14 @@ $$
 
 This is the expectation of the maximum utility in a RUM with alternative utilities
 given by $v(x,d') + \varepsilon_{d'}$, which {cite:t}`mcfadden1974ConditionalLogitAnalysisa`
-called the **social surplus function** in Class 6. In the EV1 case max-stability gives
+called the **social surplus function** in [Class 6](6_logit.md#wdz-theorem). In the EV1 case max-stability gives
 it in closed form, with $\gamma \approx 0.5772$ the Euler–Mascheroni constant,
 
 $$
-V_\sigma(x) = \log \big( \sum_{d' \in D(x)} \exp[v(x,d')] \big) + \gamma
+V^\sigma(x) = \log \big( \sum_{d' \in D(x)} \exp[v(x,d')] \big) + \gamma
 $$
 
+(ccp-choice-probabilities)=
 ### Choice probabilities
 
 Recall that by the [Williams–Daly–Zachary theorem](6_logit.md#wdz-theorem) in the
@@ -116,7 +141,7 @@ $$
 P(d|x) = \frac{\partial}{\partial v(x,d)}
 \mathbb{E}\left\{\max_{d' \in D(x)} \big[ v(d',x) +\varepsilon(d') \big]\Big|x\right\}
 =
-\frac{\partial V_\sigma(x)}{\partial v(x,d)}
+\frac{\partial V^\sigma(x)}{\partial v(x,d)}
 $$
 
 and under the EV1 assumption the derivative of the logsum is the multinomial logit,
@@ -242,7 +267,7 @@ have closed-form expressions for the inverse map.
   $x$, and how likely is that with frequency estimates on the bus data?
 :::
 
-## Relationship between $V_\sigma(x)$, $v(x,d)$ and choice probabilities
+## Relationship between $V^\sigma(x)$, $v(x,d)$ and choice probabilities
 
 Recall that the choice probability $P(d|x)$ in the general case is simply the
 expectation of the indicator that a particular choice $d$ yields the maximum utility,
@@ -253,11 +278,11 @@ P(d|x)= \hbox{Prob}\left\{d = \arg\max_{d' \in D(x)} \{v(x,d')+\varepsilon_{d'}\
 \mathbb{E}\left[\left. I\left\{ d = \arg\max_{d' \in D(x)} \{v(x,d')+\varepsilon_{d'}\} \right\} \right|x \right]
 $$
 
-The expression for $V_\sigma(x)$ as the expected maximum can then be expanded using
+The expression for $V^\sigma(x)$ as the expected maximum can then be expanded using
 the *law of iterated expectations*, conditioning on which alternative is chosen:
 
 $$
-V_\sigma(x) = \int_{\Omega} \max_{d'\in D(x)} \left\{ v(x,d')
+V^\sigma(x) = \int_{\Omega} \max_{d'\in D(x)} \left\{ v(x,d')
 + \varepsilon_{d'} \right\} q(\varepsilon|x) d\varepsilon
 =
 \mathbb{E}\left[
@@ -318,7 +343,7 @@ random component conditional on the event that the alternative it is associated 
 has the highest value. We end up with
 
 $$
-V_\sigma(x) =
+V^\sigma(x) =
 \sum_{d \in D(x)} P(d|x)
 \big(
 v(x,d) + e(x,d)
@@ -329,7 +354,7 @@ We can make one more step, using the Hotz–Miller inversion with a reference al
 $d_0$, to arrive at
 
 $$
-V_\sigma(x) - v(x,d_0) =
+V^\sigma(x) - v(x,d_0) =
 \sum_{d \in D(x)} P(d|x)
 \big(
 \Delta v(x,d) + e(x,d)
@@ -368,8 +393,9 @@ $$
 where $N(d)$ is the set of alternatives in the same *nest* as $d$ and
 $\sigma\leqslant 1$ is the scale parameter within the nest. In the EV1 case
 $\psi(x,d_0) = \gamma - \log P(d_0|x)$: one line of algebra from the logsum, and the
-whole relationship between $V_\sigma$ and the CCPs is the logit formula read backwards.
+whole relationship between $V^\sigma$ and the CCPs is the logit formula read backwards.
 
+(ccp-identification)=
 ## Identification
 
 The previous results have immediate implications for **identification** of the model
@@ -389,27 +415,27 @@ into vectors over the state space $X$ we obtain
 
 $$
 v(d_0) =
-\underbrace{u(d_0)}_{=0} + \beta \Pi(d_0) V_\sigma
+\underbrace{u(d_0)}_{=0} + \beta \Pi(d_0) V^\sigma
 $$
 
-From the relationship between $V_\sigma(x)$ and $v(x,d)$ we have
-$V_\sigma - v(d_0) = \psi(d_0)$, and substituting,
+From the relationship between $V^\sigma(x)$ and $v(x,d)$ we have
+$V^\sigma - v(d_0) = \psi(d_0)$, and substituting,
 
 $$
-V_\sigma - \psi(d_0) = \beta \Pi(d_0) V_\sigma
+V^\sigma - \psi(d_0) = \beta \Pi(d_0) V^\sigma
 \implies
-V_\sigma = [I - \beta \Pi(d_0)]^{-1} \psi(d_0)
+V^\sigma = [I - \beta \Pi(d_0)]^{-1} \psi(d_0)
 $$
 
 This is an expression for the integrated value function that only depends on objects we
 can estimate in a first stage. To non-parametrically recover the utility function for
-the other actions, follow the same route from $v(d) = u(d) + \beta \Pi(d) V_\sigma$
-and $V_\sigma - v(d) = \psi(d)$,
+the other actions, follow the same route from $v(d) = u(d) + \beta \Pi(d) V^\sigma$
+and $V^\sigma - v(d) = \psi(d)$,
 
 $$
-V_\sigma - \psi(d) = u(d) + \beta \Pi(d) V_\sigma
+V^\sigma - \psi(d) = u(d) + \beta \Pi(d) V^\sigma
 \implies
-u(d) = -\psi(d) + [I - \beta \Pi(d)] V_\sigma
+u(d) = -\psi(d) + [I - \beta \Pi(d)] V^\sigma
 $$
 
 $$
@@ -470,6 +496,7 @@ tomorrow: after tomorrow both paths sit at mileage zero with the same continuati
 value, so it drops out of the difference.
 ````
 
+(ccp-estimation)=
 ## CCP-based estimation
 
 There are many estimation approaches based on the CCP representation of the dynamic
@@ -506,8 +533,8 @@ $\Delta v(x)$ implied by $\theta$ and the first-stage estimates are matched to t
 first-stage CCPs by a distance, a set of moments, or a likelihood. In the Zurcher model
 with the logit inverse map, step 1 is a frequency table of replacements by mileage bin,
 and step 2 is a static logit estimation with the future differenced out by finite
-dependence. This is what we code on Thursday, and the pseudo-likelihood versions of
-step 2 are the subject of Class 13.
+dependence. This is what we code next Tuesday, and the pseudo-likelihood versions of
+step 2 are the subject of [Class 14](14_npl.md).
 
 Where it breaks: the first-stage estimates enter the criterion function directly, so
 their sampling error is inherited by $\hat\theta$. With many states and a modest
@@ -542,39 +569,9 @@ research and applied work:
   {cite:t}`abbringIdentifyingDiscountFactor2020`, and further special cases and
   circumstances
 
-(task11.1)=
-````{danger} Homework: recovering value differences from choice data
-
-This is a graded homework assignment.
-
-The notebook `tasks/eta_ccp/` in the class repository carries the model class and the
-simulator of Class 10 and the steps to take:
-
-```bash
-git pull upstream main                              # collect the task
-cp -r tasks/eta_ccp solutions/eta_ccp               # work on the copy
-```
-
-1. Simulate a panel from the Zurcher model at known parameters, and estimate the CCPs
-   $P(\text{replace}|x)$ by frequency counts on the mileage grid. Plot them against the
-   model's own $P(\text{replace}|x)$ from the solver, and mark the grid points that are
-   never visited.
-2. Apply the logit inverse map to recover $\Delta v(x)$ from the estimated CCPs, and
-   compare to the value differences from the solver. Report where the two disagree and
-   explain why in terms of the first-stage sample sizes per state.
-3. Compute $\psi(x,d_0)$ and the integrated value function
-   $V_\sigma = [I - \beta \Pi(d_0)]^{-1}\psi(d_0)$ from the first-stage estimates alone,
-   and compare to the solver's $V_\sigma(x)$.
-4. Repeat 1–3 with a panel ten times smaller and ten times larger, and report how the
-   discrepancies scale.
-
-Remember to follow the git workflow <https://dse.iskh.me/workflow/#submission> to submit
-your solution.
-````
-
-(11_ccp_references)=
 ````{note} References and additional resources
 
+(12_ccp_references)=
 - 📖 {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` "Conditional Choice Probabilities and the Estimation of Dynamic Models"
 - 📖 {cite:t}`arcidiaconoConditionalChoiceProbability2011` "Conditional Choice Probability Estimation of Dynamic Discrete Choice Models With Unobserved Heterogeneity"
 - 📖 {cite:t}`arcidiacono2019NonstationaryDynamicModels` "Nonstationary dynamic models with finite dependence"

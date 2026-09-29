@@ -2,9 +2,6 @@
 title: "📖 Practice: infinite horizon"
 short_title: 📖 Infinite horizon
 subtitle: Class 8 — Thursday, September 17
-exports:
-  - format: typst
-    output: exports/8_dp_infinite.pdf
 downloads:
   - file: 8_dp_infinite.md
     title: MyST Markdown
@@ -25,7 +22,7 @@ repository**. Today is a practical, so that folder holds the pre-code skeleton w
 in together, and the completed version appears there afterwards.
 
 You should have cloned that repository already — if not, the instructions are in the
-[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
 
 Update your copy before the class. Editing a file in place makes `git pull` refuse to
 update it, so discard whatever you changed while experimenting:
@@ -276,7 +273,7 @@ $\Rightarrow$
 :::
 
 - Newton-based method converge quadratically if started from the basin of attraction
-- Polyalgorithm would be a good idea, see NFXP in the next lecture
+- Polyalgorithm would be a good idea, see the [poly-algorithm](9_zurcher.md#poly-algorithm) in the next lecture
 
 
 ## Inventory dynamics problem with stochastic demand in infinite time
@@ -319,6 +316,7 @@ k &=& \max\{x-d,0\} + q
 \end{array}
 $$
 
+(ev-space-trick)=
 ### Trick 1: Bellman equation in expected value function space
 
 Idiosyncratic random shocks lead to the possibility of rewriting the Bellman equation in expected value function space, which reduces the dimensionality of the problem!
@@ -401,9 +399,9 @@ q^\star(y) = \arg\max_{q \ge 0} \Big\{ -qr - c \mathbb{1}\{q>0\} + \beta EV(y+q)
 $$
 
 
-(task8.1)=
-````{warning} Practical task 8.1: solving the infinite horizon inventory model
+````{warning} Practical task: solving the infinite horizon inventory model
 
+(task-inventory-infinite)=
 We code this together in class, starting from `session08-sep17/inventory_pre.ipynb`.
 **Pull the code repository before the class:**
 
@@ -419,9 +417,9 @@ cd sb-dse-code && git pull
 ````
 
 
-(8_dp_references)=
 ````{note} References and additional resources
 
+(8_dp_references)=
 - 📖 {cite:t}`sargent2025DynamicProgrammingFinite` "Dynamic Programming: Finite States"
 - Online version of the same book on [dp.quantecon.org](https://dp.quantecon.org)
 - 📖 {cite:t}`adda2023DynamicEconomicsQuantitative` "Dynamic Economics: Quantitative Methods and Applications", chapters 2 and 3

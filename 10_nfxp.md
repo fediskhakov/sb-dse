@@ -1,10 +1,7 @@
 ---
-title: "🔬 Practice: nested fixed point estimation"
-short_title: 🔬 NFXP
+title: "📖 Nested fixed point MLE estimation"
+short_title: 📖 NFXP
 subtitle: Class 10 — Thursday, September 24
-exports:
-  - format: typst
-    output: exports/10_nfxp.pdf
 downloads:
   - file: 10_nfxp.md
     title: MyST Markdown
@@ -13,7 +10,7 @@ kernelspec:
   display_name: Python 3
 ---
 
-Tuesday's solver becomes an estimator once a likelihood is wrapped around it: for
+[Tuesday's solver](9_zurcher.md#poly-algorithm) becomes an estimator once a likelihood is wrapped around it: for
 every parameter vector, solve the model and evaluate the probability of the data.
 This class is maximum likelihood for dynamic models, and the nested fixed point (NFXP)
 algorithm of {cite:t}`rustOptimalReplacementGMC1987` that makes it fast.
@@ -21,12 +18,12 @@ algorithm of {cite:t}`rustOptimalReplacementGMC1987` that makes it fast.
 ````{hint} Running the code for this lecture
 :class: dropdown
 
-The code for this class is in the folder `session10-sep24/` of the course **code
+The code for this class is in the folder `session10-11/` of the course **code
 repository**. Today is a practical, so that folder holds the pre-code skeleton we fill
 in together, and the completed version appears there afterwards.
 
 You should have cloned that repository already — if not, the instructions are in the
-[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
 
 Update your copy before the class. Editing a file in place makes `git pull` refuse to
 update it, so discard whatever you changed while experimenting:
@@ -89,7 +86,7 @@ observed data.
 
 The log is there for the numerics as much as for the algebra: a product of a few
 thousand probabilities underflows to zero long before the sample is exhausted, and a
-sum of their logs does not. Never take the log of a probability, from Class 6, applies
+sum of their logs does not. [Never take the log of a probability](6_logit.md#log-of-probability), from Class 6, applies
 to every term of $\ell_n(\theta)$.
 
 ### Asymptotic properties of MLE
@@ -231,6 +228,7 @@ $$
 The right hand side needs first derivatives only, one score vector per observation.
 That is what makes it useful inside an optimizer.
 
+(bhhh)=
 ### Berndt–Hall–Hall–Hausman (BHHH) algorithm
 
 The information matrix equality gives an approximation of the Hessian of the
@@ -241,7 +239,7 @@ H(\ell_n(\theta)) \approx - \nabla\ell(Z_n, \theta) \, \nabla\ell(Z_n, \theta)^{
 $$
 
 which is the **BHHH algorithm** of {cite:t}`berndtEstimationInferenceNonlinear1974`,
-introduced with the other quasi-Newton methods in [Class 5](5_solvers.md). The outer
+introduced with the other quasi-Newton methods in [Class 5](5_solvers.md#quasi-newton). The outer
 product of gradients is a positive semi-definite matrix for every $\theta$, so even if
 the approximation is not accurate it never points the Newton iteration in the wrong
 direction. A search for an appropriate step size in the direction found with the
@@ -264,6 +262,7 @@ is the robust alternative ({cite:t}`neweyLargeSampleEstimation1994`, Section 4.2
   data: a bus, a month, or a bus-month?
 :::
 
+(nfxp-estimation)=
 ## Estimating the bus engine model with NFXP
 
 For every value of the structural parameters
@@ -273,6 +272,7 @@ $EV_\theta(x,d)$ form the choice probabilities $P(\text{keep}|x,\theta)$ and
 $P(\text{replace}|x,\theta)$. Given data on mileage $x$ and choices $d$ we can then
 form the likelihood function and proceed with maximum likelihood estimation.
 
+(nfxp-data)=
 ### Data
 
 Harold Zurcher kept maintenance records of 162 buses in 8 groups, with monthly
@@ -287,6 +287,7 @@ The data are $(x_{i,t},d_{i,t})$, where $x_{i,t}$ is the discretized mileage (bi
 indexes) and $d_{i,t}$ the observed choice at this mileage for each bus $i$ in each
 month $t$.
 
+(nfxp-likelihood)=
 ### Likelihood function
 
 The model delivers two conditional probabilities per observation, the choice given
@@ -314,6 +315,7 @@ This is an unconstrained optimization, but it requires the computation of
 $EV_{\theta}$ for each value of the parameter $\theta$ — a fixed point problem inside
 every function evaluation.
 
+(nfxp-nested-loop)=
 ### Nested loop
 
 The **outer loop** is a hill-climbing algorithm. The log-likelihood function
@@ -323,7 +325,7 @@ $\ell_n(\theta,EV_{\theta})$ requires the solution for the fixed point $EV_{\the
 
 The **inner loop** is the fixed point algorithm: the solver for the fixed point of the
 Bellman operator $EV_{\theta} = \Gamma(EV_{\theta})$, successive approximations (VFI)
-plus Newton–Kantorovich iterations in the poly-algorithm of Tuesday.
+plus Newton–Kantorovich iterations in the [poly-algorithm of Tuesday](9_zurcher.md#poly-algorithm).
 
 ```{image} _static/img/nfxp.gif
 :width: 100%
@@ -337,14 +339,14 @@ plus Newton–Kantorovich iterations in the poly-algorithm of Tuesday.
 2. **Analytical gradients:** using the implicit function theorem and the chain rule for
    the outer loop, and the Fréchet derivative for the inner loop
 3. **Use BHHH:** the outer product of gradients approximation for the Hessian
-4. **Numerical stability:** recenter the logsum and the choice probabilities, the
-   de-maxing trick of Class 6
+4. **Numerical stability:** recenter the logsum and the choice probabilities, the [de-maxing trick of Class 6](6_logit.md#demaxing)
 5. **Further info:** the NFXP manual, see the references below
 
 Each of these is a difference between an estimator that runs in seconds and one that
 runs overnight. The comparison in {cite:t}`ecma_comment` is exactly the difference
 between an NFXP with items 1–3 and one without.
 
+(nfxp-score)=
 ### Analytical gradient of the likelihood function
 
 Differentiating the log-likelihood term by term,
@@ -375,9 +377,8 @@ NK: one more solve with the same matrix and a different right hand side.
 
 ## Replication of Rust (1987)
 
-The estimator is in the folder `session10-sep24/` of the
-[code repository](https://github.com/fediskhakov/sb-dse-code): `nfxp.py` is the model
-class of Tuesday with the data attached and the likelihood, its analytical score and
+The estimator is in the folder `session10-11/` of the
+[code repository](https://github.com/fediskhakov/sb-dse-code): `nfxp.py` is the [model class of Tuesday](9_zurcher.md#zurcher-model-class) with the data attached and the likelihood, its analytical score and
 BHHH on top, and the notebook `replicate_rust1987.ipynb` runs everything shown below.
 Run on Harold Zurcher's records for bus groups 1–4, on the 175-cell mileage grid of the
 paper and with $\beta = 0.9999$:
@@ -444,6 +445,7 @@ things to notice in the myopic rows: the cost parameter is nearly thirty times l
 when the future is not counted, and the log-likelihood is lower by 6.3, the paper's
 test of myopia.
 
+(nfxp-counterfactuals)=
 ### Counterfactuals
 
 The estimates describe Zurcher's behavior only through the model. What that behavior
@@ -501,9 +503,9 @@ the paper, although the estimates they are computed from reproduction of its tab
   idea, and when does it hurt?
 :::
 
-(task10.1)=
-````{warning} Practical: NFXP estimation of the bus engine model
+````{warning} Practical task: NFXP estimation of the bus engine model
 
+(task-nfxp)=
 **Pull the code repository before the class:**
 
 ```bash
@@ -517,13 +519,13 @@ cd sb-dse-code && git pull
 3. Get to the bottom of discrepancy between the paper and the replication code when computing the demand curve (paper Figure 7). Was an errornous figure published in Ecta?
 
 Use of AI assistance is allowed and encouraged, subject to the
-[course AI policy](https://dse.iskh.me/#ai-policy) — but you must be able to explain
+[course AI policy](index.md) — but you must be able to explain
 every line, including where the implicit function theorem enters the code.
 ````
 
-(10_nfxp_references)=
 ````{note} References and additional resources
 
+(10_nfxp_references)=
 - 📖 {cite:t}`rustOptimalReplacementGMC1987` "Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher"
 - 📖 {cite:t}`rustNestedFixedPoint2000` "Nested Fixed Point Algorithm Documentation Manual", version 6 {download}`Download pdf <_static/pdf/nfxp_man_2000.pdf>`
 - 📖 John Rust "NFXP Pocket Guide" {download}`Download pdf <_static/pdf/nfxp.pdf>`

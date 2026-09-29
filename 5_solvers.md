@@ -2,9 +2,6 @@
 title: 📖 Root finding and optimization
 short_title: 📖 Classic solvers
 subtitle: Class 5 — Tuesday, September 8
-exports:
-  - format: typst
-    output: exports/5_solvers.pdf
 downloads:
   - file: 5_solvers.md
     title: MyST Markdown
@@ -23,7 +20,7 @@ Every code example below is also a runnable notebook in the course **code reposi
 in the folder `session05-sep8/`.
 
 You should have cloned that repository already — if not, the instructions are in the
-[algorithms and complexity lecture](https://dse.iskh.me/algo#clone-code-repo).
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
 
 Update your copy before the class. Editing a file in place makes `git pull` refuse to
 update it, so discard whatever you changed while experimenting:
@@ -39,6 +36,31 @@ want to keep out of it first, or commit that to a branch of your own.
 
 Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
+````
+
+````{danger} Homework delta_newton_fractals: Newton fractals
+:class: dropdown
+
+(homework-delta_newton_fractals)=
+Graded homework: task `delta_newton_fractals` in the class repository. Collect it and work on a
+copy in your own repository:
+
+```bash
+git pull upstream main                                             # collect the task
+cp -r tasks/delta_newton_fractals solutions/delta_newton_fractals  # work on the copy
+```
+
+Map the basins of attraction of Newton's method on the function $F(x,y)$ of this
+chapter: run the solver from a grid of starting points and color each one by the
+critical point it reaches. Two versions, side by side — plain Newton, and Newton with
+the step-halving line search.
+
+The notebook `newton_fractals.ipynb` in the task folder carries $F$ with its gradient
+and Hessian, and the same map worked out for the cubic of the first example, which is
+the picture to replicate. The code of this class, `session05-sep8/` in the code
+repository, is worth having beside you while you work.
+
+Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](6_logit.md).
 ````
 
 # Bisection method
@@ -213,9 +235,6 @@ newton(f,g,x0=-2.5,callback=plot_step)
 print('Converged in %d steps'%plot_step.counter)
 ```
 
-
-
-
 # Rates of convergence and complexity
 
 :::{div}
@@ -226,7 +245,6 @@ print('Converged in %d steps'%plot_step.counter)
 
 :::
 
-
 ````{attention} Definition
 
 Let $x^\star$ denote the solution, $f(x^\star)=0$, and write $e_k = |x_k - x^\star|$ for the error at iteration $k$. The sequence converges
@@ -236,9 +254,7 @@ Let $x^\star$ denote the solution, $f(x^\star)=0$, and write $e_k = |x_k - x^\st
 - **quadratically** if $e_{k+1} \leq C\, e_k^2$ for some $C>0$
 ````
 
-
 Continue the example above with a different `callback` function to print the errors at each iteration.
-
 
 ```{code-cell} python3
 :tags: [hide-input]
@@ -298,7 +314,6 @@ the same factor every iteration.
 Quadratic convergence is a **cliff**: the number of
 correct digits doubles, so the curve bends down without limit until it hits machine
 precision.
-
 
 ```{hint} What the solver can actually measure
 
@@ -408,7 +423,6 @@ problem is what hurts. This is why the structure of the Jacobian matters so much
 practice — sparsity, block structure, or an analytical inverse turn the $n^3$ into
 something affordable.
 
-
 | Method | Convergence | Iterations for accuracy $\varepsilon$ | Cost per iteration |
 | :-- | :-- | :-- | :-- |
 | **Bisection** | linear | $O\big(\log(1/\varepsilon)\big)$ | one evaluation of $f$ |
@@ -420,20 +434,15 @@ The key distinction between the two methods is therefore:
 - **Newton** — expensive iterations, quadratic local convergence, and no guarantee of
   getting there at all
 
-
-
 :::{div}
 :class: discussion
 
 - Can we get the best of the both approaches? How?
 :::
 
-
-
 # When does Newton–Raphson fail?
 
 Newton–Raphson is **fast but fragile**: quadratic convergence near the root, but what happens away from the root?
-
 
 Five things can go wrong, in rough order of how often
 they bite in economic applications:
@@ -445,7 +454,6 @@ they bite in economic applications:
 4. **Function domain and differentiability** — a Newton step leaves the region where
    $f(x)$ or $f'(x)$ is defined
 5. **Reduced performance** — quadratic convergence is lost in special cases
-
 
 ## Multiple solutions
 
@@ -515,7 +523,6 @@ newton_pic(f,g,x0=1.25,a=-20,b=20)            # inside the domain of attraction
 newton_pic(f,g,x0=1.5,a=-20,b=20,maxiter=8)   # outside it
 ```
 
-
 ## Cycles
 
 The iterations can also enter a cycle, returning to the same point every second step.
@@ -580,7 +587,6 @@ newton(f,g,x0=1.0,callback=print_err)
 
 ```
 
-
 ## What this means for economics
 
 - Many of the pathological cases above rarely occur in practice
@@ -594,12 +600,7 @@ newton(f,g,x0=1.0,callback=print_err)
   the estimation of dynamic programming models, namely the NFXP estimator of
   {cite:t}`rustOptimalReplacementGMC1987`
 
-
-
-
-
-
-
+(multivariate-newton)=
 # Multivariate Newton and optimization
 
 Everything above is scalar, and everything above is about *solving an equation*. 
@@ -718,7 +719,6 @@ q_3 &= \frac{(x-0.55)^2}{0.055}+\frac{\big[y-0.63+2.5(x-0.55)^2\big]^2}{0.0025},
 q_4 &= \frac{(x-0.55)^2}{0.005}+\frac{(y-0.48)^2}{0.010}
 \end{aligned}
 $$
-
 
 ```{code-cell} python3
 
@@ -960,8 +960,6 @@ from:
 plot_newton_path([0.55,0.40])
 ```
 
-
-
 To see how little it takes, draw 10 Newton paths from random starting points in a small area
 in the center. Stars mark the paths that converged and crosses the point where a run gave up —
 for the plain solver most of those are far outside the picture, after `maxiter=100` steps.
@@ -1185,7 +1183,7 @@ region** methods, the main alternative to line search.
 
 ```
 
-
+(quasi-newton)=
 # BFGS, BHHH and other quasi-Newton methods
 
 The line search of the previous section can only work if the direction it is handed
@@ -1216,7 +1214,6 @@ always climbs. BHHH, being based on the statistical properties of the scores, is
 specific to econometric M-estimation problems — and for that reason it is often *not*
 found in standard optimization packages.
 
-
 :::{note} Where this comes back
 
 The NFXP estimator is a Newton-type optimizer with analytical derivatives
@@ -1227,42 +1224,9 @@ The full treatment of M-estimation, asymptotics and the information identity is
 reference reading in the course — see the source notes listed below.
 :::
 
-(task4.1)=
-````{danger} Homework: Newton fractals
-
-This is a graded homework assignment.
-
-Map the basins of attraction of Newton's method on the function $F(x,y)$ of this
-chapter: run the solver from a grid of starting points and color each one by the
-critical point it reaches. Two versions, side by side — plain Newton, and Newton with
-the step-halving line search.
-
-The notebook `tasks/delta_newton_fractals/newton_fractals.ipynb` in the class repository
-carries $F$ with its gradient and Hessian, and the same map worked out for the cubic of
-the first example, which is the picture to replicate:
-
-```bash
-git pull upstream main                                            # collect the task
-cp -r tasks/delta_newton_fractals solutions/delta_newton_fractals # work on the copy
-```
-
-The code shown in this class is `session05-sep8/` in the code repository, which is worth
-having beside you while you work:
-
-```bash
-cd sb-dse-code && git pull
-```
-
-Remember to follow the git workflow <https://dse.iskh.me/workflow/#submission> to submit
-your solution.
-
-````
-
-
-
 ## Regions of attraction of the four-hills function
 
-The solution of the homework above: every starting point of a grid covering the picture is
+The solution of homework `delta_newton_fractals`: every starting point of a grid covering the picture is
 iterated at once, in the same vectorized style as the cubic example in the task notebook.
 
 ```{code-cell} python3
@@ -1399,10 +1363,9 @@ plt.show()
 :align: center
 ```
 
-
-(5_solvers_references)=
 ````{note} References and additional resources
 
+(5_solvers_references)=
 - On the computational complexity of Newton's method
   [link](https://m.tau.ac.il/~tsirel/dump/Static/knowino.org/wiki/Newton's_method.html#Computational_complexity)
 

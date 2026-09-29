@@ -2,9 +2,6 @@
 title: "🔬 Beauty of coding: towers of Hanoi"
 short_title: 🔬 Towers of Hanoi
 subtitle: Class 4 — Thursday, September 3
-exports:
-  - format: typst
-    output: exports/4_recursion.pdf
 downloads:
   - file: 4_recursion.md
     title: MyST Markdown
@@ -94,12 +91,11 @@ def main_algorithm(n,source,aux,target):
     main_algorithm(n-1,aux,source,target)
 ```
 
-(task_hanoi_)=
 ````{warning} Practical task: Towers of Hanoi
 
+(task-hanoi)=
 Code up the recursive solution using the algorithm above, and print the sequence of
-moves. How many moves does the solution for $n$ disks take? What is the complexity
-class of the algorithm (see next lecture)?
+moves. How many moves does the solution for $n$ disks take? What is the complexity class of the algorithm (see [big-O notation](3_algo.md#big-o))?
 
 Navigate to the directory you chose to save the course materials (must be different from the homework repository!), and clone the code repo once:
 
@@ -275,9 +271,9 @@ def animate_hanoi(n, source='A', target='C', auxiliary='B', interval=700):
 animate_hanoi(8)
 ```    
 
-(4_recursion_references)=
 ````{note} References and additional resources
 
+(4_recursion_references)=
 - 📺 Same problem in greater details by prof. Thorsten Altenkirch, University of Nottingham
   [video, 12 min](https://www.youtube.com/watch?v=8lhxIOAfDss)
 
