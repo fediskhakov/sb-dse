@@ -16,6 +16,40 @@ down the value function differences, so the model can be estimated without ever
 solving it. The same result of {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` also
 says exactly what the data can and cannot identify.
 
+
+````{seealso} Key reading
+
+{cite:t}`arcidiaconoConditionalChoiceProbability2011` "Conditional Choice Probability Estimation of Dynamic Discrete Choice Models With Unobserved Heterogeneity", *Econometrica* 79(6), pp. 1823–1867
+
+{cite:t}`hotz1993ConditionalChoiceProbabilitiesb` "Conditional Choice Probabilities
+and the Estimation of Dynamic Models", *Review of Economic Studies* 60(3), pp. 497–529
+````
+
+````{hint} Running the code for this lecture
+:class: dropdown
+
+Every code example below is also a runnable notebook in the course **code repository**,
+in the folder `session12-oct1/`.
+
+You should have cloned that repository already — if not, the instructions are in the
+[algorithms and complexity lecture](3_algo.md#clone-code-repo).
+
+Update your copy before the class. Editing a file in place makes `git pull` refuse to
+update it, so discard whatever you changed while experimenting:
+
+```bash
+cd sb-dse-code
+git reset --hard HEAD
+git pull
+```
+
+Nothing in this repository is submitted, so experiment freely — but copy anything you
+want to keep out of it first, or commit that to a branch of your own.
+
+Setting up the Python environment is covered in
+[](2_workflow.md#python-install).
+````
+
 ````{danger} Homework eta_ccp: recovering value differences from choice data
 :class: dropdown
 
@@ -28,21 +62,17 @@ git pull upstream main                 # collect the task
 cp -r tasks/eta_ccp solutions/eta_ccp  # work on the copy
 ```
 
-The notebook in the task folder carries the model class and the simulator of [Class 10](10_nfxp.md).
-The steps:
+Derive the Bellman equation of the Zurcher model in the space of integrated value
+functions and implement it as a subclass `zurcher_ccp` of the model class, checking that
+it is a contraction. Then verify numerically, at the NFXP estimates and a handful of
+other parameter values, the Hotz–Miller inversion and the Arcidiacono–Miller
+relationship between the integrated value function, the choice-specific values and the
+choice probabilities.
 
-1. Simulate a panel from the Zurcher model at known parameters, and estimate the CCPs
-   $P(\text{replace}|x)$ by frequency counts on the mileage grid. Plot them against the
-   model's own $P(\text{replace}|x)$ from the solver, and mark the grid points that are
-   never visited.
-2. Apply the logit inverse map to recover $\Delta v(x)$ from the estimated CCPs, and
-   compare to the value differences from the solver. Report where the two disagree and
-   explain why in terms of the first-stage sample sizes per state.
-3. Compute $\psi(x,d_0)$ and the integrated value function
-   $V^\sigma = [I - \beta \Pi(d_0)]^{-1}\psi(d_0)$ from the first-stage estimates alone,
-   and compare to the solver's $V^\sigma(x)$.
-4. Repeat 1–3 with a panel ten times smaller and ten times larger, and report how the
-   discrepancies scale.
+The notebook `ccp_representations.ipynb` in the task folder loads the model class, the
+NFXP estimator and Zurcher's data from `session10-11/` of the code repository, and has
+the details of the task, step by step. The code of [Class 10](10_nfxp.md), `session10-11/` in the code
+repository, is worth having beside you while you work.
 
 Submit it as a pull request, following the [git workflow](2_workflow.md#submission). One of you presents a solution at the
 start of the next Tuesday class.
@@ -60,7 +90,7 @@ $$V(x,\varepsilon) = \max_{d\in D(x)} \Big\{ \underbrace{u(x,d) + \beta
 + \varepsilon_d \Big\}$$
 
 and it breaks into three pieces that are useful on their own: the choice-specific
-value, the expected value, and the value itself,
+value, the expected value, and the value function itself,
 
 $$
 V(x,\varepsilon) = \max_{d\in D(x)} \big\{ v(x,d) + \varepsilon_{d} \big\},
@@ -81,9 +111,12 @@ V(x',\varepsilon')
 q(\varepsilon'|x') \pi(x'|x,d) d\varepsilon' dx'
 $$
 
-Let's repeat the terminology. $v(x,d)$ is the **choice-specific value function**, or
-conditional value function, and $EV(x,d)$ is commonly referred to as the **expected
-value function** and sometimes as the ex-post value function.
+Let's repeat the terminology:
+
+- $v(x,d)$ is the **choice-specific value function**, or
+conditional value function, and 
+- $EV(x,d)$ is commonly referred to as the **expected
+value function** and sometimes as the ex-post value function
 
 Here is a new object and yet another representation. The **integrated value function**
 $V^\sigma(x)$, also known as the ex-ante value function, is the value function with the
@@ -108,22 +141,31 @@ The Bellman circle of value functions: plain value function $V(x,\varepsilon)$, 
 
 We could write the Bellman equation in the space of integrated value functions
 $V^\sigma(x)$ by cutting the *circle of Bellman* at a different point:
-$V(x,\varepsilon) \rightarrow V^\sigma(x) \rightarrow EV(x,d) \rightarrow v(x,d) \rightarrow V(x,\varepsilon) \rightarrow \dots$
+
+$$
+V(x,\varepsilon) \rightarrow V^\sigma(x) \rightarrow EV(x,d) \rightarrow v(x,d) \rightarrow V(x,\varepsilon) \rightarrow \dots
+$$
+
 The new representation of the Bellman equation is
 
 $$
-V^\sigma(x) = \int_{\Omega} \max_{d'\in D(x)} \Big\{ \underbrace{u(x,d') + \beta
+V^\sigma(x) = 
+\int_{\Omega} \max_{d'\in D(x)} \Big\{ \underbrace{u(x,d') + \beta
 \int_{X} V^\sigma(x')
 \pi(x'|x,d') dx'}_{v(x,d')}
 + \varepsilon_{d'} \Big\} q(\varepsilon|x) d\varepsilon
 =
-\int_{\Omega} \max_{d'\in D(x)} \left\{ v(x,d')
+$$
+$$
+=\int_{\Omega} \max_{d'\in D(x)} \left\{ v(x,d')
 + \varepsilon_{d'} \right\} q(\varepsilon|x) d\varepsilon
 $$
 
 This is the expectation of the maximum utility in a RUM with alternative utilities
 given by $v(x,d') + \varepsilon_{d'}$, which {cite:t}`mcfadden1974ConditionalLogitAnalysisa`
-called the **social surplus function** in [Class 6](6_logit.md#wdz-theorem). In the EV1 case max-stability gives
+called the **social surplus function** in [Class 6](6_logit.md#wdz-theorem). 
+
+In the EV1 case max-stability gives
 it in closed form, with $\gamma \approx 0.5772$ the Euler–Mascheroni constant,
 
 $$
@@ -153,13 +195,24 @@ P(d|x) =
 \frac{\exp[v(x,d)]}{\sum_{d'\in D(x)} \exp[v(x,d')]}
 $$
 
+Exchanging the order of differentiation and integration in the general case, we can also 
+express the choice probabilities as the integral with
+respect to the distribution $q(\varepsilon|x)$ of the indicator that $d$ is the
+maximizer
+
+$$
+P(d|x)=
+\int_\Omega I\left\{ d = \arg\max_{d' \in D(x)} \{v(x,d')+\varepsilon_{d'}\}
+\right\}q(\varepsilon|x) d\varepsilon
+$$
+
+
 ## Inversion theorem
 
-📖 {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` "Conditional Choice Probabilities
-and the Estimation of Dynamic Models"
-
 Let $d_0$ denote the reference alternative, so that the values of other alternatives
-will be measured relative to it. For each $x$ consider the vector of value differences
+will be measured relative to it. 
+
+For each $x$ consider the vector of value differences
 $\Delta v(x) \in \mathbb{R}^{K-1}$, where $K=|D(x)|$ is the number of alternatives,
 with elements
 
@@ -167,9 +220,8 @@ $$
 \Delta v(x,d) = v(x,d) - v(x,d_0), \quad d \in D(x)\setminus\{d_0\}
 $$
 
-Another way to express the choice probabilities $P(d|x)$ is through the integral with
-respect to the distribution $q(\varepsilon|x)$ of the indicator that $d$ is the
-maximizer. Rewriting the event step by step,
+Rewriting the event $\left\{ d = \arg\max_{d' \in D(x)} \{v(x,d')+\varepsilon_{d'}\}
+\right\}$ from above step by step, we have
 
 $$
 P(d|x)=
@@ -201,12 +253,13 @@ q(\varepsilon|x) d\varepsilon
 Q_{d}(\Delta v(x),x)
 $$
 
-The steps are: write the argmax as a system of inequalities, subtract $v(x,d_0)$ from
-both sides of each inequality so that only differences appear, and read the result as
-the probability mass of a region of $\Omega$ that depends on $\Delta v(x)$ only.
+The steps are: 
+- write the argmax as a system of inequalities, 
+- subtract $v(x,d_0)$ from both sides of each inequality so that only differences appear, and 
+- read the result as the probability mass of a region of $\Omega$ that depends on $\Delta v(x)$ only
+
 Compare this derivation to the
-[static multinomial logit model](6_logit.md#wdz-theorem) of Class 6, where the same
-region was integrated in closed form.
+[static multinomial logit model](6_logit.md#wdz-theorem) of Class 6.
 
 In other words, if
 
@@ -250,6 +303,8 @@ The inverse map is given by the log odds ratio
 
 $$
 \frac{P(d|x)}{P(d_0|x)} = \exp[\Delta v(x,d)] \implies
+$$
+$$
 \Delta v(x,d) = \log P(d|x) - \log P(d_0|x), \quad d \in D(x)\setminus\{d_0\}
 $$
 ````
@@ -275,6 +330,9 @@ expectation of the indicator that a particular choice $d$ yields the maximum uti
 $$
 P(d|x)= \hbox{Prob}\left\{d = \arg\max_{d' \in D(x)} \{v(x,d')+\varepsilon_{d'}\}|x\right\}
 =
+$$
+$$
+=
 \mathbb{E}\left[\left. I\left\{ d = \arg\max_{d' \in D(x)} \{v(x,d')+\varepsilon_{d'}\} \right\} \right|x \right]
 $$
 
@@ -282,15 +340,14 @@ The expression for $V^\sigma(x)$ as the expected maximum can then be expanded us
 the *law of iterated expectations*, conditioning on which alternative is chosen:
 
 $$
-V^\sigma(x) = \int_{\Omega} \max_{d'\in D(x)} \left\{ v(x,d')
-+ \varepsilon_{d'} \right\} q(\varepsilon|x) d\varepsilon
-=
+V^\sigma(x) 
+= 
 \mathbb{E}\left[
 \max_{d'\in D(x)} \left\{ v(x,d')
 + \varepsilon_{d'} \right\}
-\right] =
+\right] 
+=
 $$
-
 $$
 =
 \sum_{d \in D(x)} P(d|x)
@@ -338,7 +395,8 @@ d = \arg\max_{d''\in D(x)} \{v(x,d'')+\varepsilon_{d''}\}
 $$
 
 has the special name of **correction term**, see
-{cite:t}`arcidiaconoConditionalChoiceProbability2011`. It is the expectation of the
+{cite:t}`aguirregabiriaSwappingNestedFixed2002`.
+It is the expectation of the
 random component conditional on the event that the alternative it is associated with
 has the highest value. We end up with
 
@@ -371,14 +429,17 @@ e(x,d)
 \psi(x,d_0)
 $$
 
-where $\psi(x,d_0)$ is a function of the choice probabilities and not of the value
-functions, as shown by {cite:t}`arcidiaconoConditionalChoiceProbability2011`. In other
-words, the difference between the integrated value function and any choice-specific
+where $\psi(x,d_0)$ *is a function of the choice probabilities and not of the value
+functions*, see Lemma 1 in {cite:t}`arcidiaconoConditionalChoiceProbability2011`. 
+This result holds can be written for any reference alternative $d_0$, and therefore holds for every $d$.
+
+In other words, the difference between the integrated value function and any choice-specific
 reference value is a function of the choice probabilities only. This is the result
 that every CCP-based method builds on.
 
-### Special case of EV1 and GEV
+### Correction terms for EV1 and GEV
 
+{cite:t}`hotz1993ConditionalChoiceProbabilitiesb` and 
 {cite:t}`arcidiaconoConditionalChoiceProbability2011` show that the correction term
 has a closed form in the two workhorse cases,
 
@@ -391,9 +452,254 @@ $$
 $$
 
 where $N(d)$ is the set of alternatives in the same *nest* as $d$ and
-$\sigma\leqslant 1$ is the scale parameter within the nest. In the EV1 case
-$\psi(x,d_0) = \gamma - \log P(d_0|x)$: one line of algebra from the logsum, and the
-whole relationship between $V^\sigma$ and the CCPs is the logit formula read backwards.
+$\sigma\leqslant 1$ is the scale parameter within the nest.
+
+
+(finite-dependence)=
+## Finite dependence
+
+Hotz-Miller inversion establishes the relationship between the choice probabilities and the value differences, but values are still defined recursively.
+
+Main idea of finite dependence is to note that it may be possible to *cancel out the future* after several periods
+
+- recursion reduces to several periods (one repeated cycle)
+- then no fixed point to solve for
+- estimator can be applied to short panels
+
+The idea goes back to
+{cite:t}`altug1998EffectWorkExperience`, and we follow the general version in Section 3
+of {cite:t}`arcidiaconoConditionalChoiceProbability2011`.
+
+The starting point is the expression derived above
+
+$$
+V^\sigma(x) = v(x,d) + \psi(x,d), \qquad d \in D(x)
+$$
+
+Substituting it into the definition of the choice-specific value gives
+
+$$
+v(x,d) = u(x,d) + \beta \sum_{x' \in X} \big[ v(x',k) + \psi(x',k) \big] \pi(x'|x,d),
+\qquad k \in D(x')
+$$
+
+where $k \in D(x')$ is just some alternative chosen in the next period.
+
+- It does not have to be the same in every $x'$. 
+
+- It does not even have to be a single alternative either, and can be represented by some 
+*choice weights* $\{\omega_k\}$, such that $\sum_{k\in D(x')} \omega_k = 1$:
+
+$$
+V^\sigma(x') = 
+\sum_{k\in D(x)} \omega_k V^\sigma(x') =
+\sum_{k\in D(x)} \omega_k \big[ v(x',k) + \psi(x',k) \big]
+$$
+
+Let's now repeat this step again in the next period, and so on. This is referred to as *telescoping* the integratedvalue function.
+
+1. Fix the current period $t$, the state $x_t = x$ and the initial choice
+$d$. 
+
+2. A **choice sequence** assigns to every later period $\tau > t$ and every state
+$x_\tau$ a vector of **decision weights** $\omega_\tau(k|x_\tau,d) \geqslant 0$ with
+$\sum_{k \in D(x_\tau)} \omega_\tau(k|x_\tau,d) = 1$. 
+- The weights may depend on the state reached and may mix over alternatives
+- {cite:t}`arcidiaconoConditionalChoiceProbability2011` write them as $d^*_{k\tau}(z_\tau,j)$
+
+Along the sequence, the state evolves according to the distribution
+
+$\kappa_\tau(\cdot|x,d)$ of $x_{\tau+1}$, defined recursively by
+
+$$
+\kappa_\tau(x'|x,d) =
+\begin{cases}
+\pi(x'|x,d), & \tau = t, \\
+\sum_{x_\tau \in X} \sum_{k \in D(x_\tau)} \omega_\tau(k|x_\tau,d)\, \pi(x'|x_\tau,k)\,
+\kappa_{\tau-1}(x_\tau|x,d), & \tau > t.
+\end{cases}
+$$
+
+In other words, we look at the distribution of states resulting from the chosen sequence of choice weights
+
+$$
+\begin{matrix}
+0 & \omega_{t+1}(1|x_{t+1},d) & \omega_{t+2}(1|x_{t+2},d) & \omega_{t+3}(1|x_{t+3},d) & \cdots \\
+1 & \omega_{t+1}(2|x_{t+1},d) & \omega_{t+2}(2|x_{t+2},d) & \omega_{t+3}(2|x_{t+3},d) & \cdots \\
+\vdots & \vdots & \vdots & \\
+0 & \omega_{t+1}(K|x_{t+1},d) & \omega_{t+2}(K|x_{t+2},d) & \omega_{t+3}(K|x_{t+3},d) & \cdots
+\end{matrix}
+$$
+
+or in the simple case of a deterministic sequence of choices $d_\tau$
+
+$$
+\begin{matrix}
+d & k_{t+1}(x_{t+1},d) & k_{t+2}(x_{t+2},d) & k_{t+3}(x_{t+3},d) & \cdots
+\end{matrix}
+$$
+
+In both cases the induced distribution of states is
+
+$$
+\begin{matrix}
+\pi(1|x,d) & \kappa_{t+1}(1|x,d) & \kappa_{t+2}(1|x,d) & \kappa_{t+3}(1|x,d) & \cdots \\
+\pi(2|x,d) & \kappa_{t+1}(2|x,d) & \kappa_{t+2}(2|x,d) & \kappa_{t+3}(2|x,d) & \cdots \\
+\vdots & \vdots & \vdots & \\
+\pi(N|x,d) & \kappa_{t+1}(N|x,d) & \kappa_{t+2}(N|x,d) & \kappa_{t+3}(N|x,d) & \cdots
+\end{matrix}
+$$
+
+Now we can compute the choice specific value *along some choice sequence*!
+
+Theorem 1 of {cite:t}`arcidiaconoConditionalChoiceProbability2011` shows that, for any
+state $x$, any initial choice $d$ and *any* choice sequence,
+
+$$
+v(x,d) = u(x,d) + \sum_{\tau=t+1}^{\infty} \beta^{\tau-t}
+\sum_{x_\tau \in X} \sum_{k \in D(x_\tau)}
+\big[ u(x_\tau,k) + \psi(x_\tau,k) \big]\,
+\omega_\tau(k|x_\tau,d)\, \kappa_{\tau-1}(x_\tau|x,d)
+$$
+
+
+The term $\psi(x_\tau,k) = V^\sigma(x_\tau) - v(x_\tau,k)$ compensates at each step for the
+sequence not being the optimal policy. 
+
+
+````{attention} Definition
+
+**$\rho$-period finite dependence.** A pair of alternatives $d, d' \in D(x)$ exhibits
+**$\rho$-period finite dependence** at state $x$ if there exist a choice sequence
+starting with $d$ and a choice sequence starting with $d'$ such that
+
+$$
+\kappa_{t+\rho}(x''|x,d) = \kappa_{t+\rho}(x''|x,d') \quad \text{for all } x'' \in X,
+$$
+
+that is, the two sequences lead to the same distribution of the state in period
+$t+\rho+1$.
+````
+
+Why is this useful?
+
+From period $t+\rho+1$ on, set the weights of the two sequences equal.
+
+Every term of Theorem 1 after $t+\rho$ is then identical for $d$ and $d'$ and cancels in the
+difference, leaving
+
+$$
+\begin{aligned}
+v(x,d) - v(x,d') = & u(x,d) - u(x,d') \\
+& + \sum_{\tau=t+1}^{t+\rho} \beta^{\tau-t} \sum_{x_\tau \in X} \sum_{k \in D(x_\tau)}
+\big[ u(x_\tau,k) + \psi(x_\tau,k) \big]
+\Delta_\tau(k,x,x_\tau,d,d')
+\end{aligned}
+$$
+$$
+\Delta_\tau(k,x,x_\tau,d,d') = \omega_\tau(k|x_\tau,d)\, \kappa_{\tau-1}(x_\tau|x,d)
+- \omega_\tau(k|x_\tau,d')\, \kappa_{\tau-1}(x_\tau|x,d')
+$$
+
+````{hint}
+What is observed and not observed in this expression?
+
+- $v(x,d) - v(x,d')$ can be recovered from the CCPs by Hotz-Miller inversion
+- $\psi(x_\tau,k)$ only depend on CCPs
+- $\omega_\tau(k|x_\tau,d)$ and $\omega_\tau(k|x_\tau,d')$ are chosen by the researcher
+- $\kappa_{\tau-1}(x_\tau|x,d)$ and $\kappa_{\tau-1}(x_\tau|x,d')$ are computed recursively, assuming $\pi(x'|x,d)$ are known/estimated
+- $u(x,d) - u(x,d')$, $u(x_\tau,k)$ contain the structural parameters of interest, 
+- $\beta$ is another structural parameter
+
+We have enough information to form GMM-type moment conditions entangling the structural parameters and data.
+
+The data required are states and choices for $\rho+1$ periods, including short panels if the model admits low period finite dependence.
+
+````
+
+Helpful properties of finite dependence:
+
+- the $\psi$ mappings, the first-stage CCPs and the transition probabilities, the
+value difference is a linear function of flow utilities over $\rho+1$ periods.
+- only the $\psi$ functions of alternatives that carry positive weight in one of the two sequences
+are needed
+
+(renewal-terminal)=
+````{tip} Example: renewal actions and terminal choices
+
+Let a **renewal action** $r \in D(x)$ be an alternative that, taken at $t+1$, makes the distribution of the
+state at $t+2$ independent of the choice at $t$:
+
+$$
+\sum_{x' \in X} \pi(x''|x',r)\, \pi(x'|x,d)
+=
+\sum_{x' \in X} \pi(x''|x',r)\, \pi(x'|x,d')
+\quad \text{for all } x'', d, d'
+$$
+
+The state at $t+2$ may still depend on the state at $t+1$, but only through variables
+that the choice at $t$ did not affect. Put weight one on $r$ at $t+1$ in both sequences,
+and the difference collapses to
+
+$$
+\begin{aligned}
+v(x,d) - v(x,d') = & u(x,d) - u(x,d') +\\ &
++ \beta \sum_{x' \in X} \big[ u(x',r) + \psi(x',r) \big]
+\big[ \pi(x'|x,d) - \pi(x'|x,d') \big]
+\end{aligned}
+$$
+
+Only the mapping $\psi(\cdot,r)$ of the renewal action is needed. A **terminal
+choice**, such as exit or retirement, works the same way
+{cite:p}`hotz1993ConditionalChoiceProbabilitiesb`. No choices follow it, so its
+continuation value folds into its flow payoff, and the same expression holds for any
+two non-terminal alternatives $d, d'$ with $r$ the terminal choice.
+````
+
+The Zurcher model is the leading case: engine replacement is a renewal action, so the
+model has one-period finite dependence. The
+[practical of Class 13](13_ccp_practice.md#zurcher-finite-dependence) derives the
+resulting value difference and codes the estimator built on it.
+
+Finite dependence can take more than one period and require sequences that react to the
+state. In the stylized labor-supply example of Section 3.2.2 of {cite:t}`arcidiaconoConditionalChoiceProbability2011`, working today
+raises human capital $z$ by 1 or 2 units with equal probability. Working in any later
+period raises it by exactly 1, and staying home leaves it unchanged. Starting with
+*home*, the sequence *work, work* reaches $z+2$ at $t+3$ for sure. Starting with
+*work*, stay home at $t+1$ if the gain was 2 and work if it was 1, then stay home at
+$t+2$: again $z+2$ at $t+3$. The pair has two-period finite dependence, and the second
+sequence is state-contingent.
+
+### What if no finite dependence?
+
+Finite dependence is a property of the transition probabilities, and
+nothing guarantees it. If no later choice can undo or replicate the effect of today's
+choice on the state, the terms never cancel. 
+Then the infinite sum, or the matrix
+inversion of the [identification section](#ccp-identification), is back. 
+
+Finding the sequences by hand is application-specific;
+{cite:t}`arcidiacono2019NonstationaryDynamicModels` search for the decision weights
+numerically. 
+
+See also the JMP by Jaepil {cite:t}`lee_structural_2025` for an application of numerically searching for finite dependence sequences in estimation.
+
+The CCPs that enter are those at the states reachable within $\rho$
+periods, including rarely visited ones, where $\log \hat P$ is noisy. The pay-off is
+largest in nonstationary models with short panels. There, the CCPs in the last observed
+period carry all the information about the unobserved future, and flow utilities are
+estimable up to $\rho$ periods before the sample ends without modeling the horizon.
+
+:::{div}
+:class: discussion
+- For bus engines does replacement constitute a renewal action, and what does $\psi$ depend on?
+- Which CCPs does the Zurcher model require, and at which mileages are
+  they expected to be poorly estimated in the bus data?
+- Think of a model in your own field. Does it have a renewal or terminal action, and if
+  not, what would a finite-dependence sequence look like?
+:::
+
+
 
 (ccp-identification)=
 ## Identification
@@ -428,7 +734,9 @@ V^\sigma = [I - \beta \Pi(d_0)]^{-1} \psi(d_0)
 $$
 
 This is an expression for the integrated value function that only depends on objects we
-can estimate in a first stage. To non-parametrically recover the utility function for
+can estimate in a first stage. 
+
+To non-parametrically recover the utility function for
 the other actions, follow the same route from $v(d) = u(d) + \beta \Pi(d) V^\sigma$
 and $V^\sigma - v(d) = \psi(d)$,
 
@@ -468,33 +776,13 @@ $\beta$ is likewise not identified without further restrictions,
 :class: discussion
 
 - In the Zurcher model, which normalization does $u(x,\text{keep}) = -c(x,\theta_1)$
-  and $u(x,\text{replace}) = -RC$ correspond to, and is $RC$ a level or a difference?
+  and $u(x,\text{replace}) = -RC$ correspond to?
 - The derivation takes $\beta$ as given. Where exactly does it enter, and why can it not
   be recovered from the same equations?
 - Which counterfactuals survive a change of the normalization, and which do not?
 :::
 
-### Finite dependence
 
-Finite dependence is a powerful idea that helps identification and estimation. In many
-applications there may be different paths from a point in the state space $x_1$ at time
-$t_1$ to the point $x_2$ at time $t_2$. Two different paths require different
-sequences of choices, yet at $x_2$ and time $t_2$ the future should look exactly the
-same regardless of the path taken to get there.
-
-Therefore the expected values at $t_2$ can be differenced out, resulting in a finite
-structure of dependence with no need for matrix inversions, similar to finite horizon
-problems.
-
-````{tip} Example: one-period finite dependence in the Zurcher model
-
-The Zurcher model has one-period finite dependence. Indeed, all regenerative models
-have this property: renewing today leads to exactly the same future outlook as renewing
-one period later, and here exact time subscripts do not matter due to stationarity.
-Compare the value of replacing at $x$ today to the value of keeping today and replacing
-tomorrow: after tomorrow both paths sit at mileage zero with the same continuation
-value, so it drops out of the difference.
-````
 
 (ccp-estimation)=
 ## CCP-based estimation
@@ -531,17 +819,24 @@ Output: estimate of θ, obtained without solving the model
 The second step is where the methods differ: the value function differences
 $\Delta v(x)$ implied by $\theta$ and the first-stage estimates are matched to the
 first-stage CCPs by a distance, a set of moments, or a likelihood. In the Zurcher model
-with the logit inverse map, step 1 is a frequency table of replacements by mileage bin,
-and step 2 is a static logit estimation with the future differenced out by finite
-dependence. This is what we code next Tuesday, and the pseudo-likelihood versions of
+with the logit inverse map, step 1 estimates the replacement probability in every mileage
+bin, a frequency table in principle and a smoothed one in practice, and step 2 is a static logit estimation with the future differenced out by finite
+dependence. This is what we code in the
+[practical of Class 13](13_ccp_practice.md), and the pseudo-likelihood versions of
 step 2 are the subject of [Class 14](14_npl.md).
 
-Where it breaks: the first-stage estimates enter the criterion function directly, so
-their sampling error is inherited by $\hat\theta$. With many states and a modest
-panel, frequency estimates of $P(d|x)$ are noisy or exactly zero in rarely visited
-states, and $\log P$ in the inverse map amplifies the noise. Two-step estimators are
-therefore less efficient than NFXP in finite samples, and in the tails of the state
-space they can be badly biased. Smoothing the first stage helps, at the price of a
+### Issues with CCP-based estimation
+
+The first-stage estimates enter the criterion function directly, so
+their sampling error is inherited by $\hat\theta$. 
+
+With many states and a modest panel, frequency estimates of $P(d|x)$ are noisy or exactly zero in rarely visited
+states, and $\log P$ in the inverse map amplifies the noise. 
+
+Two-step estimators are therefore less efficient than NFXP in finite samples, and in the tails of the state
+space they can be badly biased. 
+
+Smoothing the first stage helps, at the price of a
 choice of smoother that the theory does not make for you.
 
 :::{div}
@@ -549,8 +844,6 @@ choice of smoother that the theory does not make for you.
 
 - What are the strengths of CCP-based estimation, and how does it compare to NFXP?
 - What are the potential weaknesses and difficulties of this approach?
-- Which states of the Zurcher model are visited rarely in the bus data, and what does
-  that do to the first stage?
 :::
 
 ## Further topics

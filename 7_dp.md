@@ -53,9 +53,12 @@ cp -r tasks/epsilon_inventory solutions/epsilon_inventory  # work on the copy
 
 Implement the stochastic version set up in this chapter: truncated geometric demand,
 the value function on the $(x,d)$ grid, and backwards induction over the finite
-horizon. The notebook in the task folder carries the deterministic code of this class
-and the task to complete. The code of this class, `session07-sep15/inventory.ipynb` in
-the code repository, is worth having beside you while you work.
+horizon.
+
+The notebook `inventory_stochastic.ipynb` in the task folder carries the deterministic
+code of this class and the details of the task, step by step. The code of this class,
+`session07-sep15/inventory.ipynb` in the code repository, is worth having beside you
+while you work.
 
 Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](8_dp_infinite.md).
 ````

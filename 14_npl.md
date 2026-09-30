@@ -27,21 +27,13 @@ git pull upstream main                     # collect the task
 cp -r tasks/theta_npl solutions/theta_npl  # work on the copy
 ```
 
-The notebook in the task folder carries the model class, the simulator and the [NFXP estimator of Class 10](10_nfxp.md). The steps:
+Implement the operator $\Psi(P,\theta)$ for the Zurcher model, estimate $(RC, \theta_1)$ by
+the two-step pseudo-likelihood and by the NPL iterations on simulated data, and compare
+both to NFXP on the same sample, in accuracy and in cost, for a large and a small panel.
 
-1. Implement the operator $\Psi(P,\theta)$ for the Zurcher model: the correction terms
-   $e(d)$, the policy evaluation $\varphi(P)$ as a linear solve, and the logit
-   $\Lambda$. Verify that the model's own choice probabilities from the solver are a
-   fixed point of $\Psi$ at the true parameters.
-2. Write the pseudo-likelihood $\ell_n(\theta)$ for $\theta = (RC,\theta_1)$ given
-   frequency-estimated CCPs on simulated data, and maximize it. Compare the estimate
-   and its standard errors to NFXP on the same sample.
-3. Implement the NPL iterations and record $\hat\theta_K$ and
-   $\|\hat P_K - \hat P_{K-1}\|$ for $K = 1,2,\dots$ until convergence. Plot the path of
-   the estimates against the NFXP estimate, and count solver-equivalent operations for
-   both methods.
-4. Repeat 2–3 on a panel ten times smaller. Report which $K$ removes most of the
-   finite sample bias, and whether the iterations still converge.
+The notebook `npl_zurcher.ipynb` in the task folder carries the model class, the
+simulator, the [NFXP estimator of Class 10](10_nfxp.md) and the details of the task,
+step by step.
 
 Submit it as a pull request, following the [git workflow](2_workflow.md#submission). One of you presents a solution at the
 start of the next Tuesday class.

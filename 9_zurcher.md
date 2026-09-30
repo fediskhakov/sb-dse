@@ -59,23 +59,15 @@ git pull upstream main                           # collect the task
 cp -r tasks/zeta_zurcher solutions/zeta_zurcher  # work on the copy
 ```
 
-The notebook in the task folder carries the model class of this class. The steps:
+Take the model of this class apart: verify its Fréchet derivative against finite
+differences, find the starting points from which Newton–Kantorovich breaks down, and
+compute the ergodic distribution of mileage under the optimal policy — the distribution
+of the data the model generates, which we simulate from [on Thursday](10_nfxp.md).
 
-1. Verify the Fréchet derivative: compare `dev1` returned by `bellman()` to a finite
-   difference approximation of $\partial\Gamma/\partial EV$ at a random point, and report
-   the maximum absolute discrepancy.
-2. Break NK: at $\beta = 0.9999$ start `solve_nk` from $EV_0 = 0$ and from a few other
-   starting points, such as a large constant or random noise. Record where it converges,
-   where it diverges or stalls, and how many SA steps the poly-algorithm needs before its
-   NK steps succeed from the same points.
-3. Ergodic distribution: under the optimal policy the mileage follows a Markov chain
-   with transition matrix $\bar{\Pi} = \text{diag}(P)\,\Pi(d=0) + \text{diag}(\bar P)\,\Pi(d=1)$.
-   Compute its stationary distribution and plot it against the replacement
-   probability on the same mileage grid. This is the distribution of the data the model
-   generates, and we simulate from it [on Thursday](10_nfxp.md).
-
-The code of this class, `session09-sep22/zurcher.ipynb` in the code repository, is
-worth having beside you while you work.
+The notebook `play_zurcher.ipynb` in the task folder carries the model class of this
+class, `zurcher.py`, and the details of the task, step by step. The code of this class,
+`session09-sep22/zurcher.ipynb` in the code repository, is worth having beside you
+while you work.
 
 Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](10_nfxp.md).
 ````

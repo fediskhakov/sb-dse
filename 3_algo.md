@@ -58,7 +58,13 @@ git pull upstream main                                       # collect the task
 cp -r tasks/gamma_compositions solutions/gamma_compositions  # work on the copy
 ```
 
-Write your own composition generator and measure its complexity empirically.
+Write your own generator of the compositions of an integer, verify it, and measure its
+complexity empirically: time it on growing inputs and compare the growth to the number of
+compositions it has to produce.
+
+The notebook `compositions.ipynb` in the task folder carries the details of the task, step
+by step. The code of this class, `session03-sep1/algorithms.ipynb` in the code
+repository, is worth having beside you while you work.
 
 Submit it as a pull request, following the [git workflow](2_workflow.md#submission). The solutions are discussed at the start of the [next class](4_recursion.md).
 ````
