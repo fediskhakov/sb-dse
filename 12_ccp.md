@@ -19,10 +19,13 @@ says exactly what the data can and cannot identify.
 
 ````{seealso} Key reading
 
-{cite:t}`arcidiaconoConditionalChoiceProbability2011` "Conditional Choice Probability Estimation of Dynamic Discrete Choice Models With Unobserved Heterogeneity", *Econometrica* 79(6), pp. 1823–1867
-
 {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` "Conditional Choice Probabilities
 and the Estimation of Dynamic Models", *Review of Economic Studies* 60(3), pp. 497–529
+The inversion theorem that started it all, the early CCP estimator and application. Notation that been standardized later..
+
+{cite:t}`arcidiaconoConditionalChoiceProbability2011` "Conditional Choice Probability Estimation of Dynamic Discrete Choice Models With Unobserved Heterogeneity", *Econometrica* 79(6), pp. 1823–1867.
+Further CCP theory, modern notation, notion of finite dependence, CCP estimator for models with unobserved heterogeneity.
+
 ````
 
 ````{hint} Running the code for this lecture
