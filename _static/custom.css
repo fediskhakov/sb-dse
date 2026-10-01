@@ -418,3 +418,73 @@ img.img-thin-border {
     display: none;
   }
 }
+
+/* Announcement — schedule changes and other news the class must not miss: a moved class,
+   a cancelled session, a changed deadline. Uses the `important` kind, which is used for
+   nothing else in these notes (MyST discards custom class names, so the kind is the
+   handle). Never collapsed. The loudest block on the page: a heavy red frame on all four
+   sides, a solid red header with white text, and a large megaphone in a column on the
+   left spanning header and body, in place of the theme's small header icon. */
+.myst-admonition.myst-admonition-important {
+  position: relative;
+  border: 4px solid #c62828;
+  border-left-width: 10px;
+  box-shadow: 0 4px 18px rgb(198 40 40 / 25%);
+}
+
+.myst-admonition-important::before {
+  content: "📢";
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.myst-admonition-important .myst-admonition-header > svg {
+  display: none;
+}
+
+.myst-admonition-important .myst-admonition-header {
+  padding-left: 5.2rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+  font-size: 1.25em;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  background-color: #c62828;
+}
+
+.myst-admonition-important .myst-admonition-body {
+  padding-left: 5.2rem;
+  background-color: #fff3f0;
+  font-size: 1.1em;
+}
+
+.dark .myst-admonition.myst-admonition-important {
+  border-color: #ef5350;
+}
+
+.dark .myst-admonition-important .myst-admonition-header {
+  color: #ffffff;
+  background-color: #b71c1c;
+}
+
+.dark .myst-admonition-important .myst-admonition-body {
+  background-color: #3a1a1a;
+}
+
+/* on narrow screens the icon column costs too much width: shrink it */
+@media (max-width: 640px) {
+  .myst-admonition-important::before {
+    font-size: 2rem;
+    left: 0.6rem;
+  }
+  .myst-admonition-important .myst-admonition-header,
+  .myst-admonition-important .myst-admonition-body {
+    padding-left: 3.6rem;
+  }
+}

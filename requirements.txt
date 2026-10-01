@@ -8,3 +8,4 @@ scipy
 matplotlib
 sympy
 line_profiler
+optimagic

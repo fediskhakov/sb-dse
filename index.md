@@ -82,7 +82,7 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Sep 24 | [Nested fixed point estimation (NFXP)](10_nfxp.md) |
 | Tue Sep 29 | [Practical session on NFXP estimation](11_practical_nfxp.md) |
 | Thu Oct 1 | [Conditional choice probabilities, identification and two-step estimator](12_ccp.md) |
-| Tue Oct 6 | Estimation of Zurcher model with two step CCP estimator **@ 11:30 instead of 9:30** |
+| Tue Oct 6 | [Estimation of Zurcher model with two step CCP estimator](13_ccp_practice.md) **@ 11:00 instead of 9:30** |
 | Thu Oct 8 | [Nested pseudo-likelihood (NPL)](14_npl.md) |
 | Tue Oct 13 | *Fall break — no class* |
 | | **Part III — Continuous choice and simulation-based estimation** |
