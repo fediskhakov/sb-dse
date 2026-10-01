@@ -320,7 +320,7 @@ want to evaluate thousands of times inside an estimator.
 
 Three assumptions bring the problem back to a fixed point on the mileage grid alone.
 
-````{attention} Definition
+````{attention} Rust assumptions
 
 **(AS)** Additive separability in preferences:
 
