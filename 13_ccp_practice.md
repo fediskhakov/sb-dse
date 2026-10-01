@@ -13,7 +13,7 @@ kernelspec:
 
 ````{important} Announcement: special class time on October 6
 
-**Tuesday, October 6: this class meets 11:00–12:30**, instead of the usual
+**Tuesday, October 6: this class meets 12:30–1:50pm**, instead of the usual
 9:30–10:50, because of my late return from the airport.
 ````
 

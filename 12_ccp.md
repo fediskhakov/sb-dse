@@ -499,7 +499,7 @@ V^\sigma(x') =
 \sum_{k\in D(x)} \omega_k \big[ v(x',k) + \psi(x',k) \big]
 $$
 
-Let's now repeat this step again in the next period, and so on. This is referred to as *telescoping* the integratedvalue function.
+Let's now repeat this step again in the next period, and so on. This is referred to as *telescoping* the integrated value function.
 
 1. Fix the current period $t$, the state $x_t = x$ and the initial choice
 $d$. 
