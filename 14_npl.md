@@ -1,6 +1,6 @@
 ---
 title: 📖 Nested pseudo-likelihood (NPL)
-short_title: 📖 NPL
+short_title: 📖 NPL estimator
 subtitle: Class 14 — Thursday, October 8
 downloads:
   - file: 14_npl.md
@@ -14,6 +14,15 @@ The [two-step estimator of Class 12](12_ccp.md#ccp-estimation) trades efficiency
 NFXP trades the other way. {cite:t}`aguirregabiriaSwappingNestedFixed2002` put the two
 on one line: rewrite the Bellman equation as a fixed point in the space of choice
 probabilities, and iterate on it only as many times as the data deserve.
+
+````{seealso} Key reading
+
+{cite:t}`aguirregabiriaSwappingNestedFixed2002` "Swapping the Nested Fixed Point
+Algorithm: A Class of Estimators for Discrete Markov Decision Models", *Econometrica*
+70(4), 1519–1543. The policy iteration operator in probability space, the
+pseudo-likelihood estimator and the NPL iterations of this class all come from this
+paper.
+````
 
 ````{danger} Homework theta_npl: pseudo-likelihood and NPL on the bus engine model
 :class: dropdown
@@ -300,6 +309,7 @@ part of the course returns to the question of which fixed point an estimator fin
 - 📖 {cite:t}`aguirregabiriaSequentialEstimationDynamic2007` "Sequential Estimation of Dynamic Discrete Games"
 - 📖 {cite:t}`hotz1993ConditionalChoiceProbabilitiesb` "Conditional Choice Probabilities and the Estimation of Dynamic Models"
 - 📖 {cite:t}`pesendorfer2010SequentialEstimationDynamic` "Sequential Estimation of Dynamic Discrete Games: A Comment"
+- 📖 {cite:t}`aguirregabiriaImposingEquilibriumRestrictions2021` "Imposing equilibrium restrictions in the estimation of dynamic discrete games"
 - 📖 {cite:t}`aguirregabiriaDynamicDiscreteChoice2010` "Dynamic discrete choice structural models: A survey"
 - 📺 Econometric Society Dynamic Structural Econometrics (DSE) lecture by Bertel Schjerning [YouTube video](https://youtu.be/houBb2vQFZE?si=VOIG544hnAiOx18x)
 - Matlab implementation of the NPL estimator for the bus model [DSE 2019 GitHub repo](https://github.com/dseconf/DSE2019/tree/master/02_DDC_SchjerningIskhakov)

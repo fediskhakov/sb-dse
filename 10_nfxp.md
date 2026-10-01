@@ -1,6 +1,6 @@
 ---
 title: "📖 Nested fixed point MLE estimation"
-short_title: 📖 NFXP
+short_title: 📖 NFXP estimator
 subtitle: Class 10 — Thursday, September 24
 downloads:
   - file: 10_nfxp.md

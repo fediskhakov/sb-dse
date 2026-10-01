@@ -70,9 +70,9 @@ The plan below is provisional and will be adjusted as we go.
 | :-- | :-- |
 | | **Part I — Foundations and computational toolkit** |
 | Tue Aug 25 | [Introduction to structural estimation](1_intro.md) — what a structural project consists of |
-| Thu Aug 27 | [Work environment and submission workflow](2_workflow.md) Practical tasks on version control &nbsp;·&nbsp; [Towers of Hanoi](4_recursion.md) — recursion, if time allows |
+| Thu Aug 27 | [Work environment and submission workflow](2_workflow.md) Practical tasks on version control |
 | Tue Sep 1 | [Algorithms and complexity](3_algo.md) |
-| Thu Sep 3 | [Programming practice: recursion](4_recursion.md) |
+| Thu Sep 3 | [Programming practice: Towers of Hanoi](4_recursion.md) |
 | Tue Sep 8 | [Root finding and optimization](5_solvers.md) — bisection and Newton–Raphson |
 | Thu Sep 10 | [Programming practice: static discrete choice](6_logit.md) |
 | | **Part II — Single-agent dynamic programming** |
