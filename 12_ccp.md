@@ -641,8 +641,21 @@ $$
 $$
 
 The state at $t+2$ may still depend on the state at $t+1$, but only through variables
-that the choice at $t$ did not affect. Put weight one on $r$ at $t+1$ in both sequences,
-and the difference collapses to
+that the choice at $t$ did not affect. Put weight one on $r$ at $t+1$ in both sequences.
+In terms of the general formula:
+
+- **Sequences.** $(d, r, \dots)$ and $(d', r, \dots)$, that is
+  $\omega_{t+1}(k|x',d) = \omega_{t+1}(k|x',d') = I\{k=r\}$ for every $x' \in X$.
+- **State distributions.** $\kappa_t(x'|x,d) = \pi(x'|x,d)$ at $t+1$, and
+  $\kappa_{t+1}(x''|x,d) = \sum_{x' \in X} \pi(x''|x',r)\, \pi(x'|x,d)$ at $t+2$. The
+  renewal condition above says exactly that $\kappa_{t+1}(\cdot|x,d) = \kappa_{t+1}(\cdot|x,d')$.
+- **Dependence length.** $\rho = 1$, so the sum over $\tau$ keeps only $\tau = t+1$.
+- **Weights from $t+2$ on.** Any common choice, for example the CCPs themselves. They
+  never have to be specified, because their terms cancel.
+- **Weight differences.** $\Delta_{t+1}(k,x,x',d,d') = I\{k=r\}
+  \big[ \pi(x'|x,d) - \pi(x'|x,d') \big]$, so the sum over $k$ keeps only $k = r$.
+
+Substituting, the difference collapses to
 
 $$
 \begin{aligned}
@@ -656,7 +669,10 @@ Only the mapping $\psi(\cdot,r)$ of the renewal action is needed. A **terminal
 choice**, such as exit or retirement, works the same way
 {cite:p}`hotz1993ConditionalChoiceProbabilitiesb`. No choices follow it, so its
 continuation value folds into its flow payoff, and the same expression holds for any
-two non-terminal alternatives $d, d'$ with $r$ the terminal choice.
+two non-terminal alternatives $d, d'$ with $r$ the terminal choice. In the general
+formula, after $r$ the state moves to an absorbing state with zero payoffs, so
+$\kappa_{t+1}(\cdot|x,d) = \kappa_{t+1}(\cdot|x,d')$ is a point mass on it, $\rho = 1$,
+and $u(x',r)$ is the lifetime value of exiting at $x'$.
 ````
 
 The Zurcher model is the leading case: engine replacement is a renewal action, so the

@@ -67,7 +67,7 @@ $$
 $$
 
 Neither $u(x',\text{replace}) = -RC$ nor $\gamma$ depends on $x'$. Both multiply the
-difference of two probability distributions, which sums to zero, so they drop out:
+difference of two probability distributions, each integrates to one giving difference of zero, so they drop out:
 
 $$
 \begin{aligned}
@@ -97,7 +97,7 @@ $$
 \big[ \Pi_{x,x'} - \Pi_{0,x'} \big]
 $$
 
-wehre $\Lambda(\bullet) = \exp(\bullet)/\sum\exp(\cdot)$ is the logistic function. 
+where $\Lambda(\bullet) = \exp(\bullet)/[1+\exp(\bullet)]$ converts value difference to choice probability. 
 
 ### CCP estimator
 
