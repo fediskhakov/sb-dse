@@ -449,6 +449,7 @@ are
     - the reason behind the fast convergence of policy iterations
     - mathematically equivalent to NK iterations
 
+(howard-policy-iterations)=
 ## Policy iterations aka Howard policy improvement algorithm
 
 Break the search of the fixed point of Bellman operator into two steps:
