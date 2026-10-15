@@ -57,6 +57,9 @@ project:
     - file: 12_ccp.md
     - file: 13_ccp_practice.md
     - file: 14_npl.md
+    - file: 15_cake_eating.md
+    - file: 16_cons_practice.md
+    - file: 17_egm.md
     - file: bibliography.md
 
 site:

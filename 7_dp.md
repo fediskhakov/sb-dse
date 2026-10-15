@@ -157,6 +157,7 @@ Solution is given by:
 The optimal choices are revealed along the solution of the Bellman
 equation as decisions which solve the maximization problem in the right hand side ($\arg\max$ of the maximization in the Bellman equation) 
 
+(dp-classification)=
 ## Classification of DP models
 
 There are many problems where DP methods are applicable, therefore it is important to quickly classify *your problem* to make others understand exactly what follows

@@ -86,9 +86,9 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Oct 8 | [Nested pseudo-likelihood (NPL)](14_npl.md) |
 | Tue Oct 13 | *Fall break — no class* |
 | | **Part III — Continuous choice and simulation-based estimation** |
-| Thu Oct 15 | Cake eating on a grid; function approximation |
-| Tue Oct 20 | The same model solved many ways — accuracy and speed compared |
-| Thu Oct 22 | The endogenous gridpoint methods |
+| Thu Oct 15 | [Cake eating on a grid, function approximation and the consumption-savings model](15_cake_eating.md) |
+| Tue Oct 20 | [Practice: one model, three solvers](16_cons_practice.md) — accuracy and speed compared |
+| Thu Oct 22 | [The endogenous gridpoint method](17_egm.md) |
 | Tue Oct 27 | DC-EGM for discrete-continuous choice |
 | Thu Oct 29 | Method of simulated moments |
 | Tue Nov 3 | Simulation-based estimation of a consumption-savings-retirement model |
