@@ -241,6 +241,7 @@ stated rather than implied.
 maintained structure, and taking them outside it requires further external validity
 assumptions.
 
+(project-components)=
 ### Components of a structural estimation project
 
 1. **Economic model** derived from theory — optimizing agents, possibly with bounded

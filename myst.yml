@@ -43,6 +43,7 @@ project:
       output: exports/eco629-dynamic-structural-models.pdf
   toc:
     - file: index.md
+    - file: 0_project.md
     - file: 1_intro.md
     - file: 2_workflow.md
     - file: 3_algo.md
