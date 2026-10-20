@@ -89,6 +89,7 @@ thousand probabilities underflows to zero long before the sample is exhausted, a
 sum of their logs does not. [Never take the log of a probability](6_logit.md#log-of-probability), from Class 6, applies
 to every term of $\ell_n(\theta)$.
 
+(mle-asymptotics)=
 ### Asymptotic properties of MLE
 
 Under regularity conditions the MLE has four properties that make it the default

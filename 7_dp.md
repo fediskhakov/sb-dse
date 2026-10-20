@@ -220,6 +220,8 @@ $$V(\text{state}) = \max_{\text{decisions}} \big[ U(\text{state},\text{decision}
     - discretized?
     - treated as continuous?
     - require interpolating of value function in Bellman equation!
+    - 📖 {cite:t}`carroll2006MethodEndogenousGridpoints` EGM paper, and
+        {cite:t}`megm` multidimensional EGM paper
 
 1. Problems with discrete and continuous choice
 

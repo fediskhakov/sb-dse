@@ -627,9 +627,9 @@ value difference is a linear function of flow utilities over $\rho+1$ periods.
 - only the $\psi$ functions of alternatives that carry positive weight in one of the two sequences
 are needed
 
-(renewal-terminal)=
 ````{tip} Example: renewal actions and terminal choices
 
+(renewal-terminal)=
 Let a **renewal action** $r \in D(x)$ be an alternative that, taken at $t+1$, makes the distribution of the
 state at $t+2$ independent of the choice at $t$:
 

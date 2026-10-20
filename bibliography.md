@@ -106,7 +106,8 @@ Random utility and discrete choice:
 
 - {cite:t}`carroll2006MethodEndogenousGridpoints` — the endogenous gridpoint method
 - {cite:t}`egm` — DC-EGM for discrete-continuous problems
-- {cite:t}`megm` — the multidimensional endogenous gridpoint method
+- {cite:t}`megm` — the multidimensional endogenous gridpoint method, with the corrigendum
+  {cite:t}`iskhakov2017CorrigendumMultidimensionalEndogenous`
 - {cite:t}`druedahl2017GeneralEndogenousGridb` — a general EGM
 - {cite:t}`mcfaddenMethodSimulatedMoments1989` and
   {cite:t}`pakes1989SimulationAsymptoticsOptimizationa` — method of simulated moments

@@ -357,6 +357,7 @@ In Python both are available:
 - `np.interp` for the linear spline
 - `scipy.interpolate.CubicSpline` for the cubic spline
 
+(polynomial-approximation)=
 ## Polynomial approximation
 
 A polynomial of degree $n$ through $n+1$ distinct nodes exists and is unique. 

@@ -89,9 +89,9 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Oct 15 | [Cake eating on a grid, function approximation and the consumption-savings model](15_cake_eating.md) |
 | Tue Oct 20 | [Practice: one model, three solvers](16_cons_practice.md) — accuracy and speed compared |
 | Thu Oct 22 | [The endogenous gridpoint method](17_egm.md) |
-| Tue Oct 27 | DC-EGM for discrete-continuous choice |
-| Thu Oct 29 | Method of simulated moments |
-| Tue Nov 3 | Simulation-based estimation of a consumption-savings-retirement model |
+| Tue Oct 27 | [DC-EGM for discrete-continuous choice](18_dcegm.md) |
+| Thu Oct 29 | [Method of simulated moments](19_msm.md) |
+| Tue Nov 3 | [Simulation-based estimation of a consumption-savings-retirement model](20_msm_practice.md) |
 | | **Part IV — Equilibrium models** |
 | Thu Nov 5 | Micro-founded equilibrium models — equilibrium trade in used cars &nbsp;·&nbsp; **project proposal due** |
 | Tue Nov 10 | Implementation of the doubly NFXP estimation &nbsp;·&nbsp; **project clinic** |

@@ -1,6 +1,6 @@
 ---
 title: "🔬 Practice: one model, three solvers"
-short_title: 🔬 Consumption-savings practice
+short_title: 🔬 Consumption-savings
 subtitle: Class 16 — Tuesday, October 20
 downloads:
   - file: 16_cons_practice.md
@@ -10,12 +10,11 @@ kernelspec:
   display_name: Python 3
 ---
 
-<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
-
 Today we code the stochastic consumption-savings model of
 [Class 15](15_cake_eating.md), compare ways to compute the expectation over income, and
 solve the model three ways: value function iterations with a discretized choice, value
-function iterations with a continuous choice, and time iterations on the Euler equation. Then we measure what each solver buys, in accuracy and
+function iterations with a continuous choice, and time iterations on the Euler equation. 
+Then we measure what each solver buys, in accuracy and
 in time, with two checks that apply to any solution method.
 
 ````{hint} Running the code for this lecture
@@ -45,6 +44,7 @@ Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
 ````
 
+(cons-model-object)=
 ## The model object
 
 The model of {cite:t}`deaton1991SavingLiquidityConstraints`, from
@@ -57,8 +57,7 @@ $$
 
 The model object holds the parameters, the state grid on $(0, \overline{M}]$, the choice
 grid as shares of wealth, the [quadrature nodes and weights](#expectations-by-quadrature)
-for the income, and the primitives: utility, marginal utility and its inverse, and the
-budget constraint. Every solver below is a function of this object.
+for the income, and the primitives: utility and the budget constraint. Every solver below is a function of this object.
 
 ```{code-cell} python3
 import time
@@ -83,12 +82,6 @@ class deaton():
 
     def u(self, c):
         return np.log(c)                                  # utility
-
-    def mu(self, c):
-        return 1 / c                                      # marginal utility
-
-    def imu(self, x):
-        return 1 / x                                      # inverse marginal utility
 
     def next_wealth(self, M, c, y):
         return self.R * (M - c) + y                       # budget constraint
@@ -132,15 +125,41 @@ for some $\xi \in [a,b]$: the same rates as linear and cubic splines, and for th
 reason.
 
 **Gaussian quadrature** chooses the nodes as well as the weights, which doubles the
-degree of polynomials it integrates exactly.
+degree of polynomials it integrates exactly. The nodes come from orthogonal polynomials.
+
+````{attention} Definition
+
+Let $w(x) > 0$ be a **weight function** on an interval $[a,b]$, possibly unbounded, with
+finite moments $\int_a^b x^k w(x)\, dx$ for all $k$. It defines the inner product
+
+$$
+\langle f, g \rangle_w = \int_a^b f(x)\, g(x)\, w(x)\, dx
+$$
+
+A family of polynomials $\{\phi_k\}_{k=0}^{\infty}$, with $\phi_k$ of degree exactly $k$,
+is **orthogonal** with respect to $w$ if
+
+$$
+\langle \phi_i, \phi_j \rangle_w = 0 \;\text{ for } i \neq j,
+\qquad
+\langle \phi_k, \phi_k \rangle_w > 0,
+$$
+
+and **orthonormal** if in addition $\langle \phi_k, \phi_k \rangle_w = 1$.
+````
+
+- the [Chebyshev polynomials of Class 15](15_cake_eating.md#polynomial-approximation)
+  are the orthogonal family for $w(x) = (1-x^2)^{-1/2}$ on $[-1,1]$
 
 ````{attention} Theorem (Gaussian quadrature)
 
 Let $\{\phi_k\}$ be the polynomials orthogonal with respect to a weight function
-$w(x) > 0$ on $[a,b]$, with $\phi_k$ of degree $k$ and leading coefficient $q_k$. Let
-the nodes $x_1 < \dots < x_n$ be the $n$ zeros of $\phi_n$, which all lie in $(a,b)$,
-and the weights $\omega_i = -\dfrac{q_{n+1}/q_n}{\phi_n'(x_i)\,\phi_{n+1}(x_i)} > 0$. Then
-for $f$ with $2n$ continuous derivatives, for some $\xi \in [a,b]$,
+$w(x) > 0$ on $[a,b]$, with $\phi_k$ of degree $k$ and leading coefficient $q_k$. 
+
+Let the nodes $x_1 < \dots < x_n$ be the $n$ zeros of $\phi_n$, which all lie in $(a,b)$,
+and the weights $\omega_i = -\dfrac{q_{n+1}/q_n}{\phi_n'(x_i)\,\phi_{n+1}(x_i)} > 0$.
+
+Then for $f$ with $2n$ continuous derivatives, for some $\xi \in [a,b]$,
 
 $$
 \int_a^b f(x)\, w(x)\, dx = \sum_{i=1}^{n} \omega_i f(x_i) + \frac{f^{(2n)}(\xi)}{q_n^2\, (2n)!}
@@ -191,6 +210,29 @@ as many draws for twice the precision, but it does not depend on the dimension o
 integral, while the number of nodes of a product quadrature rule grows exponentially
 with it.
 
+````{tip} Example: an expectation with a known value
+
+Let $\tilde y$ be log-normal, $\log \tilde y \sim N(0, \sigma^2)$, with $\sigma = 0.5$.
+
+Then $1/\tilde y$ is log-normal too, $\log(1/\tilde y) = -\log \tilde y \sim N(0, \sigma^2)$,
+so
+
+$$
+\mathbb{E}\,(1/\tilde y) = \exp(\sigma^2/2)
+$$
+
+exactly, and the error of any numerical method can be measured.
+
+The code computes
+$\mathbb{E}\,(1/\tilde y)$ three ways and reports the absolute errors:
+
+- **Gauss–Hermite**, with nodes $y_i = e^{\sqrt{2}\sigma x_i}$ and weights
+  $\omega_i/\sqrt{\pi}$ from the formula above, for $n = 3, 5, 10, 20$ nodes
+- **Gauss–Legendre on the CDF**, with nodes $y_k = F^{-1}(q_k)$ and weights rescaled to
+  $[0,1]$, for the same numbers of nodes
+- **Monte Carlo**, with $N$ = 100 to 100 000 draws, next to its estimated standard error
+````
+
 ```{code-cell} python3
 def quadrature_hermite(sigma, n):
     '''Gauss-Hermite nodes and weights for expectations of functions of a log-normal income'''
@@ -215,14 +257,11 @@ for N in (100, 1_000, 10_000, 100_000):
     print(f'{N:>7} {abs(g.mean() - exact):>14.1e} {g.std() / np.sqrt(N):>16.1e}')
 ```
 
-The expectation of $1/\tilde y$, the shape of a marginal utility, is computed to machine
+The expectation of $1/\tilde y$ is computed to machine
 precision by Gauss–Hermite with 10 nodes. Gauss–Legendre on the CDF is still off in the
 third digit with 20 nodes, and Monte Carlo needs about 100 thousand draws to match it.
 For a one-dimensional expectation inside a solver, where it is evaluated millions of
-times, a Gaussian rule matched to the distribution is the right tool. Monte Carlo has
-its place in high dimensions, and in simulating the model, as in Keane's test below.
-Switching the model object to Gauss–Hermite is one of the extensions of the
-[practical task](#task-cons-practice).
+times, a Gaussian rule matched to the distribution is the right tool.
 
 ## VFI with discretized choice
 
@@ -256,6 +295,39 @@ def solve_vfi(m, bellman, maxiter=500, tol=1e-4, callback=None):
     return c1
 ```
 
+```{code-cell} python3
+:tags: [hide-input]
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.5))
+for sigma in (0.0001, 0.5, 0.75):
+    ms = deaton(sigma=sigma)
+    last = {}                                             # the callback keeps the last iteration
+    c = solve_vfi(ms, bellman_discretized, callback=lambda **kw: last.update(kw))
+    ax1.plot(ms.grid[1:], last['value'][1:], label=f'σ = {sigma}')
+    ax2.plot(ms.grid, c, label=f'σ = {sigma}')
+ax2.plot(ms.grid, ms.grid, 'k:', lw=0.8, label='c = M')
+ax2.set(ylim=(0, 3))
+for ax, t in ((ax1, 'Value function'), (ax2, 'Policy function')):
+    ax.set(xlabel='Wealth, M', title=t)
+    ax.grid(color='0.9')
+    ax.legend()
+fig.suptitle('VFI with discretized choice, 100 state and 250 choice points')
+plt.show()
+```
+
+The consumer eats all wealth up to a threshold and saves a part of it above. With more
+income risk the threshold is lower and consumption at low wealth is smaller: the
+consumer saves for precaution. At high wealth the order flips, because with
+$\log\tilde y \sim N(0,\sigma^2)$ a larger $\sigma$ also raises mean income
+$\exp(\sigma^2/2)$, which is also why the value function is higher.
+
+:::{div}
+:class: discussion
+
+- Happy with the accuracy of the solution?
+- How would you change the model to vary the risk while keeping mean income fixed?
+:::
+
 ## VFI with continuous choice
 
 The second approach drops the choice grid and solves the maximization in the Bellman
@@ -272,7 +344,7 @@ $$
 
 `scipy.optimize.minimize_scalar` with `method='bounded'` runs Brent's method on an
 interval, combining golden section search with parabolic interpolation, without
-derivatives.
+derivatives. See the link in the bottom of the page to the visualization of the method by Oscar Fernandez.
 
 ```{code-cell} python3
 def bellman_continuous(m, V0):
@@ -292,28 +364,58 @@ def bellman_continuous(m, V0):
     return V1, c1
 ```
 
+```{code-cell} python3
+:tags: [hide-input]
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.5))
+for sigma in (0.0001, 0.5, 0.75):
+    ms = deaton(sigma=sigma)
+    last = {}                                             # the callback keeps the last iteration
+    c = solve_vfi(ms, bellman_continuous, callback=lambda **kw: last.update(kw))
+    ax1.plot(ms.grid[1:], last['value'][1:], label=f'σ = {sigma}')
+    ax2.plot(ms.grid, c, label=f'σ = {sigma}')
+ax2.plot(ms.grid, ms.grid, 'k:', lw=0.8, label='c = M')
+ax2.set(ylim=(0, 3))
+for ax, t in ((ax1, 'Value function'), (ax2, 'Policy function')):
+    ax.set(xlabel='Wealth, M', title=t)
+    ax.grid(color='0.9')
+    ax.legend()
+fig.suptitle('VFI with truly continuous choice, 100 state and 250 choice points')
+plt.show()
+```
+
+:::{div}
+:class: discussion
+
+- Happy with the accuracy of the solution?
+- What contributes to the inaccuracy of the solution now?
+:::
+
+
 ## Time iterations on the Euler equation
 
 The third approach does not use the value function at all. The
 [Euler equation](15_cake_eating.md#the-euler-equation) holds for the optimal policy,
 so given a policy $c_{i-1}$ for next period, the policy for this period solves, in every
-state $M_j$,
+state $M_j$
 
 $$
 u'(c) = \beta R \sum_k \omega_k\, u'\Big(c_{i-1}\big(R(M_j - c) + y_k\big)\Big)
 $$
 
-for $c$, a root-finding problem in one variable. If the residual
-$u'(c) - \beta R\, \mathbb{E}\, u'(c')$ is still positive at $c = M_j$, the borrowing
-constraint binds and $c = M_j$. Iterating this operator, the *time iterations*,
-converges to the optimal policy.
+for $c$, a root-finding problem in one variable.
+
+If the residual $u'(c) - \beta R\, \mathbb{E}\, u'(c')$ is still positive at $c = M_j$, the borrowing
+constraint binds and $c = M_j$.
+
+Iterating this operator, the *time iterations*, converges to the optimal policy.
 
 ```{code-cell} python3
 def euler_residual(m, c, M, c0):
     '''LHS - RHS of the Euler equation at (M, c), with next period policy c0 on the grid'''
     M1 = m.next_wealth(np.atleast_1d(M)[:, None], np.atleast_1d(c)[:, None], m.quadp[None, :])
     c1 = np.maximum(interp(M1, m.grid, c0), m.eps)        # next period consumption, kept positive
-    return m.mu(c) - m.beta * m.R * (m.mu(c1) @ m.quadw).squeeze()
+    return 1 / c - m.beta * m.R * ((1 / c1) @ m.quadw).squeeze()   # marginal utility u'(c) = 1/c
 
 def solve_timeiter(m, maxiter=500, tol=1e-4, callback=None):
     '''Time iterations: solve the Euler equation for c in every state, returns the policy'''
@@ -337,30 +439,31 @@ def solve_timeiter(m, maxiter=500, tol=1e-4, callback=None):
 ```{code-cell} python3
 :tags: [hide-input]
 
-m = deaton()
-solutions = {}
-for name, solver in (('VFI, discretized choice', lambda: solve_vfi(m, bellman_discretized)),
-                     ('VFI, continuous choice', lambda: solve_vfi(m, bellman_continuous)),
-                     ('time iterations', lambda: solve_timeiter(m))):
-    t0 = time.perf_counter()
-    solutions[name] = solver()
-    print(f'{name:<25} solved in {time.perf_counter() - t0:5.2f} s')
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.5))
-for name, c in solutions.items():
-    ax1.plot(m.grid, c, label=name)
-    ax2.plot(m.grid, c, label=name)
-ax1.plot(m.grid, m.grid, 'k:', lw=0.8, label='c = M')
-ax2.set(xlim=(0, 2.5), ylim=(0, 2), title='Near the borrowing constraint')
-ax1.set(title='Policy functions')
-for ax in (ax1, ax2):
-    ax.set(xlabel='Wealth M', ylabel='Consumption'); ax.grid(color='0.9'); ax.legend(fontsize=8)
+for sigma in (0.0001, 0.5, 0.75):
+    ms = deaton(sigma=sigma)
+    last = {}                                             # the callback keeps the last iteration
+    c = solve_timeiter(ms, callback=lambda **kw: last.update(kw))
+    ax2.plot(ms.grid, c, label=f'σ = {sigma}')
+ax2.plot(ms.grid, ms.grid, 'k:', lw=0.8, label='c = M')
+ax2.set(ylim=(0, 3))
+for ax, t in ((ax1, 'Value function'), (ax2, 'Policy function')):
+    ax.set(xlabel='Wealth, M', title=t)
+    ax.grid(color='0.9')
+ax2.legend()
+fig.suptitle('Time iterations, 100 state and 250 choice points')
 plt.show()
 ```
 
-The three policies look alike at this scale. The consumer eats all of the wealth up to a
-threshold, where the borrowing constraint stops binding, and saves a growing part of it
-above. To tell the solvers apart we need a measure of accuracy.
+:::{div}
+:class: discussion
 
+- Happy with the accuracy of the solution?
+- What contributes to it now?
+:::
+
+
+(accuracy-the-euler-equation-residuals)=
 ## Accuracy: the Euler equation residuals
 
 The [Euler equation residual of Class 15](15_cake_eating.md#euler-residuals) measures
@@ -375,19 +478,6 @@ The residual is relative, so it reads as a fraction of the marginal utility. It 
 evaluated on a dense grid, ten times finer than the solver's, with the policy
 interpolated, and only where the constraint does not bind.
 
-```{code-cell} python3
-def accuracy(m, c, factor=10, rtol=1e-6):
-    '''Mean absolute relative Euler residual of the policy c on a dense grid, interior points only'''
-    M = np.linspace(m.grid[1], m.Mbar, m.ngrid * factor)  # dense grid, first point skipped
-    cM = interp(M, m.grid, c)                             # interpolated policy
-    er = euler_residual(m, cM, M, c) / m.mu(cM)           # relative Euler residual
-    interior = cM < M * (1 - rtol)                        # drop the corner solutions c = M
-    return np.mean(np.abs(er[interior]))
-
-for name, c in solutions.items():
-    print(f'{name:<25} mean |Euler residual| {accuracy(m, c):.2e}')
-```
-
 Time iterations are the most accurate, because they solve the very equation the residual
 measures, up to the interpolation of next period's policy. VFI with continuous choice
 comes next and VFI with discretized choice last.
@@ -396,9 +486,10 @@ Where it breaks: the definition of a corner solution. The bounded optimizer of
 `bellman_continuous` cannot land exactly on the bound $c = M$, it stops a hair below. A
 corner test with an absolute tolerance, `c < M - 1e-10`, then counts the corners as
 interior points, where the residual is large by construction, and the measured error of
-the continuous solver is twenty times too big. The relative tolerance `rtol` above
-removes them. Every accuracy measure needs this kind of care.
+the continuous solver is twenty times too big. The relative tolerance `rtol` in the
+[code below](#speed-and-accuracy) removes them. Every accuracy measure needs this kind of care.
 
+(simulation-and-keanes-test)=
 ## Simulation and Keane's test
 
 The simulator draws income from its true distribution, not from the quadrature nodes,
@@ -446,40 +537,99 @@ plt.show()
 The discretized solver fails the test, with consumption off by about one percent and
 drifting, while the other two keep it flat to seven digits or better.
 
-:::{div}
-:class: discussion
 
-- The homework showed that the on-grid solver passes Keane's test exactly, for a
-  mechanical reason. Why does the discretized solver not share that luck?
-- The Euler residual and Keane's test rank the two VFI solvers the same way here. Can
-  you think of a solver that would pass one check and fail the other?
-:::
-
+(speed-and-accuracy)=
 ## Speed and accuracy compared
+
+The [Euler residual](#accuracy-the-euler-equation-residuals) of a policy, on a dense
+grid and at the interior points only:
+
+```{code-cell} python3
+def accuracy(m, c, factor=10, rtol=1e-6):
+    '''Mean absolute relative Euler residual of the policy c on a dense grid, interior points only'''
+    M = np.linspace(m.grid[1], m.Mbar, m.ngrid * factor)  # dense grid, first point skipped
+    cM = interp(M, m.grid, c)                             # interpolated policy
+    er = euler_residual(m, cM, M, c) * cM                 # relative Euler residual, divided by u'(c) = 1/c
+    interior = cM < M * (1 - rtol)                        # drop the corner solutions c = M
+    return np.mean(np.abs(er[interior]))
+```
+
+Each solver now runs for the three values of $\sigma$ and for a growing state grid, with
+the choice grid of the discretized solver fixed at 250 points. The solvers stop at a
+tight tolerance, $10^{-8}$, so that what we measure is the error of the grid and not of
+the stopping rule. For $\sigma$ near zero the model is set to $\beta R = 1$, where
+[Keane's test](#simulation-and-keanes-test) applies; for the other two values of
+$\sigma$ it does not.
 
 ```{code-cell} python3
 :tags: [hide-input]
 
-print(f'{"grid":>5} {"solver":<25} {"time, s":>8} {"Euler residual":>15}')
-for n in (50, 100, 200):
-    mm = deaton(ngrid=n)
-    for name, solver in (('VFI, discretized choice', lambda: solve_vfi(mm, bellman_discretized)),
-                         ('VFI, continuous choice', lambda: solve_vfi(mm, bellman_continuous)),
-                         ('time iterations', lambda: solve_timeiter(mm))):
-        t0 = time.perf_counter()
-        c = solver()
-        print(f'{n:>5} {name:<25} {time.perf_counter() - t0:>8.2f} {accuracy(mm, c):>15.2e}')
+solvers = {'VFI, discretized choice': lambda m: solve_vfi(m, bellman_discretized, tol=1e-8, maxiter=2000),
+           'VFI, continuous choice': lambda m: solve_vfi(m, bellman_continuous, tol=1e-8, maxiter=2000),
+           'time iterations': lambda m: solve_timeiter(m, tol=1e-8, maxiter=2000)}
+sigmas, grids = (0.0001, 0.5, 0.75), (50, 100, 200, 400)
+M0, T = 5.0, 100                                          # Keane's test: initial wealth and periods
+fig, axes = plt.subplots(3, 3, figsize=(15, 12))
+for row, sigma in zip(axes, sigmas):
+    keane_test = sigma < 0.01                             # sigma near zero: Keane's test with beta*R = 1
+    for name, solve in solvers.items():
+        keane, euler, runtime = [], [], []
+        for n in grids:
+            if keane_test:
+                m = deaton(sigma=sigma, R=1/0.9, nquad=2, ngrid=n)   # beta = 0.9, so beta*R = 1
+            else:
+                m = deaton(sigma=sigma, ngrid=n)
+            t0 = time.perf_counter()
+            c = solve(m)
+            runtime.append(time.perf_counter() - t0)
+            euler.append(accuracy(m, c))
+            if keane_test:
+                _, C = simulate(m, c, M0, T, seed=2026)
+                cstar = ((m.R - 1) * M0 + 1) / m.R
+                keane.append(np.max(np.abs(C[0] / cstar - 1)))
+        if keane_test:
+            row[0].plot(grids, keane, 'o-', label=name)
+        row[1].plot(grids, euler, 'o-', label=name)
+        row[2].plot(grids, runtime, 'o-', label=name)
+    if not keane_test:
+        row[0].axis('off')
+        row[0].text(0.5, 0.5, f"σ = {sigma}\nKeane's test needs σ ≈ 0 and βR = 1",
+                    ha='center', va='center', transform=row[0].transAxes)
+    titles = ("Keane's test, max |c_t / c* - 1|", 'Mean |Euler residual|', 'Run time, s')
+    for ax, t in zip(row, titles):
+        ax.set(xscale='log', yscale='log', xlabel='State grid points',
+               title=f'{t}, σ = {sigma}' + (', βR = 1' if keane_test else ''))
+        ax.set_xticks(grids, [str(n) for n in grids])
+        ax.grid(color='0.9')
+axes[0, 0].legend()
+fig.tight_layout()
+plt.show()
 ```
 
-More grid points help all three solvers, but the ranking stays. The discretized solver
-is cheap per iteration, but its accuracy is capped by the choice grid. Optimizing over a
-continuous choice in every state buys accuracy at a cost that grows with the grid.
-Time iterations are the most accurate here and, from 100 grid points on, also the
-fastest: a root of the Euler equation is easier to find than a maximum of the Bellman
-equation, and the Euler equation needs no value function.
+- **Keane's test** at $\sigma \approx 0$: the discretized solver fails it at every grid
+  size, off by 4% with 50 points and still by 0.4% with 400, because the choice grid
+  pins consumption only to the nearest share. Time iterations keep consumption within
+  $10^{-4}$ of $c^\star$ at every grid size, which is about as close as a test with
+  $\sigma = 10^{-4}$ can show: the income shocks themselves move consumption by that
+  much over 100 periods. VFI with continuous choice gets there only with 400 points,
+  from $6 \cdot 10^{-4}$ with 50.
+- **Euler residuals**: VFI with continuous choice and time iterations improve
+  steadily with the grid. With $\sigma \approx 0$ they are almost identical and fall
+  fourfold for every doubling of the grid, the $h^2$ rate of linear interpolation. With
+  income risk time iterations are well ahead, at about $10^{-5}$ with 400 points. The
+  discretized solver stalls between $10^{-3}$ and $3 \cdot 10^{-3}$, capped by its
+  choice grid.
+- **Run time**: the discretized solver is the fastest without income risk. With risk,
+  time iterations are faster at every grid size and the gap grows with the grid, because
+  each iteration of the discretized solver evaluates every combination of state, choice
+  and quadrature node. Optimizing over a continuous choice in every state is the slowest
+  throughout.
 
-All three still solve a nonlinear problem in every state on every iteration. The
-endogenous gridpoint method of the [next class](17_egm.md) avoids that altogether.
+Time iterations are the best of the three: as accurate as VFI with continuous choice or
+better, and several times faster. A root of the Euler equation is easier to find than a
+maximum of the Bellman equation, and the Euler equation needs no value function.
+
+**Important idea:** not using value function is beneficial! (See next lecture)
 
 :::{div}
 :class: discussion
@@ -489,38 +639,18 @@ endogenous gridpoint method of the [next class](17_egm.md) avoids that altogethe
   or if there were a discrete choice on top of consumption?
 :::
 
+
 ````{warning} Practical task: three solvers for the consumption-savings model
 
 (task-cons-practice)=
-**Pull the code repository before the class:**
-
-```bash
-cd sb-dse-code && git pull
-```
-
-Open `session16-oct20/deaton_pre.ipynb`. It has the model object and the headings of
-this page, and the solvers are left for us to write. Step by step, in class:
-
-1. Explore the model object: how do the quadrature nodes and weights change with
-   $\sigma$ and the number of nodes? Check that they integrate $\mathbb{E}\tilde y$.
-2. Write `bellman_discretized` and `solve_vfi`, and solve the model.
-3. Write `bellman_continuous` and solve the model again.
-4. Write `euler_residual` and `solve_timeiter`, and solve the model a third time.
-5. Write `accuracy` and compare the three solutions. Plot the Euler residuals against
-   wealth: where are they largest, and why?
-6. Write `simulate` and run Keane's test on all three solvers.
-7. Compare the solvers in time and accuracy for several grid sizes.
-
-If time allows:
-
-8. Switch to CRRA utility $u(c) = (c^{1-\rho} - 1)/(1-\rho)$: which methods of the model
-   object change? Solve for $\rho = 2$ and $\rho = 5$.
-9. Make the state grid denser near zero, for example with points $\overline{M}\,s^2$
+1. Switch to CRRA utility $u(c) = (c^{1-\rho} - 1)/(1-\rho)$: which methods of the model
+   object and which functions change? Solve for $\rho = 2$ and $\rho = 5$.
+2. Make the state grid denser near zero, for example with points $\overline{M}\,s^2$
    for $s$ equally spaced on $[0,1]$, and measure the effect on the Euler residuals.
-10. How do the solvers behave for $\beta R$ close to one, and for a large $\sigma$?
-11. Replace the quadrature by
-    [Gauss–Hermite](#expectations-by-quadrature), which is far more
-    accurate for log-normal income, and measure how much the Euler residuals change.
+3. How do the solvers behave for $\beta R$ close to one, and for a large $\sigma$?
+4. Replace the quadrature by
+   [Gauss–Hermite](#expectations-by-quadrature), which is far more
+   accurate for log-normal income, and measure how much the Euler residuals change.
 ````
 
 ````{note} References and additional resources

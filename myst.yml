@@ -60,6 +60,9 @@ project:
     - file: 15_cake_eating.md
     - file: 16_cons_practice.md
     - file: 17_egm.md
+    - file: 18_dcegm.md
+    - file: 19_msm.md
+    - file: 20_msm_practice.md
     - file: bibliography.md
 
 site:
