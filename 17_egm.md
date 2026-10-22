@@ -62,13 +62,11 @@ git pull upstream main                          # collect the task
 cp -r tasks/kappa_floor solutions/kappa_floor   # work on the copy
 ```
 
-Add a government consumption floor to the consumption-savings model of
-[Class 16](16_cons_practice.md): next period wealth becomes
-$M' = \max\{R(M - c) + \tilde y, \underline{x}\}$. Solve the model with
+Add a government consumption floor to the consumption-savings model with deterministic
+income, and solve it with
 [value function iterations with discretized choice](16_cons_practice.md#vfi-with-discretized-choice)
-and with the EGM solver of this class, adapted to the floor. Compare the two solutions
-for several levels of the floor, both the policy functions and simulated consumption
-and wealth profiles, and explain what you find.
+and with the EGM solver of this class. Compare the two solutions for several levels of
+the floor, and explain what you find.
 
 The notebook `floor.ipynb` in the task folder carries the details of the task, step by
 step.
@@ -344,7 +342,7 @@ sum over the income nodes.
 
 ````{attention} Endogenous gridpoint method (EGM) step
 
-The **EGM step** maps a grid $A_1 < \dots < A_n$ of savings and a policy $c(\cdot)$ into
+Given (an estimate of) a policy function $c(\cdot)$, the **EGM step** maps a point $A_j$ from the grid on savings and  into
 the points $(M_j, c_j)$ of the updated policy:
 
 1. next period wealth in every income node: $M'_{jk} = R A_j + y_k$
