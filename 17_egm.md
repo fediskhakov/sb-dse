@@ -352,6 +352,7 @@ the points $(M_j, c_j)$ of the updated policy:
 5. the endogenous grid point: $M_j = A_j + c_j$
 ````
 
+
 The EGM iterations repeat the step, interpolating the points $(M_j, c_j)$ into the policy
 for the next step, until the policy stops changing.
 

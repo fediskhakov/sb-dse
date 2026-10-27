@@ -10,10 +10,8 @@ kernelspec:
   display_name: Python 3
 ---
 
-<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
-
 The [EGM of Class 17](17_egm.md) solves the consumption-savings model without a single
-root-finding operation, but only when the problem is concave. Today we add a discrete
+root-finding operation, but implicitly assumes that the problem is concave. Today we add a discrete
 choice, retirement, on top of consumption, and code the **DC-EGM** of
 {cite:t}`egm`: an EGM step per discrete choice, an upper envelope to throw away the
 points the Euler equation gets wrong, and taste shocks to make the whole thing smooth.
@@ -61,21 +59,23 @@ In economics the two kinds of choice co-exist:
 - how much to save, *and* when to buy a house, a car, a durable
 - which car to buy, *and* how much to drive it
 
-Traditional methods treat them separately: a discrete choice is a maximum over a finite
-set, a continuous choice is a first order condition plus concavity, and a dynamic problem
-is dynamic programming with VFI, policy or time iterations. Put together, the pieces
-break:
-
+Traditional methods treat them separately: 
+- a discrete choice is a maximum over a finite set 
+- a continuous choice is a first order condition under concavity
+  
+Put together, the pieces break:
 - the problem is **intrinsically non-concave**: the value function is the maximum of
   several concave functions, one per discrete alternative
 - **first order conditions are not sufficient**: the Euler equation has several solutions,
-  and only one is the optimum
+  not all are optimum
 - **value functions have kinks and policy functions have discontinuities**, which a
   fixed grid smears and an optimizer trips over
 
 So a traditional solver needs a global optimizer in every point of the state space, has to
 locate and track every kink, and needs special numerical procedures for non-smooth
-objects. DC-EGM keeps the two things EGM is good at, no root finding and an exact
+objects. 
+
+**DC-EGM** keeps the two things EGM is good at, no root finding and an exact
 treatment of the credit constraint, and adds the machinery for the kinks.
 
 The class of problems is that of [EGM](17_egm.md), extended:
@@ -87,16 +87,18 @@ The class of problems is that of [EGM](17_egm.md), extended:
 - one continuous choice $c_t$, consumption, and one discrete choice $d_t$, which drives
   the discrete states
 
-DC-EGM comes in two flavors. **Without taste shocks** it iterates on the value and
-policy functions and produces exact thresholds for the discrete decisions. **With taste
+DC-EGM comes in two flavors. 
+
+1. **Without taste shocks** it iterates on the value and
+policy functions and produces exact thresholds for the discrete decisions. 
+
+2. **With taste
 shocks** it iterates on choice-specific value functions and produces choice
 probabilities, as in the [Rust model](9_zurcher.md#zurcher-choice-probabilities).
 
 :::{div}
 :class: discussion
 
-- Which of the four solvers of Classes 16–17 survives a discrete choice on top of
-  consumption, and at what cost?
 - Why is the maximum of two concave functions not concave?
 :::
 
@@ -136,9 +138,11 @@ u(c, d) = \frac{c^{\rho} - 1}{\rho} - \delta\, \mathbf{1}(d = \mathbb{W})
 \log(c) - \delta\, \mathbf{1}(d = \mathbb{W})
 $$
 
-The worker's problem has exactly the EGM structure, choice by choice: fix $d$, and the
-post-decision state $A = M - c$ determines next period's wealth. What is new is the
-maximum over $d$ in front.
+The worker's problem has exactly the EGM structure, choice by choice: 
+- fix $d$, and then 
+- the post-decision state $A = M - c$ determines next period's wealth. 
+
+What is new is the maximum over $d$ in front.
 
 ````{tip} Example: the analytic solution with log utility and no interest
 
@@ -169,7 +173,7 @@ change at every threshold: those are the kinks and the jumps we are after. The
 [check below](#dcegm-analytic-check) compares the numerical solution with this formula.
 ````
 
-The analytic consumption rule of a worker, from the DSE 2024 lectures:
+The analytic consumption rule of a worker:
 
 ```{figure} _static/img/egm/dcegm_analytic.png
 :width: 75%
@@ -184,9 +188,8 @@ segments of the formula, and drops at every retirement threshold.
 :::{div}
 :class: discussion
 
-- In the analytic solution, why does consumption *drop* at the thresholds where the
-  consumer decides to retire one period earlier?
-- What happens to the thresholds as $\beta R$ moves away from one?
+- Think of an economics implication of the drops in consumption, why it happens?
+- Does the graph imply that in the data we should expect to see discontinuous drops in consumption?
 :::
 
 The model object follows the [architecture of Class 16](16_cons_practice.md): parameters,
@@ -194,9 +197,8 @@ grids, quadrature and the primitives in one place, every solver a function of it
 details are specific to the discrete choice:
 
 - the grid is on **savings** $A$, as in EGM, ascending and starting at zero
-- income is paid only while working, and a retiree with no wealth is kept alive by a
-  consumption floor $\underline{c}$, the safety net of {cite:t}`egm`, which also keeps
-  $\log(0)$ out of the code
+- there is disutility of work $\delta$
+- income is paid only while working
 
 ```{code-cell} python3
 import time
@@ -208,11 +210,10 @@ class retirement():
     '''Consumption-savings model with a discrete retirement choice (Iskhakov et al. 2017)'''
 
     def __init__(self, beta=0.95, R=1.05, y=1.0, delta=0.5, T=10, sigma=0.0, sigma_y=0.0,
-                 Mbar=20, ngrid=500, nquad=5, cfloor=1e-3):
+                 Mbar=20, ngrid=500, nquad=5):
         self.beta, self.R, self.y, self.delta = beta, R, y, delta   # discount, return, wage, disutility of work
         self.T, self.sigma, self.sigma_y = T, sigma, sigma_y  # periods, taste shock scale, income shock std
         self.Mbar, self.ngrid, self.nquad = Mbar, ngrid, nquad
-        self.cfloor = cfloor                                  # consumption floor: safety net for a retiree
         self.eps = np.finfo(float).eps                        # smallest positive float
         self.A = np.linspace(0, Mbar, ngrid)                  # grid on savings, ascending, starts at zero
         x, w = np.polynomial.hermite.hermgauss(nquad)         # Gauss-Hermite nodes and weights
@@ -229,7 +230,7 @@ class retirement():
         return 1 / x                                          # inverse marginal utility
 
     def next_wealth(self, A, d, y):
-        return np.maximum(self.R * A + d * y, self.cfloor)    # budget: income only while working, safety net
+        return self.R * A + d * y                             # budget: income only while working
 
 def interp(x, xp, fp):
     '''Linear interpolation, extrapolated linearly beyond the last grid point'''
@@ -248,7 +249,6 @@ The defaults used in all the figures below, unless stated otherwise:
 | savings grid | 500 equally spaced points on $[0, 20]$ |
 | income shocks | none, $\sigma_y = 0$; log-normal with 5 Gauss–Hermite nodes otherwise |
 | taste shocks | none, $\sigma = 0$ |
-| consumption floor | $\underline{c} = 10^{-3}$ |
 
 Periods are indexed from zero, as Python does, so the last period is $T - 1$ and the
 period before it $T - 2$.
@@ -265,7 +265,7 @@ The plan of {cite:t}`egm` in its first version:
 4. reconstruct the overall consumption rule and value function from the switching points
 
 Nothing here needs a root finder, and the credit constraint keeps its EGM treatment. The
-price is that we must now compute **value functions**, which [time iterations](16_cons_practice.md)
+price is that we must now compute **value functions**, which time iterations
 and EGM never needed, and compute an **upper envelope**.
 
 So each EGM step must return, for its discrete choice $d$, the endogenous points
@@ -276,6 +276,8 @@ v_t(M_j, d) = u(c_j, d) + \beta\, \mathbb{E} V_{t+1}\big(R A_j + y\,\mathbf{1}(d
 $$
 
 where $V_{t+1}$ is the value of the state the choice $d$ leads to.
+
+So, we have to keep and interpolate the value function as well as the policy function.
 
 ### The credit constrained region
 
@@ -378,10 +380,10 @@ def egm_step(m, d, sol1):
     '''EGM step for choice d (1 work, 0 retire) given the solution sol1 = [retire, work] of next period'''
     M1 = m.next_wealth(m.A[:, None], d, m.quadp[None, :])     # next period wealth: savings x income nodes
     vR = value(m, sol1[0], 0, M1)                             # next period value of a retiree
-    cR = np.maximum(policy(m, sol1[0], M1), m.cfloor)         # next period consumption of a retiree
+    cR = np.maximum(policy(m, sol1[0], M1), m.eps)            # next period consumption of a retiree, kept positive
     if d == 1:                                                # still a worker tomorrow: chooses again
         vW = value(m, sol1[1], 1, M1)
-        cW = np.maximum(policy(m, sol1[1], M1), m.cfloor)
+        cW = np.maximum(policy(m, sol1[1], M1), m.eps)
         P = choice_prob(m, vW, vR)                            # probability to keep working tomorrow
         mu1 = P * m.mu(cW) + (1 - P) * m.mu(cR)               # expected marginal utility over the choice
         V1 = logsum(m, vW, vR)                                # value before the taste shocks are drawn
@@ -473,7 +475,7 @@ def euler_residual(m, sol1, M, c):
     M1 = m.next_wealth(np.asarray(M)[..., None] - np.asarray(c)[..., None], 1, m.quadp)   # ... x nodes
     vW, vR = value(m, sol1[1], 1, M1), value(m, sol1[0], 0, M1)
     P = choice_prob(m, vW, vR)                                # who works next period
-    cW, cR = np.maximum(policy(m, sol1[1], M1), m.cfloor), np.maximum(policy(m, sol1[0], M1), m.cfloor)
+    cW, cR = np.maximum(policy(m, sol1[1], M1), m.eps), np.maximum(policy(m, sol1[0], M1), m.eps)
     return m.mu(c) - m.beta * m.R * ((P * m.mu(cW) + (1 - P) * m.mu(cR)) @ m.quadw)
 ```
 
