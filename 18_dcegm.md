@@ -1197,6 +1197,7 @@ cd sb-dse-code && git pull
 ````{note} References and additional resources
 
 (18_dcegm_references)=
+- [EGM and DC-EGM slides from DSE2025 summer school](https://github.com/dseconf/DSE2025HKU/blob/main/08_Iskhakov_egm/dcegm_DSE2025hku.pdf)
 - 📖 {cite:t}`egm` "The endogenous grid method for discrete-continuous dynamic choice models with (or without) taste shocks"
 - 📖 {cite:t}`fella2014GeneralizedEndogenousGrid` "A Generalized Endogenous Grid Method for Non-Smooth and Non-Concave Problems" — identifies the regions where the Euler equation is not sufficient, and uses VFI inside and EGM outside
 - 📖 {cite:t}`druedahl2017GeneralEndogenousGridb` "A general endogenous grid method for multi-dimensional models with non-convexities and constraints" — the upper envelope re-interpolated on a regular grid, in several dimensions
