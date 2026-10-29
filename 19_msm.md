@@ -10,25 +10,12 @@ kernelspec:
   display_name: Python 3
 ---
 
-<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
-
-[EGM](17_egm.md) solves the consumption-savings model in milliseconds, but there is no
-likelihood for consumption and wealth data. The **method of simulated moments (MSM)**
+It's not easy to write a likelihood for consumption and wealth data.
+The **method of simulated moments (MSM)**
 needs only the simulator: pick a few statistics of the data, and find the parameters
-at which the model reproduces them. Theory today, [practice on Tuesday](20_msm_practice.md).
+at which the model reproduces them. 
+Theory today, [practice on Tuesday](20_msm_practice.md).
 
-````{seealso} Key reading
-
-{cite:t}`mcfaddenMethodSimulatedMoments1989` "A Method of Simulated Moments for
-Estimation of Discrete Response Models Without Numerical Integration", *Econometrica*
-57(5), 995–1026. The estimator, the role of fixed simulation draws, and the
-$(1 + 1/S)$ variance correction of this class.
-
-{cite:t}`pakes1989SimulationAsymptoticsOptimizationa` "Simulation and the Asymptotics
-of Optimization Estimators", *Econometrica* 57(5), 1027–1057. The asymptotic theory
-for criteria that are not smooth in the parameters, the case of every simulator with a
-discrete choice in it.
-````
 
 ````{hint} Running the code for this lecture
 :class: dropdown
@@ -49,12 +36,27 @@ cd sb-dse-code
 git reset --hard HEAD
 git pull
 ```
-
 Nothing in this repository is submitted, so experiment freely — but copy anything you
 want to keep out of it first, or commit that to a branch of your own.
 
 Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
+````
+
+
+````{danger} Homework: project proposal due Nov 5
+:class: dropdown
+
+Project proposals are due **Thu Nov 5**. 
+
+Prepare a one-two page pdf proposal, following the [guidelines](0_project.md)
+
+Follow the usual process to submit your work using your homework repository using `project_proposal` as the assignment name.
+
+Acceptable file formats: `markdown`, `pdf` (produced from markdown, LaTeX, etc), or `ipynb` (Jupyter notebook).
+
+Feel free to prepare your document right in the homework repository.
+
 ````
 
 ## From solver and simulator to estimator
@@ -70,8 +72,11 @@ to match the model to the observed data**, in order to
 
 The workflow of a structural project is the arc of this course: model, implementation,
 solver, *understanding how the model works*, estimation, validation, counterfactuals.
+
 Step four is where the time goes: solve, simulate, ask whether the result makes
-economic sense, repeat. It is also where the moments for step five are found.
+economic sense, repeat. 
+
+It is also where the **moments** for step five are found.
 
 ### Estimation versus calibration
 
@@ -88,9 +93,10 @@ fixed $\beta$, for instance.
 
 ### Why not maximum likelihood?
 
-The [MLE of Class 10](10_nfxp.md#mle-asymptotics) is the most efficient estimator there
-is, when the model gives the probability of the observed data. In the bus engine model it
-does: the logit choice probabilities. In the consumption-savings model it does not, or
+The [MLE of Class 10](10_nfxp.md#mle-asymptotics) is the most efficient estimator, when the model gives the probability of the observed data. In the bus engine model it
+does: the logit choice probabilities. 
+
+In the consumption-savings model it does not, or
 not easily:
 
 - consumption is a **deterministic function of the state**, $c = c(M)$. Observed
@@ -121,8 +127,8 @@ statistic of the data.
 
 Matching statistics of the model to statistics of the data has a long history:
 
-- **method of moments**: as many moments as parameters, a system of equations, solved
-  exactly
+- **method of moments (MM)** of {cite:t}`pearson1894ContributionsMathematicalTheory`: as many
+  moments as parameters, a system of equations, solved exactly
 - **generalized method of moments (GMM)** of {cite:t}`hansen1982LargeSampleProperties`:
   more moments than parameters, minimize a weighted distance between the data moments and
   the theoretical moments
@@ -130,21 +136,44 @@ Matching statistics of the model to statistics of the data has a long history:
   GMM with the theoretical moments replaced by averages over simulated data
 
 Let $z_i$, $i = 1, \dots, N$, be the observed data, one record per individual, and let
-$h(z)$ be a vector of $q$ statistics of one record, the **moment functions**. Three
-objects share the name "moments":
+$\theta$ be the $K \times 1$ vector of parameters of the model that generated it.
+Let $h(z)$ be a vector of $q$ statistics of one record, the **moment functions**.
+- $N$ observations
+- $K$ parameters
+- $q$ moments
 
-$$
-\underbrace{\hat m_N = \frac{1}{N} \sum_{i=1}^N h(z_i)}_{\text{data moments}},
-\qquad
-\underbrace{m(\theta) = \mathbb{E}_\theta\, h(z)}_{\text{model moments}},
-\qquad
-\underbrace{\tilde m_S(\theta) = \frac{1}{SN} \sum_{s=1}^{SN} h\big(\tilde z_s(\theta)\big)}_{\text{simulated moments}}
-$$
+Three other objects share the name "moments":
 
-The model moments are the expectation of $h$ under the model with parameters $\theta$,
-the object GMM works with. MSM replaces them by the average over a synthetic sample
-$\tilde z_s(\theta)$ of $S N$ records, simulated from the model at $\theta$ with random
-draws $\tilde u_s$. The vector
+- **model moments**: the expectation of the moment functions under the model at parameter value $\theta$
+  $$m(\theta) = \mathbb{E}_\theta\, h(z)$$
+- **data moments**: the average of the moment functions over the observed sample
+  $$\hat m_N = \frac{1}{N} \sum_{i=1}^N h(z_i)$$
+- **simulated moments**: the average of the moment functions over a synthetic sample of
+  $SN$ records $\tilde z_s(\theta)$, $s = 1, \dots, SN$, each one record of the same
+  form as $z_i$ produced by solving the model at $\theta$ and simulating it on a random
+  draw $\tilde u_s$, so that $\tilde z_s(\theta) = \tilde z(\theta, \tilde u_s)$
+  $$\tilde m_S(\theta) = \frac{1}{SN} \sum_{s=1}^{SN} h\big(\tilde z_s(\theta)\big)$$
+
+The model moments are a deterministic function of $\theta$ that may or may not have a
+closed form. The three methods differ in which two of the three objects they put against each other,
+and how:
+
+- **MM**: with as many moments as parameters, $q = K$, solve the system
+  $\hat m_N = m(\theta)$ for $\theta$; the solution is the estimator, and every moment is
+  matched exactly
+- **GMM**: minimize the weighted distance
+  $(\hat m_N - m(\theta))^T W (\hat m_N - m(\theta))$, which allows $q > K$ but still
+  needs $m(\theta)$ in a form that can be evaluated at any $\theta$ — an integral over
+  the distribution of $z$ that is rarely available for a structural model
+- **MSM**: minimize the weighted distance
+  $(\hat m_N - \tilde m_S(\theta))^T W (\hat m_N - \tilde m_S(\theta))$, where
+  $\tilde m_S(\theta)$ is a Monte Carlo estimate of the integral $m(\theta)$ computed on
+  the simulated records $\tilde z_s(\theta)$; the only thing it needs is a simulator
+
+So GMM compares data to theory, while MSM compares data to a simulation of the theory
+and never writes $m(\theta)$ down. 
+
+Finally, the vector
 
 $$
 g_N(\theta) = \hat m_N - \tilde m_S(\theta)
@@ -164,8 +193,8 @@ Q_N(\theta) = g_N(\theta)^T\, W\, g_N(\theta),
 $$
 
 where $g_N(\theta) = \hat m_N - \tilde m_S(\theta)$ is the $q \times 1$ vector of moment
-conditions, $W$ is a $q \times q$ symmetric positive definite weighting matrix, $\theta$
-is a $K \times 1$ parameter vector with $K \leqslant q$, and the simulated moments
+conditions, $W$ is a $q \times q$ symmetric positive definite weighting matrix, the number of
+moments is at least the number of parameters, $K \leqslant q$, and the simulated moments
 $\tilde m_S(\theta)$ are computed from the **same random draws** $\tilde u_s$,
 $s = 1, \dots, SN$, at every $\theta$.
 ````
@@ -177,13 +206,34 @@ moments are a deterministic function of $\theta$ that an optimizer can minimize.
 Redraw the shocks at every $\theta$ and the criterion is a random function: an
 optimizer cannot tell a change in the parameters from a change in the draws.
 
+````{attention} MSM assumptions
+
+(msm-assumptions)=
 Three conditions make the estimator work, in the words of
 {cite:t}`corbae2024MethodMoments`:
 
-- the simulation draws are **independent of the data**
-- the model is **identified**: $m(\theta) = m(\theta_0)$ only at $\theta_0$
-- the simulated moments are **continuous in the mean**: $\tilde m_S(\theta) \to m(\theta)$
-  as the simulated sample grows
+**(IND)** The simulation draws $\tilde u_s$ are **independent of the data** $z_i$.
+
+**(ID)** The model is **identified**: $m(\theta) = m(\theta_0)$ only at $\theta_0$.
+
+**(CM)** The simulated moments are **continuous in the mean**:
+$\tilde m_S(\theta) \to m(\theta)$ as the simulated sample grows.
+````
+(IND) is a statement about the sampling experiment behind the asymptotics, not about
+the sample in hand: the observed $z_1, \dots, z_N$ are one realization from the model
+at $\theta_0$, the draws $\tilde u_s$ are a second random vector, and (IND) requires
+their joint distribution to factorize. In practice it means the draws are produced
+without reading the sample. A random number generator with a seed chosen beforehand
+qualifies; residuals backed out of the data and used as shocks, or a resample of the
+data, do not. The payoff is that the sampling error $\hat m_N - m(\theta_0)$ and the
+simulation error $\tilde m_S(\theta_0) - m(\theta_0)$ are uncorrelated, so their
+variances add, which gives the factor $1 + 1/S$ in the
+[asymptotic variance](#msm-asymptotics).
+
+(ID) says the moments pin down the parameters; the order and rank conditions below provide guidance, but verifying this is hard. Instead, we can check the *local identification* of the parameters by seeing how the simulated moments move with $\theta$, and so through the curvature of the criterion function.
+
+(CM) is a law of large numbers for the simulator, and holds whenever
+$h(\tilde z(\theta, u))$ has a finite mean.
 
 The count of moments against parameters is the **order condition**, necessary but not
 sufficient:
@@ -196,19 +246,27 @@ sufficient:
 ````{tip} Example: moments for the consumption-savings model
 
 The data are a panel of wealth $M_{it}$ and consumption $c_{it}$ for $N$ individuals
-over $T$ periods, from the [Deaton model of Class 16](16_cons_practice.md) with
-$\beta = 0.92$, $\sigma = 0.5$, $R = 1.05$. Three moment functions, one record per
-individual:
+over $T$ periods, from the [Deaton model of Class 16](16_cons_practice.md),
+
+$$
+V(M) = \max_{0 \leqslant c \leqslant M} \Big\{ \log(c) + \beta\, \mathbb{E}_{y}\, V\big(R(M - c) + \tilde{y}\big) \Big\},
+\qquad \log\tilde{y} \sim N(0, \sigma^2),
+$$
+
+with $\beta = 0.92$, $\sigma = 0.5$, $R = 1.05$. The parameters to estimate are
+$\theta = (\beta, \sigma)$, $K = 2$, with $R$ known. Three moment functions, one record
+per individual:
 
 - $h_1$: mean wealth over the periods, $\frac{1}{T}\sum_t M_{it}$
 - $h_2$: standard deviation of wealth over the periods, within individual
 - $h_3$: standard deviation of consumption growth $\Delta \log c_{it}$
 
-A more patient consumer holds more wealth, so $h_1$ moves with $\beta$. A riskier
-income moves wealth and consumption around more, so $h_2$ and $h_3$ move with $\sigma$
-— and $h_1$ moves with $\sigma$ too, through precautionary savings. With $q = 3$ moments
-and $K = 2$ parameters the model is **overidentified**, and the one extra moment is a
-test of the model.
+A more patient consumer holds more wealth, so $h_1$ moves with $\beta$, and a wealthier
+consumer smooths consumption better, so $h_3$ moves with $\beta$ too, the other way. A
+riskier income moves wealth around more, so $h_1$ and $h_2$ move with $\sigma$ through
+precautionary savings. The [next section](#msm-comparative-statics) traces these
+responses out. With $q = 3$ moments and $K = 2$ parameters the model is
+**overidentified**, and the one extra moment is a test of the model.
 ````
 
 :::{div}
@@ -219,8 +277,8 @@ test of the model.
 - Why must the number of moments be at least the number of parameters?
 :::
 
-(msm-criterion)=
-## The simulated criterion
+(msm-comparative-statics)=
+## How the parameters move the moments
 
 The data are simulated too, from the "true" parameters, so that we know the answer. The
 module `deaton_egm.py` holds the [model object of Class 16](16_cons_practice.md#cons-model-object),
@@ -241,24 +299,25 @@ if not CODE.exists():                                     # otherwise fetch it f
     urllib.request.urlretrieve('https://raw.githubusercontent.com/fediskhakov/sb-dse-code/main/session19-oct29/deaton_egm.py',
                                CODE / 'deaton_egm.py')
 sys.path.insert(0, str(CODE))
-from deaton_egm import deaton, solve_egm, simulate
+import deaton_egm                                         # the model, the EGM solver and the simulator
 ```
 
 ```{code-cell} python3
 theta0 = np.array([0.92, 0.5])                            # true beta and sigma, to be recovered
 N, T, tail = 500, 40, 10                                  # individuals, simulated periods, observed periods
-m0 = deaton(beta=theta0[0], sigma=theta0[1])              # R = 1.05, 100 grid points on [0, 20]
+m0 = deaton_egm.deaton(beta=theta0[0], sigma=theta0[1])   # R = 1.05, 100 grid points on [0, 20]
 rng = np.random.default_rng(2026)
 M0 = np.exp(rng.standard_normal(N))                       # initial wealth, log-normal
-Wd, Cd = simulate(m0, solve_egm(m0), M0, T, seed=rng)     # the "data": N wealth and consumption paths
+pol0 = deaton_egm.solve_egm(m0)                           # policy at the true parameters
+Wd, Cd = deaton_egm.simulate(m0, pol0, M0, T, seed=rng)   # the "data": N wealth and consumption paths
 
 def moments(W, C):
     '''Moment functions h(z), one row per individual, from the last `tail` periods of the paths'''
     Wt, Ct = W[:, -tail:], C[:, -tail:]                   # the first 30 periods are burn-in, not observed
-    return np.column_stack([Wt.mean(1), Wt.std(1), np.diff(np.log(Ct), axis=1).std(1)])
+    return np.column_stack([Wt.mean(axis=1), Wt.std(axis=1), np.diff(np.log(Ct), axis=1).std(axis=1)])
 
 h = moments(Wd, Cd)                                       # N x q individual contributions
-mhat = h.mean(0)                                          # data moments
+mhat = h.mean(axis=0)                                     # data moments
 Omega = np.cov(h.T)                                       # covariance of the contributions, q x q
 for name, mh, s in zip(('mean wealth', 'std wealth', 'std consumption growth'), mhat, np.sqrt(np.diag(Omega) / N)):
     print(f'{name:<25} {mh:7.4f}  (s.e. {s:.4f})')
@@ -280,11 +339,84 @@ def simmoments(theta, S=5, seed=1):
     '''Simulated moments at theta: S copies of the data, same draws at every theta'''
     beta, sigma = theta
     if not (0 < beta < 1 / 1.05 and sigma > 0): return None   # EGM does not converge for beta R >= 1
-    m = deaton(beta=beta, sigma=sigma)
-    pol = solve_egm(m)                                    # about 3 milliseconds
-    Ws, Cs = simulate(m, pol, np.tile(M0, S), T, seed=np.random.default_rng(seed))   # fixed draws
-    return moments(Ws, Cs).mean(0)
+    m = deaton_egm.deaton(beta=beta, sigma=sigma)
+    pol = deaton_egm.solve_egm(m)                         # about 3 milliseconds
+    Ws, Cs = deaton_egm.simulate(m, pol, np.tile(M0, S), T, seed=np.random.default_rng(seed))   # fixed draws
+    return moments(Ws, Cs).mean(axis=0)
+```
 
+Before choosing moments, or trusting an estimate, it pays to see what each parameter
+does to each moment. The sweep below moves one parameter over a grid with the other at
+its true value, simulates the moments on the fixed draws, and reports the distance from
+the data moments in units of their standard errors, $(\tilde m_{S,j}(\theta) - \hat m_{N,j}) / \sqrt{\Omega_{jj} / N}$.
+In these units a moment that moves by one is a moment that can tell the two parameter
+values apart at the precision of the data.
+
+```{code-cell} python3
+def sweep(k, grid, S=5):
+    '''Simulated moments in s.e. units along a grid for parameter k, the other at its true value'''
+    se = np.sqrt(np.diag(Omega) / N)
+    out = []
+    for v in grid:
+        theta = theta0.copy(); theta[k] = v
+        out.append((simmoments(theta, S) - mhat) / se)
+    return np.array(out)                                  # grid points x q
+```
+
+```{code-cell} python3
+:tags: [hide-input]
+
+labels = ('mean wealth', 'std wealth', 'std consumption growth')
+grids = (np.linspace(0.86, 0.95, 37), np.linspace(0.3, 0.7, 33))
+fig, ax = plt.subplots(1, 2, figsize=(12, 4.5))
+for k, (a, g, name) in enumerate(zip(ax, grids, ('β', 'σ'))):
+    dev = sweep(k, g)
+    for j, lab in enumerate(labels):
+        a.plot(g, dev[:, j], lw=1.5, label=lab)
+    a.axhline(0, color='k', lw=0.5); a.axvline(theta0[k], color='k', lw=0.5, ls=':')
+    a.set(xlabel=name, ylabel='(simulated − data) / s.e.', ylim=(-30, 30),
+          title=f'Moments along {name}, the other parameter at its true value')
+    a.grid(color='0.9')
+ax[0].legend()
+plt.show()
+```
+
+What the picture shows:
+
+- **mean wealth rises with $\beta$**, and faster and faster: as $\beta R$ approaches one
+  the buffer stock stops being bounded, which is why the solver refuses $\beta \geqslant 1/R$
+- **the spread of wealth barely moves with $\beta$**: a flatter line than the others, so
+  this moment says little about patience on its own
+- **consumption growth falls with $\beta$**: a wealthier consumer absorbs income shocks
+  from the buffer instead of from consumption, so the moment moves in the opposite
+  direction to mean wealth
+- **both wealth moments rise with $\sigma$**: a riskier income raises precautionary
+  saving and the swings in wealth, while consumption growth moves only mildly, because
+  the extra buffer absorbs most of the extra risk
+
+The slopes of these lines at the true values are the columns of the Jacobian $D$ of the
+[asymptotic variance](#msm-asymptotics), rescaled by the standard errors. Two parameters
+are told apart when their columns point in different directions, and here they do:
+$\beta$ moves mean wealth and consumption growth in opposite directions, $\sigma$ moves
+the two wealth moments together. The [section on choosing the moments](#msm-moments)
+shows what happens when the moment that makes the difference is dropped.
+
+:::{div}
+:class: discussion
+
+- The lines are not straight. What does that mean for the rank condition, which only
+  looks at $D$ at $\theta_0$?
+- Mean wealth along $\beta$ climbs off the chart on the right. Is a very sensitive
+  moment always a good moment?
+:::
+
+(msm-criterion)=
+## The simulated criterion
+
+The criterion puts a weighting matrix on the gap between the data moments and the
+simulated moments of the previous section:
+
+```{code-cell} python3
 def criterion(theta, W, S=5, seed=1):
     '''The MSM criterion g' W g'''
     ms = simmoments(theta, S, seed)
@@ -348,35 +480,61 @@ to the simplex.
 (msm-asymptotics)=
 ## Asymptotic properties
 
-The MSM estimator is a GMM estimator with a noisy version of the model moments, and it
-inherits the GMM theory of {cite:t}`hansen1982LargeSampleProperties` with one
-correction. Let $D$ be the $q \times K$ **Jacobian of the model moments**,
+Start with the GMM estimator, the one with the model moments in the criterion,
+
+$$
+\hat\theta_{GMM}(W) = \arg\min_{\theta \in \Theta}\; \big(\hat m_N - m(\theta)\big)^T\, W\, \big(\hat m_N - m(\theta)\big).
+$$
+
+Let $D$ be the $q \times K$ **Jacobian of the model moments**,
 
 $$
 D = \frac{\partial m(\theta_0)}{\partial \theta^T},
 $$
 
 and $\Omega$ the $q \times q$ asymptotic covariance of the data moments,
-$\sqrt N (\hat m_N - m(\theta_0)) \xrightarrow{d} N(0, \Omega)$.
+$\sqrt N (\hat m_N - m(\theta_0)) \xrightarrow{d} N(0, \Omega)$; with a random sample
+$\Omega = \operatorname{Var}\, h(z)$, the covariance of the individual contributions.
+
+````{attention} Theorem (asymptotics of the GMM estimator)
+
+Let $z_1, \dots, z_N$ be a random sample, $\Theta$ compact, $m(\theta)$ continuous on
+$\Theta$ and $W$ symmetric positive definite
+({cite:t}`hansen1982LargeSampleProperties`; {cite:t}`neweyLargeSampleEstimation1994`,
+Theorems 2.6 and 3.4 and Section 5.2).
+
+1. **Consistency**: $\hat\theta_{GMM}(W) \xrightarrow{p} \theta_0$, provided $\theta_0$
+   is the unique solution of $m(\theta) = m(\theta_0)$ on $\Theta$ (**identification**).
+2. **Asymptotic normality**: if in addition $\theta_0$ is interior to $\Theta$, $m$ is
+   continuously differentiable in a neighborhood of $\theta_0$, $\mathbb{E}\|h(z)\|^2 < \infty$
+   and $D$ has full column rank $K$ (**local identification**),
+
+   $$
+   \sqrt N\, \big( \hat\theta_{GMM}(W) - \theta_0 \big) \xrightarrow{d}
+   N\Big( 0,\; (D^T W D)^{-1} D^T W \,\Omega\, W D\, (D^T W D)^{-1} \Big).
+   $$
+
+3. **Efficiency**: the asymptotic variance is smallest for $W^\star = \Omega^{-1}$, where it
+   reduces to $(D^T \Omega^{-1} D)^{-1}$.
+````
+
+The MSM estimator is a GMM estimator with a noisy version of the model moments, and it
+inherits the theorem with one correction.
 
 ````{attention} Theorem (asymptotics of the MSM estimator)
 
-Under regularity conditions, with the simulation draws fixed across $\theta$ and
-independent of the data, and with $S$ fixed as $N \to \infty$:
+Under the conditions of the GMM theorem and the [MSM assumptions](#msm-assumptions),
+with the simulation draws fixed across $\theta$ and $S$ fixed as $N \to \infty$, the
+three statements hold for $\hat\theta_{MSM}(W)$ with the asymptotic variance multiplied
+by $1 + 1/S$
+({cite:t}`mcfaddenMethodSimulatedMoments1989`; {cite:t}`pakes1989SimulationAsymptoticsOptimizationa`):
 
-1. **Consistency**: $\hat\theta_{MSM}(W) \xrightarrow{p} \theta_0$ for any positive
-   definite $W$, provided $\theta_0$ is the unique zero of
-   $m(\theta_0) - m(\theta)$ on $\Theta$ (**identification**).
-2. **Asymptotic normality**:
+$$
+\sqrt N\, \big( \hat\theta_{MSM}(W) - \theta_0 \big) \xrightarrow{d}
+N\Big( 0,\; \big(1 + \tfrac{1}{S}\big)\, (D^T W D)^{-1} D^T W \,\Omega\, W D\, (D^T W D)^{-1} \Big),
+$$
 
-   $$
-   \sqrt N\, \big( \hat\theta_{MSM}(W) - \theta_0 \big) \xrightarrow{d}
-   N\Big( 0,\; \big(1 + \tfrac{1}{S}\big)\, (D^T W D)^{-1} D^T W \,\Omega\, W D\, (D^T W D)^{-1} \Big),
-   $$
-
-   provided $D$ has full column rank $K$ (**local identification**).
-3. **Efficiency**: the asymptotic variance is smallest for $W^\star = \Omega^{-1}$, where it
-   reduces to $(1 + \frac{1}{S})\, (D^T \Omega^{-1} D)^{-1}$.
+and $(1 + \frac{1}{S})\, (D^T \Omega^{-1} D)^{-1}$ at $W^\star = \Omega^{-1}$.
 ````
 
 Where does the factor $1 + 1/S$ come from? The moment conditions at $\theta_0$ carry two
@@ -396,7 +554,7 @@ What the factor costs: with $S = 1$ the standard errors are $\sqrt 2$ times the 
 ones, with $S = 10$ they are 5% larger, and simulating more than ten copies of the data
 buys very little.
 
-Three more things to read off the theorem:
+More to read off the theorems:
 
 - **Consistency needs no good $W$** and no large $S$. The estimator is consistent with the
   identity matrix and $S = 1$. What $W$ and $S$ buy is precision.
@@ -572,8 +730,9 @@ The choice of moments is the crucial part of an MSM estimation, and more art tha
 science. The principles:
 
 - **the moments must be sensitive to the parameters**: understanding how the model works
-  means understanding what variation the parameters induce in the simulated data, and the
-  $q$ moments should represent that variation
+  means understanding what variation the parameters induce in the simulated data, as in
+  the [sweep above](#msm-comparative-statics), and the $q$ moments should represent that
+  variation
 - **every parameter needs its own moment**, in the sense of the rank condition: the
   columns of $D$ are the responses of the moments to the parameters, and they must be
   linearly independent
@@ -608,8 +767,10 @@ precautionary saving.
 
 The rank condition still holds along the valley, $D$ has rank two, but its columns are
 nearly collinear: the standard errors explode and an optimizer stops anywhere along the
-floor. The consumption moment breaks the trade-off because $\sigma$ moves consumption
-growth and $\beta$ does not.
+floor. The consumption moment breaks the trade-off because $\beta$ moves consumption growth
+strongly and in the opposite direction to wealth, while $\sigma$ barely moves it: along
+the valley the lower $\beta$ raises consumption growth and the higher $\sigma$ adds to
+it rather than undoing it.
 
 Where it breaks, in applications:
 
