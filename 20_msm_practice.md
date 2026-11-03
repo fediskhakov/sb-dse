@@ -1,5 +1,5 @@
 ---
-title: "🔬 Practice: MSM estimation of the retirement model"
+title: "🔬 Practice: MSM estimation of the continuous choice models"
 short_title: 🔬 MSM practice
 subtitle: Class 20 — Tuesday, November 3
 downloads:
@@ -86,7 +86,6 @@ imported by name, so every call below says which module it runs.
 import sys, time, pathlib, tempfile, urllib.request
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 from scipy.optimize import minimize
 MODULES = {'session17-oct22': ('deaton.py',),               # the folder of every module in the code repository
            'session19-oct29': ('deaton_egm.py',),
@@ -103,7 +102,7 @@ import deaton                                                 # Deaton model, VF
 import deaton_egm                                             # Deaton model with EGM and a simulator (Classes 17, 19)
 import retirement                                             # retirement model, DC-EGM and a simulator (Class 18)
 import cons_floor                                             # consumption floor model, EGM with upper envelope (homework)
-import msm                                                    # the model-free MSM estimator (Class 19)
+import msm                                                    # the MSM estimator and its machinery (Classes 19, 20)
 ```
 
 The estimator in `msm.py` takes the criterion and the simulated moments as function
@@ -261,8 +260,8 @@ criterion a function.
 
 ### Nelder-Mead gradient-free optimizer
 
-`msm.estimate` minimizes by Nelder–Mead. The method works on a **simplex** of $K + 1$
-points, a triangle for two parameters. One iteration:
+`msm.estimate` minimizes by the method of {cite:t}`nelder1965SimplexMethodFunction`. It
+works on a **simplex** of $K + 1$ points, a triangle for two parameters. One iteration:
 
 - evaluate the criterion at the vertices and drop the worst one
 - **reflect** it through the centroid of the others
@@ -565,7 +564,7 @@ error from a 0.8% one, nor a coverage of 100% from one of 95%.
 
 The [retirement model of Class 18](18_dcegm.md#retirement-model) adds a discrete
 choice: every period a worker decides whether to keep working, and retirement is
-absorbing. The data are 1000 workers with initial wealth uniform on $[2, 20]$, taste
+absorbing. The data are 100 workers with initial wealth uniform on $[2, 20]$, taste
 shocks $\sigma = 0.1$ and income shocks $\sigma_y = 0.2$, over $T = 10$ periods. The
 parameters we pretend not to know:
 
@@ -573,7 +572,7 @@ parameters we pretend not to know:
 | :-- | :-- | :-- |
 | disutility of work $\delta$ | $0.5$ | yes |
 | discount factor $\beta$ | $0.95$ | yes |
-| taste shock scale $\sigma$ | $0.1$ | fixed, see [what breaks](#msm-practice-sigma) |
+| taste shock scale $\sigma$ | $0.1$ | fixed, see [the taste shock scale](#msm-practice-sigma) |
 | income shock $\sigma_y$ | $0.2$ | fixed |
 | return $R$, wage $y$ | $1.05$ | fixed |
 | wage $y$ | $1$ | fixed |
@@ -587,12 +586,12 @@ def model(theta):
     '''The retirement model at the parameters we estimate; everything else fixed at the values above'''
     delta, beta = theta                                   # the two parameters, in this order everywhere below
     return retirement.retirement(beta=beta, delta=delta, **FIXED_R)   # the model object of Class 18
-Nr = 1000                                                 # workers in the data
+Nr = 100                                                  # workers in the data
 rng = np.random.default_rng(3)                            # the seed of the data: initial wealth and all shocks
 M0r = rng.uniform(2, 20, Nr)                              # initial wealth of the sample
 mr = model(theta0r)                                       # the true model
 solr = retirement.solve_dcegm(mr)                         # its solution: sol[t][d] for every period and choice
-Md, Cd_r, Dd, VWd, VRd = retirement.simulate(mr, solr, M0r, seed=rng, values=True)   # the data: wealth, consumption, work status, Nr x T each, and the two values behind every decision
+Md, Cd_r, Dd, VWd = retirement.simulate(mr, solr, M0r, seed=rng)   # the data: wealth, consumption, work status and value of working, Nr x T each
 print(f'share working by period  {np.round(Dd.mean(axis=0), 2)}')   # the profile of work status, one number per period
 print(f'mean wealth by period    {np.round(Md.mean(axis=0), 1)}')   # the profile of wealth
 ```
@@ -632,18 +631,18 @@ a half and one, and with the discount factor at 0.9:
 fig, ax = plt.subplots(1, 2, figsize=(12, 4.5))
 for d in (0.25, 0.5, 1.0):
     mx = model((d, theta0r[1]))
-    Mx, Cx, Dx = retirement.simulate(mx, retirement.solve_dcegm(mx), M0r, seed=np.random.default_rng(3))
+    Mx, Cx, Dx, _ = retirement.simulate(mx, retirement.solve_dcegm(mx), M0r, seed=np.random.default_rng(3))
     ax[0].plot(t, Dx.mean(axis=0), 'o-', label=f'δ = {d}'); ax[1].plot(t, Mx.mean(axis=0), 'o-', label=f'δ = {d}')
 mx = model((theta0r[0], 0.9))
-Mx, Cx, Dx = retirement.simulate(mx, retirement.solve_dcegm(mx), M0r, seed=np.random.default_rng(3))
+Mx, Cx, Dx, _ = retirement.simulate(mx, retirement.solve_dcegm(mx), M0r, seed=np.random.default_rng(3))
 ax[0].plot(t, Dx.mean(axis=0), 's--', label=f'δ = {theta0r[0]}, β = 0.9'); ax[1].plot(t, Mx.mean(axis=0), 's--', label=f'δ = {theta0r[0]}, β = 0.9')
 ax[0].set(xlabel='period', title='share working by period'); ax[1].set(xlabel='period', title='mean wealth by period')
 for a in ax: a.legend(); a.grid(color='0.9')
 plt.show()
 ```
 
-- With $\delta = 0.25$ everyone works until the last period; with $\delta = 1$ two
-  thirds retire at once. The share working is the moment that sees $\delta$, and the
+- With $\delta = 0.25$ nearly everyone works until the last two periods; with
+  $\delta = 1$ two thirds retire at once. The share working is the moment that sees $\delta$, and the
   wealth profile barely moves with it.
 - With $\beta = 0.9$ the share working starts lower and falls more slowly, while wealth
   is run down visibly faster. The wealth profile is the moment that sees $\beta$, and the
@@ -668,8 +667,8 @@ wealth from the known distribution, with the same seed at every $\theta$, and th
 keep the optimizer where the solver works.
 
 ```{code-cell} python3
-RET = {**{f'share working t={t}': (lambda M, C, D, t=t: D[:, t]) for t in range(mr.T - 1)},
-       **{f'mean wealth t={t}': (lambda M, C, D, t=t: M[:, t]) for t in range(1, mr.T)}}
+RET = {**{f'share working t={t}': (lambda M, C, D, V, t=t: D[:, t]) for t in range(mr.T - 1)},
+       **{f'mean wealth t={t}': (lambda M, C, D, V, t=t: M[:, t]) for t in range(1, mr.T)}}
 Ar = list(RET)
 def retirement_simulate_at(theta, S=5, seed=1):
     '''Simulate S copies of the data at theta, initial wealth included, on fixed draws'''
@@ -678,7 +677,7 @@ def retirement_simulate_at(theta, S=5, seed=1):
     m = model(theta)
     rng = np.random.default_rng(seed)
     return retirement.simulate(m, retirement.solve_dcegm(m), rng.uniform(2, 20, S * Nr), seed=rng)
-mhatr, Omegar, simmomr, critr = msm.setup(RET, Ar, (Md, Cd_r, Dd), retirement_simulate_at)
+mhatr, Omegar, simmomr, critr = msm.setup(RET, Ar, (Md, Cd_r, Dd, VWd), retirement_simulate_at)
 q, K = mhatr.size, 2
 Wr = msm.wdiag(Omegar)
 print(f'{q} moments, {K} parameters; standard errors of the data moments:')
@@ -688,10 +687,10 @@ t0 = time.perf_counter(); Q0 = critr(theta0r, Wr)
 print(f'criterion at the truth {Q0:.4f}, one evaluation with S = 5 in {time.perf_counter() - t0:.3f} seconds')
 ```
 
-The two kinds of moments live on different scales: a residual in a work share is of
-order $0.01$, a residual in mean wealth of order $0.1$, and the inverse variances put
-them on the same footing. With the identity matrix the wealth residuals would decide
-everything and the work shares nothing.
+The two kinds of moments live on different scales: the standard error of a work share is
+about $0.05$, that of mean wealth up to $0.5$, and the inverse variances put them on the
+same footing. With the identity matrix the wealth residuals would decide everything and
+the work shares nothing.
 
 (msm-practice-simulator)=
 ### The stepped criterion
@@ -703,7 +702,7 @@ zooms in on a window of $\delta$ one thousandth wide.
 :tags: [hide-input]
 
 fig, ax = plt.subplots(1, 3, figsize=(16, 4.5))
-dg, bg, dz = np.linspace(0.3, 0.7, 41), np.linspace(0.9, 0.99, 37), np.linspace(0.4995, 0.5005, 51)
+dg, bg, dz = np.linspace(0.4, 0.6, 151), np.linspace(0.94, 0.96, 151), np.linspace(0.4995, 0.5005, 71)
 for S_, col in ((1, 'C0'), (5, 'C1')):
     ax[0].plot(dg, [critr([d, theta0r[1]], Wr, S_) for d in dg], color=col, lw=1, label=f'S = {S_}')
     ax[1].plot(bg, [critr([theta0r[0], b], Wr, S_) for b in bg], color=col, lw=1)
@@ -716,8 +715,10 @@ for a in ax: a.axvline(theta0r[0] if a is not ax[1] else theta0r[1], color='k', 
 plt.show()
 ```
 
-- Both cuts have a clear minimum at the truth, three orders of magnitude deep: $\delta$
-  and $\beta$ are identified by these moments.
+- Both cuts have a clear minimum: the criterion is ten to twenty times higher at the ends
+  of the window in $\delta$, and two to eight times in the narrower one in $\beta$, so
+  $\delta$ and $\beta$ are identified by these moments. With a hundred workers the minimum
+  sits where the data put it, a few thousandths from the truth, not at the truth.
 - The zoom shows **steps**: the work status is an indicator $\mathbf 1(\tilde u < P)$, so
   a simulated share only changes when a fixed draw crosses the moving threshold, by
   $1/(SN)$ at a time. The criterion is **piecewise flat**, smaller steps with $S = 5$
@@ -725,7 +726,8 @@ plt.show()
 - The steps are why `estimate` uses Nelder–Mead and why `jacobian` takes finite
   differences with a step $h = 10^{-2}$, wide enough to average over many of them: with
   $h = 10^{-3}$ the derivative of a work share is one step divided by $h$, a number
-  that has nothing to do with the slope.
+  that has nothing to do with the slope. The [smooth simulator](#msm-practice-smooth)
+  below removes the steps instead of averaging over them.
 
 (msm-practice-estimation)=
 ### Estimation and standard errors
@@ -756,59 +758,163 @@ for a, sl, off, lab in ((ax[0], slice(0, 9), 0, 'share working'), (ax[1], slice(
 plt.show()
 ```
 
-With the diagonal matrix the estimate lands within a tenth of a standard error of the
-truth in both parameters. The optimal matrix has standard errors three times smaller
-for $\delta$ and five times smaller for $\beta$. That is what the optimal $W$ buys when
-the moments are correlated, as eighteen moments from an absorbing retirement process and
-a persistent wealth path are: it weights the *differences* between neighboring periods,
-which the diagonal $W$ cannot see. The identity lets the wealth residuals, a hundred
-times larger than those of the work shares, decide on their own, and $\delta$ is the
-parameter that suffers. The figure shows both profiles matched within the bands in
-every period at the optimal estimate. A caution from {cite:t}`altonji1996SmallSampleBias`
-applies to that column: $\hat\Omega$ has a condition number of $2 \cdot 10^4$ and is
-estimated from one thousand individuals, and its inverse is estimated with error that
-is correlated with the moment conditions.
+With the diagonal matrix the estimate lands within one standard error of the truth in
+both parameters, and the figure shows both profiles matched within the bands in every
+period at the optimal estimate.
 
-### Moments from choice-specific values
+- The optimal matrix has standard errors four times smaller for both parameters. That is
+  what the optimal $W$ buys when the moments are correlated, as eighteen moments from an
+  absorbing retirement process and a persistent wealth path are: it weights the
+  *differences* between neighboring periods, which the diagonal $W$ cannot see.
+- The identity lets the wealth residuals, up to ten times larger than those of the work
+  shares, decide on their own, and $\delta$ is the parameter that suffers.
+- A caution from {cite:t}`altonji1996SmallSampleBias` applies to the optimal column:
+  $\hat\Omega$ has a condition number of $4 \cdot 10^4$ and is estimated from one hundred
+  individuals, and its inverse is estimated with error that is correlated with the
+  moment conditions.
 
-The steps come from the simulated work status, an indicator. The model also produces,
-at every state, the two values behind the retirement decision, and the **value of
-working** is a smooth function of the parameters given the state: it carries $\delta$
-directly, through the disutility of work, and $\beta$ through the continuation. The
-experiment below replaces every work share in the library by the mean value of working
-in that period, which the simulator returns for every worker at the wealth she holds,
-retirees included, and keeps the wealth moments. Such moments are not observable, a
-value is a model object, so the data moments come from the simulation of the data by the
-true model, which only synthetic data allow. The question is what a smooth contribution does to the steps and to the
-precision.
+(msm-practice-smooth)=
+### Smooth simulator
+
+The steps come from the simulator, not from the moments. A simulated work status is an
+indicator $\mathbf 1(\tilde u < P)$, and a smooth function of the simulated paths does not
+remove it:
+
+- one draw that crosses its threshold moves the retirement date of one worker
+- the retirement date stops the income, so her whole wealth path after it moves
+- every later moment of that worker moves with the path, wealth and any value at that
+  wealth alike
+
+What is smooth in the parameters is the *expectation* over the taste shocks. Retirement
+is absorbing and the choice probabilities are logit, so that expectation can be computed
+exactly instead of simulated.
+
+```{attention} Smooth simulator
+Given the initial wealth $M_0$ and the income draws of a worker, her life is a set of
+$T + 1$ branches: the **working branch**, with wealth $M^w_t$, and one **retired branch**
+per retirement date $k$, with wealth $M^{(k)}_t$. With $P_t = P(\text{work} \mid M^w_t)$,
+the probabilities of being still working after period $t$ and of retiring in period $k$ are
+
+$$
+p_t = p_{t-1} P_t, \quad p_{-1} = 1, \qquad \pi_k = p_{k-1} (1 - P_k).
+$$
+
+The **smooth simulator** replaces every simulated outcome by its expectation over the
+branches: the work status in period $t$ by $p_t$, and a function $h$ of the state by
+
+$$
+\bar h_t = p_{t-1}\, h(M^w_t) + \sum_{k < t} \pi_k\, h(M^{(k)}_t).
+$$
+```
+
+The branches of one worker at the true parameters, with initial wealth 14 and one draw
+of her income, as a flow of probability from period to period:
 
 ```{code-cell} python3
-RETV = {**{f'value of working t={t}': (lambda M, C, V, t=t: V[:, t]) for t in range(mr.T - 1)},   # in place of the work shares
-        **{f'mean wealth t={t}': (lambda M, C, V, t=t: M[:, t]) for t in range(1, mr.T)}}        # the wealth moments as before
-Av = list(RETV)
-def retirement_simulate_values(theta, S=5, seed=1):
-    '''Like retirement_simulate_at, with the value of working on the simulated paths in place of the work status'''
+:tags: [hide-input]
+
+rng = np.random.default_rng(7)                            # one worker: initial wealth 14 and her income draws
+y = mr.y * np.exp(mr.sigma_y * rng.standard_normal(mr.T) - mr.sigma_y**2 / 2)
+Mw, p, pi = 14.0, [1.0], []                               # wealth of the working branch, p_t from p_{-1} = 1, pi_k
+for t in range(mr.T):
+    P = float(mr.choice_prob(mr.value(solr[t][1], 1, Mw), mr.value(solr[t][0], 0, Mw)))   # probability to keep working
+    pi.append(p[-1] * (1 - P)); p.append(p[-1] * P)       # a new retired branch, and the working branch that continues
+    if t < mr.T - 1: Mw = float(mr.next_wealth(Mw - mr.policy(solr[t][1], Mw), 1, y[t]))
+top, gap = 1.25, 0.25                                     # the working stream hangs from top, the retired stack sits on zero
+def band(x0, a0, b0, x1, a1, b1, color):
+    '''A flow from the interval [a0, b0] at x0 to [a1, b1] at x1, along a smooth S-curve'''
+    x = np.linspace(x0, x1, 40); s = (1 - np.cos(np.pi * (x - x0) / (x1 - x0))) / 2
+    ax.fill_between(x, a0 + (a1 - a0) * s, b0 + (b1 - b0) * s, color=color, alpha=0.75, lw=0)
+fig, ax = plt.subplots(figsize=(14, 5))
+col = plt.cm.autumn(np.linspace(0, 0.85, mr.T))           # one color per retirement date
+cum = np.r_[0, np.cumsum(pi)]                             # the retired stack: branch k on [cum[k], cum[k + 1]]
+for t in range(mr.T):                                     # flows from the state after t - 1 (x = t - 1) to the state after t (x = t)
+    band(t - 1, top - p[t + 1], top, t, top - p[t + 1], top, 'C0')            # those who keep working
+    band(t - 1, top - p[t], top - p[t + 1], t, cum[t], cum[t + 1], col[t])      # those who retire in t: a new branch
+    for k in range(t):                                                          # the branches retired before: they stay
+        band(t - 1, cum[k], cum[k + 1], t, cum[k], cum[k + 1], col[k])
+for t in range(mr.T):
+    if pi[t] > 0.03: ax.text(mr.T - 0.9, (cum[t] + cum[t + 1]) / 2, f'retired in {t}: $\\pi_{t}$ = {pi[t]:.2f}', va='center', fontsize=9)
+    ax.text(t, top + 0.04, f'{p[t + 1]:.2f}', ha='center', fontsize=9, color='C0')
+ax.text(-1, top + 0.04, 'start', ha='center', fontsize=9, color='C0')
+ax.text(-0.5, top - 0.3, 'working', ha='center', color='white', fontsize=11)
+ax.set(xlim=(-1.2, mr.T + 1.3), ylim=(-0.05, top + 0.15), yticks=[], xticks=range(-1, mr.T),
+       xticklabels=['start'] + [f't={t}' for t in range(mr.T)], title='The branches of one worker: working on top, with $p_t$ above, retired branches below')
+for s in ('left', 'right', 'top'): ax.spines[s].set_visible(False)
+plt.show()
+```
+
+The working stream on top shrinks by the share $1 - P_t$ every period, and what leaves
+it opens a retired branch that stays retired to the end, with the probability $\pi_k$ of
+the definition. Every column sums to one: the smooth simulator carries the whole
+distribution of retirement dates, where the stepped one draws a single date.
+
+Why does this remove the steps?
+
+- The weights are products of logit probabilities, smooth in $\theta$, and every branch
+  moves along the continuous policies of its own choice. There is no indicator left.
+- The stepped simulator averages to the same numbers: $\bar h_t$ is the expectation of
+  its outcome given $M_0$ and income, so the moment conditions are the same, with the
+  noise of the taste shocks removed.
+
+The algorithm runs the branches forward period by period, opening one new retired branch
+every period:
+
+```
+Input: the solution of the model at θ; initial wealth M0 and income draws y of every worker
+Algorithm:
+  working branch: wealth Mw = M0, probability p = 1; no retired branches
+  for t = 0, ..., T-1:
+    record the expectations over the branches of wealth, consumption, value of working
+    P = probability to keep working at Mw
+    open a retired branch: probability p (1 - P), savings of retiring now
+    p = p P, record it as the expected work status
+    move Mw with the worker policy and income y_t, every retired branch with the retiree policy
+Output: expected wealth, consumption, work status and value of working, N x T
+```
+
+`retirement.simulate(..., smooth=True)` implements it and returns the same four arrays as
+the stepped simulator, so the moment library `RET` and the data stay as they are; only
+the simulator changes. With the same seed both use the same initial wealth and income.
+
+Where does it break?
+
+- It needs the choice probabilities in closed form, logit here.
+- It needs few branches. An absorbing choice gives $T + 1$ per worker, and a simulation
+  costs about twice the stepped one. A choice that can be reversed every period gives
+  $2^T$, and the remedy is then to smooth the simulated indicators instead, the
+  generalized indirect inference of {cite:t}`bruins2018GeneralizedIndirectInference`.
+- It needs continuous policies. With taste shocks close to zero the worker's consumption
+  jumps at the kinks of the [upper envelope of Class 18](18_dcegm.md#dcegm-upper-envelope),
+  and a branch whose wealth crosses a kink jumps with it.
+
+```{code-cell} python3
+def retirement_simulate_smooth(theta, S=5, seed=1):
+    '''Like retirement_simulate_at with the taste shocks integrated out: the expectations of the same four arrays'''
     delta, beta = theta
     if not (0 < delta < 5 and 0.5 < beta < 1): return None   # the bounds
     m = model(theta)                                      # the model at theta
-    rng = np.random.default_rng(seed)                     # fixed draws
-    Ms, Cs, Ds, VW, VR = retirement.simulate(m, retirement.solve_dcegm(m), rng.uniform(2, 20, S * Nr), seed=rng, values=True)   # the paths, with the values on them
-    return Ms, Cs, VW                                     # the value of working at every point of every path
-mhatv, Omegav, simmomv, critv = msm.setup(RETV, Av, (Md, Cd_r, VWd), retirement_simulate_values)
-Wv = msm.wdiag(Omegav)
-print(f'condition number of Omega: {np.linalg.cond(Omegav):.2g}, against {np.linalg.cond(Omegar):.2g} with the work shares')
+    rng = np.random.default_rng(seed)                     # fixed draws: initial wealth and income
+    return retirement.simulate(m, retirement.solve_dcegm(m), rng.uniform(2, 20, S * Nr), seed=rng, smooth=True)
+_, _, simmoms, crits = msm.setup(RET, Ar, (Md, Cd_r, Dd, VWd), retirement_simulate_smooth)   # the same moments and data
+t0 = time.perf_counter(); ms_step = simmomr(theta0r, 50)  # both simulators at the truth, on the same draws of wealth and income
+t1 = time.perf_counter(); ms_smooth = simmoms(theta0r, 50)
+t2 = time.perf_counter(); se_m = np.sqrt(np.diag(Omegar) / Nr)   # standard errors of the data moments
+print(f'largest gap between the simulators at the truth, S = 50: {np.max(np.abs(ms_step - ms_smooth) / se_m):.2f} s.e. of the data moments')
+print(f'one evaluation with S = 50: stepped {t1 - t0:.2f} s, smooth {t2 - t1:.2f} s')
 ```
 
 ```{code-cell} python3
 :tags: [hide-input]
 
 fig, ax = plt.subplots(1, 3, figsize=(16, 4.5))
-for S_, col in ((1, 'C0'), (5, 'C1')):
-    ax[0].plot(dg, [critv([d, theta0r[1]], Wv, S_) for d in dg], color=col, lw=1, label=f'S = {S_}')
-    ax[1].plot(bg, [critv([theta0r[0], b], Wv, S_) for b in bg], color=col, lw=1)
-    ax[2].plot(dz, [critv([d, theta0r[1]], Wv, S_) for d in dz], '.-', color=col, ms=3, lw=0.7)
-ax[0].set(xlabel='δ', yscale='log', title=f'Criterion along δ, β = {theta0r[1]}, values of working')
-ax[1].set(xlabel='β', yscale='log', title=f'Criterion along β, δ = {theta0r[0]}, values of working')
+dg, bg, dz = np.linspace(0.4, 0.6, 151), np.linspace(0.94, 0.96, 151), np.linspace(0.4995, 0.5005, 71)
+for crit, S_, col, lab in ((crits, 1, 'C2', 'smooth, S = 1'), (crits, 5, 'C1', 'smooth, S = 5')):
+    ax[0].plot(dg, [crit([d, theta0r[1]], Wr, S_) for d in dg], color=col, lw=1, label=lab)
+    ax[1].plot(bg, [crit([theta0r[0], b], Wr, S_) for b in bg], color=col, lw=1)
+    ax[2].plot(dz, [crit([d, theta0r[1]], Wr, S_) for d in dz], '.-', color=col, ms=3, lw=0.7)
+ax[0].set(xlabel='δ', yscale='log', title=f'Criterion along δ, β = {theta0r[1]}')
+ax[1].set(xlabel='β', yscale='log', title=f'Criterion along β, δ = {theta0r[0]}')
 ax[2].set(xlabel='δ', title='Zoom: the same window as above')
 ax[0].legend()
 for a in ax: a.axvline(theta0r[0] if a is not ax[1] else theta0r[1], color='k', lw=0.5, ls=':'); a.grid(color='0.9')
@@ -817,84 +923,91 @@ plt.show()
 
 ```{code-cell} python3
 t0 = time.perf_counter()
-WSv = {'identity': np.eye(len(Av)), 'diagonal': Wv, 'optimal': np.linalg.inv(Omegav)}   # the three weighting matrices
-resv = {name: msm.fit(critv, simmomv, (0.3, 0.9), W, Omegav, Nr) for name, W in WSv.items()}   # the same poor start as before
-msm.table(resv, ('delta', 'beta'))
+ress = {name: msm.fit(crits, simmoms, (0.3, 0.9), W, Omegar, Nr) for name, W in WSr.items()}   # the three weighting matrices of the work shares
+msm.table(ress, ('delta', 'beta'))
 print(f'three runs in {time.perf_counter() - t0:.0f} s')
-D_shares, D_values = msm.jacobian(simmomr, th_r, 5, h=1e-3), msm.jacobian(simmomv, resv['optimal'][0], 5, h=1e-3)
-print('Jacobian with h = 1e-3, first three rows, work shares (left) against values of working (right):')
-print(np.round(np.column_stack([D_shares[:3], D_values[:3]]), 2))
+for name, sm, th in (('stepped', simmomr, th_r), ('smooth', simmoms, ress['optimal'][0])):   # does the derivative depend on the step?
+    D2, D3 = msm.jacobian(sm, th, 5, h=1e-2), msm.jacobian(sm, th, 5, h=1e-3)
+    print(f'{name:<8} largest change of the Jacobian from h = 1e-2 to h = 1e-3, relative: {np.max(np.abs(D2 - D3)) / np.max(np.abs(D2)):.3f}')
 ```
 
-- The staircase is **still there**. In the zoom the criterion with one copy of the data
-  moves in steps as large as with the work shares, and five copies shrink them without
-  removing them. The value of working is smooth in the parameters at a given state, but
-  the state is a simulated wealth path, and every draw that crosses its threshold still
-  moves the path and every value along it.
-- The values carry more information about $\delta$. The Jacobian entries of the value
-  moments are an order of magnitude larger than those of the shares, and of one sign
-  across periods, because the disutility of work enters every value directly. Under the
-  identity the standard error of $\delta$ falls from 0.016 to 0.004, under the optimal
-  matrix from 0.003 to 0.002, and $\beta$ is as precise as before.
-- The price is in $\hat\Omega$. The values of working of one worker in neighboring
-  periods are nearly the same number, the condition number rises from $2 \cdot 10^4$ to
-  $10^6$, and the optimal matrix leans on an inverse that a thousand workers determine
-  poorly. And none of it exists outside a simulation: the values belong to the model, not
-  to the data. The remedy that applies to real data is the smoothing of the simulated
-  choices themselves, the generalized indirect inference of
-  {cite:t}`bruins2018GeneralizedIndirectInference`.
+- The two simulators agree. With fifty copies of the data, where the taste-shock noise
+  of the stepped one averages out, their moments at the truth differ by less than a tenth
+  of a standard error of the data moments.
+- The staircase is **gone**. In the zoom the smooth criterion is a straight line with
+  $S = 1$ as with $S = 5$, where the [stepped one](#msm-practice-simulator) jumps. Its Jacobian changes by 0.1%
+  from $h = 10^{-2}$ to $h = 10^{-3}$, that of the stepped simulator by 13%, so the
+  standard errors of the smooth simulator are the ones to trust.
+- The estimates are those of the stepped simulator within a fraction of a standard
+  error, under all three weighting matrices. Nothing about the data changed, only the
+  noise in the simulation: this is the remedy that applies to real data.
 
 :::{div}
 :class: discussion
 
 - Where exactly along a wealth path does one draw crossing the threshold change the
-  simulated moments, and does the effect stay in one period?
-- The value of working is not in any data set. Which observable moment comes closest
-  to it, and what would it cost in precision?
+  stepped moments, and does the effect stay in one period?
+- The smooth simulator uses the logit formula for the probability to keep working. What
+  would change with normally distributed taste shocks?
 :::
 
 (msm-practice-sigma)=
-### What breaks: the taste shock scale
+### The taste shock scale
 
-The scale $\sigma$ of the taste shocks was fixed at its true value. Adding it to the
-parameter vector is one line in `model` and one in the bounds, and it is where the
-method shows its limits. The criterion along $\sigma$ through the truth:
+The scale $\sigma$ of the taste shocks has been fixed at its true value so far. Estimated
+together with $\delta$, with $\beta$ fixed at its true value, it shows what **poor
+identification** looks like, and with two parameters the moment figures of
+[Part 1](#msm-practice-deaton) apply as they are. The smooth simulator keeps the steps out
+of the picture, so what remains is about the moments, not about the simulation.
+
+Three sets of moments, as with the Deaton model: all eighteen, the work shares alone,
+and the wealth profile alone.
 
 ```{code-cell} python3
-def model3(theta):
-    '''The retirement model with the taste shock scale as a third parameter'''
-    delta, beta, sigma = theta
-    return retirement.retirement(beta=beta, delta=delta, **{**FIXED_R, 'sigma': sigma})   # the estimated scale replaces the fixed one
-def retirement3_simulate_at(theta, S=5, seed=1):
-    '''The simulator with three parameters'''
-    if not (0 < theta[0] < 5 and 0.5 < theta[1] < 1 and theta[2] > 0): return None
-    m = model3(theta)
+theta0s = np.array([0.1, 0.5])                            # true sigma and delta; beta fixed at its true value
+def retirement_simulate_sd(theta, S=5, seed=1):
+    '''The smooth simulator with the taste shock scale and the disutility of work as the parameters'''
+    sigma, delta = theta
+    if not (0 < sigma < 1 and 0 < delta < 5): return None   # the bounds
+    m = retirement.retirement(beta=theta0r[1], delta=delta, **{**FIXED_R, 'sigma': sigma})   # the estimated scale replaces the fixed one
     rng = np.random.default_rng(seed)
-    return retirement.simulate(m, retirement.solve_dcegm(m), rng.uniform(2, 20, S * Nr), seed=rng)
-_, _, simmom3, crit3 = msm.setup(RET, Ar, (Md, Cd_r, Dd), retirement3_simulate_at)
-for s in (0.02, 0.05, 0.08, 0.1, 0.12, 0.15, 0.2):
-    print(f'sigma {s:<5} criterion {crit3([theta0r[0], theta0r[1], s], Wr):.4f}')
+    return retirement.simulate(m, retirement.solve_dcegm(m), rng.uniform(2, 20, S * Nr), seed=rng, smooth=True)
+grids_s, pnames_s = (np.linspace(0.02, 0.3, 29), np.linspace(0.4, 0.6, 21)), ('σ', 'δ')
+SH, WL = Ar[:9], Ar[9:]                                   # the work shares, the wealth profile
+mhats, Omegas, simmoms2, crits2 = msm.diagnostics(RET, Ar, (Md, Cd_r, Dd, VWd), retirement_simulate_sd, Nr, theta0s, grids_s, pnames_s)
 ```
 
-Compare with the cuts along $\delta$ and $\beta$ above, which climb more than an order of
-magnitude within a few hundredths of the truth. Along $\sigma$ the minimum is at the
-truth, $0.007$, but the criterion is **flat**: it rises to $0.02$ at $\sigma = 0.08$ and
-$\sigma = 0.15$, and to $0.06$–$0.07$ only at $\sigma = 0.05$ and $\sigma = 0.2$. The moments
-barely respond to $\sigma$, which is the small entry in $D$ that the
-[asymptotics of Class 19](19_msm.md#msm-asymptotics) warned about:
+```{code-cell} python3
+_ = msm.diagnostics(RET, SH, (Md, Cd_r, Dd, VWd), retirement_simulate_sd, Nr, theta0s, grids_s, pnames_s)
+```
 
-- the standard error of $\sigma$ is large, and the finite-difference Jacobian in that
-  direction is dominated by the steps, so even the reported standard error is unreliable
-- Nelder–Mead estimating all three parameters stalls on the flat, stepped criterion:
-  started from $\sigma = 0.05$ it stops at $\sigma = 0.068$, from $\sigma = 0.2$ at
-  $\sigma = 0.275$, both with a criterion several times above the minimum, and a restart
-  does not help; only a start near the truth finds $\sigma \approx 0.10$
-- on other data sets the sampling noise of eighteen moments can move the flat minimum
-  away from the truth, because the weak signal of $\sigma$ cannot pull it back
+```{code-cell} python3
+_ = msm.diagnostics(RET, WL, (Md, Cd_r, Dd, VWd), retirement_simulate_sd, Nr, theta0s, grids_s, pnames_s)
+```
 
-What would identify $\sigma$ is a moment that measures how retirement varies *given*
-wealth: the dispersion of the retirement age among workers with similar initial wealth,
-for instance.
+- **All eighteen** have a trough instead of a basin. Along $\delta$ the moments sweep to
+  five standard errors within $0.1$ of the truth; along $\sigma$ every one stays within
+  two, from $\sigma = 0.02$, nearly no taste shocks, to three times the truth. The bottom
+  of the trough is at $\sigma \approx 0.15$, not at the truth.
+- **The work shares** carry what there is to know about $\sigma$. With small shocks fewer
+  workers keep working in the first period, with large ones fewer in the last, each by
+  about two standard errors at the ends of the range. Their trough is shorter, and its
+  bottom is near the truth.
+- **The wealth profile** sees neither parameter well. Only wealth in the last period
+  responds to $\delta$, and the minimum of its map lies at $\sigma \approx 0.22$.
+
+The scale $\sigma$ decides how sharply retirement follows wealth: with small shocks every
+worker retires at the wealth where working stops paying, with large ones the dates spread
+out. The work shares average over initial wealth uniform on $[2, 20]$, which spreads the
+retirement dates already, so they hardly tell the two sources apart.
+
+:::{div}
+:class: discussion
+
+- Which moment would measure how retirement varies *given* wealth, and why might it still
+  be too noisy to help in a sample of a hundred workers?
+- Why do the first and the last work shares respond to $\sigma$ in opposite directions?
+:::
 
 <!-- ````{warning} Practical task: MSM estimation of the retirement model
 
@@ -913,8 +1026,8 @@ cd sb-dse-code && git pull
    factor $\sqrt{1 + 1/S}$.
 3. With the identity weighting matrix, which moments drive the estimate, and why does
    $\delta$ suffer more than $\beta$?
-4. Add $\sigma$ as a third parameter with `model3`. Start Nelder–Mead from
-   $(0.3, 0.9, 0.2)$ and from $(0.7, 0.98, 0.05)$, with a restart each, and compare the
+4. Estimate $\beta$ along with $\sigma$ and $\delta$. Start Nelder–Mead from
+   $(0.2, 0.3, 0.9)$ and from $(0.05, 0.7, 0.98)$, with a restart each, and compare the
    two solutions and their standard errors with the Jacobian step $h = 10^{-3}$ and
    $h = 10^{-2}$.
 5. Add moments that respond to $\sigma$: the mean and the standard deviation of the
@@ -923,9 +1036,9 @@ cd sb-dse-code && git pull
    Does the criterion along $\sigma$ become steeper, and does the estimate of $\sigma$
    settle?
 6. [optional] Replace the simulated work shares by the choice probabilities, built with
-   `m.choice_prob` from the values of working and of retiring that
-   `retirement.simulate(..., values=True)` returns, keeping the data moments as they are. Do the steps
-   in the zoomed criterion disappear, and does the estimate change?
+   `m.choice_prob` from the values of working and of retiring, `m.value`, at the simulated
+   wealth, keeping the data moments as they are. Do the steps in the zoomed criterion
+   disappear, and does the estimate change?
 7. [optional] Condition on the data: simulate from the *observed* initial wealth,
    `np.tile(M0, S)`, instead of fresh draws, and keep `M0` fixed across the Monte Carlo
    replications. The Monte Carlo spread falls well below the formula. Which variation
@@ -941,7 +1054,8 @@ number you report.
 ````{note} References and additional resources
 
 (20_msm_practice_references)=
-- 📖 {cite:t}`egm` "The endogenous grid method for discrete-continuous dynamic choice models with (or without) taste shocks" — the retirement model, and its Monte Carlo estimation experiments in Section 5
-- 📖 {cite:t}`bruins2018GeneralizedIndirectInference` "Generalized indirect inference for discrete choice models" — smoothing the simulated discrete choices so that the criterion becomes differentiable: the fix for the staircase of this class
+- 📖 {cite:t}`bruins2018GeneralizedIndirectInference` "Generalized indirect inference for discrete choice models" — smoothing the simulated discrete choices so that the criterion becomes differentiable: the fix for the staircase when the choices cannot be integrated out
+- 📖 {cite:t}`aupens` "Effects of taxes and safety net pensions on life-cycle labor supply, savings and human capital: The case of Australia" — a life-cycle model of labor supply, savings and retirement of Australians, structurally estimated with MSM methods using smoothed simulator
+- 📖 {cite:t}`nelder1965SimplexMethodFunction` "A simplex method for function minimization" — the original paper of the Nelder–Mead method that `msm.estimate` uses
 - 📄 `scipy.optimize.minimize`, method Nelder–Mead <https://docs.scipy.org/doc/scipy/reference/optimize.minimize-neldermead.html>
 ````
