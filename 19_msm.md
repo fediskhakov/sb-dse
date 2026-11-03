@@ -16,7 +16,6 @@ needs only the simulator: pick a few statistics of the data, and find the parame
 at which the model reproduces them. 
 Theory today, [practice on Tuesday](20_msm_practice.md).
 
-
 ````{hint} Running the code for this lecture
 :class: dropdown
 
@@ -493,8 +492,16 @@ D = \frac{\partial m(\theta_0)}{\partial \theta^T},
 $$
 
 and $\Omega$ the $q \times q$ asymptotic covariance of the data moments,
-$\sqrt N (\hat m_N - m(\theta_0)) \xrightarrow{d} N(0, \Omega)$; with a random sample
-$\Omega = \operatorname{Var}\, h(z)$, the covariance of the individual contributions.
+$\sqrt N (\hat m_N - m(\theta_0)) \xrightarrow{d} N(0, \Omega)$. 
+
+With a random sample
+$\hat m_N$ is an average of $N$ independent copies of $h(z_i)$, so its covariance is
+$\operatorname{Var}\, h(z) / N$ at every $N$ and the central limit theorem gives
+$\Omega = \operatorname{Var}\, h(z)$, the covariance of one contribution, which the sample
+covariance of the $h(z_i)$ estimates. The general definition is the one to keep in
+mind: for moments of a time series, for example, $\Omega$ is
+still the limiting covariance of the data moments, but no longer the covariance of a
+contribution.
 
 ````{attention} Theorem (asymptotics of the GMM estimator)
 
@@ -612,8 +619,17 @@ $\tilde m_S(\theta)$ with fixed draws, a starting point $\theta^{(0)}$.
 
 1. **First step.** Minimize $Q_N(\theta)$ with a diagonal $W_1$, the identity or the inverse
    variances $\text{diag}(\hat\Omega)^{-1}$, to get the consistent $\hat\theta_1$.
-2. **Weighting matrix.** $W_2 = \hat\Omega^{-1}$; or, when the moments are not means over
-   individuals, the covariance of the moment conditions simulated at $\hat\theta_1$.
+2. **Weighting matrix.** $W_2 = \hat\Omega(\hat\theta_1)^{-1}$: simulate $B$ samples of
+   $N$ records from the model at $\hat\theta_1$ and compute the data moments $\hat m^{(b)}$
+   on each *as on the real data*, and take
+
+   $$
+   \hat\Omega(\hat\theta_1) = \frac{N}{B} \sum_{b=1}^B \big(\hat m^{(b)} - \bar m\big)\big(\hat m^{(b)} - \bar m\big)^T,
+   \qquad \bar m = \frac{1}{B} \sum_{b=1}^B \hat m^{(b)},
+   $$
+
+   the covariance of the data moments under the model, consistent for $\Omega$ because
+   $\hat\theta_1$ is consistent for $\theta_0$.
 3. **Second step.** Minimize $Q_N(\theta)$ with $W_2$, from $\hat\theta_1$, to get
    $\hat\theta_2$.
 4. **Standard errors.** Compute $\hat D$ by finite differences of $\tilde m_S(\theta)$ at
@@ -829,8 +845,6 @@ whole arc from model to counterfactual in one paper.
 :::{div}
 :class: discussion
 
-- An MSM paper reports a table of data moments and simulated moments at the estimates.
-  What should the reader look for in it beyond the fit?
 - The counterfactual changes a policy parameter and simulates the model again. Which of
   the sources of noise in the estimates carry over to the counterfactual?
 :::
