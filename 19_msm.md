@@ -304,7 +304,8 @@ import deaton_egm                                         # the model, the EGM s
 ```{code-cell} python3
 theta0 = np.array([0.92, 0.5])                            # true beta and sigma, to be recovered
 N, T, tail = 500, 40, 10                                  # individuals, simulated periods, observed periods
-m0 = deaton_egm.deaton(beta=theta0[0], sigma=theta0[1])   # R = 1.05, 100 grid points on [0, 20]
+FIXED = dict(R=1.05, Mbar=20, ngrid=100, nquad=10)        # the rest of the model, fixed and known: return, wealth grid on [0, Mbar] with ngrid points, quadrature nodes
+m0 = deaton_egm.deaton(beta=theta0[0], sigma=theta0[1], **FIXED)
 rng = np.random.default_rng(2026)
 M0 = np.exp(rng.standard_normal(N))                       # initial wealth, log-normal
 pol0 = deaton_egm.solve_egm(m0)                           # policy at the true parameters
@@ -337,8 +338,8 @@ with a **fixed seed**, so the same draws are used at every $\theta$:
 def simmoments(theta, S=5, seed=1):
     '''Simulated moments at theta: S copies of the data, same draws at every theta'''
     beta, sigma = theta
-    if not (0 < beta < 1 / 1.05 and sigma > 0): return None   # EGM does not converge for beta R >= 1
-    m = deaton_egm.deaton(beta=beta, sigma=sigma)
+    if not (0 < beta < 1 / FIXED['R'] and sigma > 0): return None   # the bounds: EGM does not converge for beta R >= 1
+    m = deaton_egm.deaton(beta=beta, sigma=sigma, **FIXED)
     pol = deaton_egm.solve_egm(m)                         # about 3 milliseconds
     Ws, Cs = deaton_egm.simulate(m, pol, np.tile(M0, S), T, seed=np.random.default_rng(seed))   # fixed draws
     return moments(Ws, Cs).mean(axis=0)
@@ -419,7 +420,7 @@ simulated moments of the previous section:
 def criterion(theta, W, S=5, seed=1):
     '''The MSM criterion g' W g'''
     ms = simmoments(theta, S, seed)
-    if ms is None: return 1e10                            # a wall for the optimizer
+    if ms is None: return 1e10                            # outside the bounds: a huge value turns the optimizer back
     g = mhat - ms
     return g @ W @ g
 ```

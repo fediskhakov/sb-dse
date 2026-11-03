@@ -28,9 +28,7 @@ paper.
 :class: dropdown
 
 The code for this class is in the folder `session18-oct27/` of the course **code
-repository**. We write it together in class, starting from the pre-code notebook
-`dcegm_pre.ipynb`, which has the model object and the headings but not the solver.
-The complete notebook `dcegm.ipynb` has all the code of this page.
+repository**. The notebook `dcegm.ipynb` has all the code of this page.
 
 You should have cloned that repository already — if not, the instructions are in the
 [algorithms and complexity lecture](3_algo.md#clone-code-repo).
@@ -1167,8 +1165,7 @@ Points to take home:
 <!-- ````{warning} Practical task: the retirement model with DC-EGM
 
 (task-dcegm)=
-Pull the class code and open the pre-code notebook `dcegm_pre.ipynb` in
-`session18-oct27/`:
+Pull the class code and open the notebook `dcegm.ipynb` in `session18-oct27/`:
 
 ```bash
 cd sb-dse-code && git pull
