@@ -395,30 +395,83 @@ def egm_step(m, d, sol1):
     return M, c, v, ev[0]                                     # ev[0]: expected value of saving nothing
 ```
 
-Two EGM steps from the terminal period give the last two periods. In the last period a
-worker never works: there is no future income to earn, so retiring is better by exactly
-$\delta$ at every wealth level. One period earlier the two choice-specific value
-functions **intersect**.
+Two EGM steps from the terminal period give the last three periods. The figures go
+backward one period at a time and show where the kinks come from.
+
+In the last period $T-1$ a worker never works: there is no future income to earn, so
+retiring is better by exactly $\delta$ at every wealth level. One period earlier, at
+$T-2$, the two choice-specific value functions **intersect**, and the value of a worker
+is their upper envelope:
 
 ```{code-cell} python3
 :tags: [hide-input]
 
+def plot_policy(ax, M, c, **kw):
+    '''Plot a function with jumps, such as a policy c(M), as a line, the jumps (slope above 3) as dotted vertical segments'''
+    j = np.flatnonzero(np.abs(np.diff(c)) > 3 * np.diff(M))   # the steps across a discontinuity
+    line, = ax.plot(np.insert(M, j + 1, np.nan), np.insert(c, j + 1, np.nan), **kw)   # broken at the jumps
+    seg = lambda x: np.c_[x[j], x[j + 1], np.full(j.size, np.nan)].ravel()   # one segment per jump
+    ax.plot(seg(M), seg(c), ':', color=line.get_color(), lw=line.get_linewidth())
+
+def fold(M, pad=(0.3, 0.3)):
+    '''Wealth limits that show the whole fold of the raw EGM points M, with a margin on each side'''
+    b = np.flatnonzero(np.diff(M) <= 0)                       # steps where the endogenous grid bends back
+    F = M[b[0]:b[-1] + 2]                                     # the fold, from the upper turning point to the lower one
+    return F.min() - pad[0], F.max() + pad[1]
+
+def fit(lim, *curves, margin=0.05):
+    '''Limits of the vertical axis that show all the curves (x, y) on the wealth interval lim'''
+    y = np.concatenate([y[(x >= lim[0]) & (x <= lim[1])] for x, y in curves])
+    return y.min() - margin * np.ptp(y), y.max() + margin * np.ptp(y)
+
 m = retirement()
 sol = [[terminal(m, d) for d in (0, 1)]]                      # last period, index T-1
 for t in range(2):
-    sol.insert(0, [dict(zip(('M', 'c', 'v', 'ev0'), egm_step(m, d, sol[0]))) for d in (0, 1)])   # T-2, then T-3
+    sol.insert(0, [dict(zip(('M', 'c', 'v', 'ev0'), egm_step(m, d, sol[0]))) for d in (0, 1)])   # T-2, then T-3, raw EGM points
 Mg = np.linspace(0.05, m.Mbar, 1000)                          # dense grid for the plots
-fig, ax = plt.subplots(1, 2, figsize=(12, 4.5))
-for s, lab in ((sol[2], 'last period'), (sol[1], 'one before last')):
-    for d, name in ((0, 'retire'), (1, 'work')):
-        ax[0].plot(Mg, value(m, s[d], d, Mg), label=f'{lab}, {name}')
-vW, vR = value(m, sol[1][1], 1, Mg), value(m, sol[1][0], 0, Mg)
-c = np.where(vW > vR, policy(m, sol[1][1], Mg), policy(m, sol[1][0], Mg))   # the worker's consumption
-ax[1].plot(Mg, c, label='worker: retire or work')
-ax[1].plot(Mg, policy(m, sol[1][0], Mg), label='retiree')
-ax[0].set(ylim=(-3, 5), xlabel='wealth M', title='Choice-specific value functions of a worker')
-ax[1].set(ylim=(0, 10.5), xlabel='wealth M', title='Consumption one period before the last')
+vW, vR = value(m, sol[1][1], 1, Mg), value(m, sol[1][0], 0, Mg)   # the two choices at T-2
+Mstar = Mg[np.argmax(vW <= vR)]                               # the retirement threshold at T-2: the primary kink
+env = np.maximum(vW, vR)                                      # the upper envelope of the two choices
+fig, ax = plt.subplots(3, 1, figsize=(9, 12), layout='constrained')
+for d, name, col in ((0, 'retire', 'C0'), (1, 'work', 'C2')):
+    ax[0].plot(Mg, value(m, sol[2][d], d, Mg), color=col, label=name)
+    ax[1].plot(Mg, value(m, sol[1][d], d, Mg), color=col, label=name)
+    ax[2].plot(Mg, value(m, sol[1][d], d, Mg), color=col, lw=2, label=name)
+ax[2].plot(Mg, env, 'C3--', label='upper envelope')
+w = (Mstar - 3, Mstar + 3)                                    # window around the primary kink
+ax[0].set(ylim=(-3, 4), xlabel='wealth M', title='Last period T-1: choice-specific values')
+ax[1].set(ylim=(-3, 5), xlabel='wealth M', title='T-2: choice-specific values')
+ax[2].set(xlim=w, ylim=(np.interp(w[0], Mg, env) - 0.2, np.interp(w[1], Mg, env) + 0.2),
+          xlabel='wealth M', title='T-2, zoom: the upper envelope and the primary kink')
 for a in ax: a.grid(color='0.9'); a.legend()
+plt.show()
+```
+
+The worker's consumption at $T-2$ follows the choice on top. One more period back, at
+$T-3$, the worker's EGM points no longer line up, magnified in the inset:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+c = np.where(vW > vR, policy(m, sol[1][1], Mg), policy(m, sol[1][0], Mg))   # the worker's consumption: the choice on top
+M3, v3 = sol[0][1]['M'], sol[0][1]['v']                       # the worker's raw EGM points at T-3, in savings order
+vR3 = value(m, sol[0][0], 0, Mg)                              # the retiree's value at T-3
+fig, ax = plt.subplots(2, 1, figsize=(9, 8), layout='constrained')
+plot_policy(ax[0], Mg, c, color='C2', label='worker: retire or work')
+ax[0].plot(Mg, policy(m, sol[1][0], Mg), color='C0', lw=0.8, label='retiree')
+ax[0].plot(Mstar, policy(m, sol[1][1], Mstar), 's', mfc='none', color='C2', ms=8)   # the last point of working
+ax[1].plot(Mg, vR3, color='C0', label='retire')
+ax[1].plot(M3, v3, color='C2', label='work, EGM points in savings order')
+w3 = fold(M3, (1.5, 2.5))                                     # from the fold to past the retirement threshold
+ins = ax[1].inset_axes([0.5, 0.08, 0.45, 0.42])               # a magnifying glass on the zig-zag
+ins.plot(M3, v3, '.-', color='C2', ms=3, lw=0.7)
+z = fold(M3)
+ins.set(xlim=z, ylim=fit(z, (M3, v3)), xticks=[], yticks=[])
+ax[1].indicate_inset_zoom(ins, edgecolor='0.5')
+ax[0].set(xlim=(0, 10), ylim=(0, 5), xlabel='wealth M', title='T-2: consumption drops at the primary kink')
+ax[1].set(xlim=w3, ylim=fit(w3, (M3, v3), (Mg, vR3)),
+          xlabel='wealth M', title="T-3: the worker's value folds back")
+for a in ax: a.grid(color='0.9'); a.legend(loc='upper left')
 plt.show()
 ```
 
@@ -429,6 +482,8 @@ So, what is going on?
 2. the **upper envelope** of the value functions has a **kink** at the intersection, and
    the combined consumption function has a **discontinuity** there: the retiree has no
    income to look forward to and consumes less out of the same wealth
+3. at $T-3$ the worker's value **folds back** on itself: the kink of $T-2$ propagates back
+   through the Euler equation, the subject of the [next section](#dcegm-euler-not-sufficient)
 
 The kink is the **primary kink**, the one that comes from the discrete choice itself.
 The first version of the algorithm handles it: compute both choice-specific functions,
@@ -464,8 +519,9 @@ are not the optimum.
 
 The figure shows the raw output of the worker's EGM step two periods before the last,
 zoomed in on the zig-zag, with the points connected in the order of the savings grid. The
-right panel plots the Euler residual as a function of consumption at a few wealth levels
+bottom panel plots the Euler residual as a function of consumption at a few wealth levels
 in the region, with the overall consumption rule of next period on the right-hand side.
+The vertical lines of the same colors mark these wealth levels in the two panels above.
 
 ```{code-cell} python3
 def euler_residual(m, sol1, M, c):
@@ -481,18 +537,18 @@ def euler_residual(m, sol1, M, c):
 :tags: [hide-input]
 
 M, c, v, ev0 = egm_step(m, 1, sol[1])                         # raw EGM step of the worker, two periods before last
-bend = np.flatnonzero(np.diff(M) <= 0)                        # steps where the endogenous grid bends back
-lo, hi = M[bend].min() - 0.3, M[bend].max() + 0.3             # window around the zig-zag
-fig, ax = plt.subplots(1, 3, figsize=(16, 4.5))
-ax[0].plot(M, v, '.-', ms=4, lw=0.7)
-ax[1].plot(M, c, '.-', ms=4, lw=0.7)
-ax[0].set(xlim=(lo, hi), ylim=(np.interp(lo, M, v) - 0.03, np.interp(hi, M, v) + 0.03),
+lo, hi = fold(M)                                              # window around the zig-zag
+fig, ax = plt.subplots(3, 1, figsize=(9, 12), layout='constrained')
+ax[0].plot(M, v, '.-', ms=4, lw=0.7, color='k')
+ax[1].plot(M, c, '.-', ms=4, lw=0.7, color='k')
+ax[0].set(xlim=(lo, hi), ylim=fit((lo, hi), (M, v)),
           xlabel='wealth M', title='Value at the EGM points, in savings order')
-ax[1].set(xlim=(lo, hi), ylim=(np.interp(lo, M, c) - 0.3, np.interp(hi, M, c) + 0.3),
+ax[1].set(xlim=(lo, hi), ylim=fit((lo, hi), (M, c)),
           xlabel='wealth M', title='Consumption at the EGM points')
 cg = np.linspace(1.6, 2.6, 500)
-for Mz in np.linspace(lo + 0.1, hi - 0.1, 5):
-    ax[2].plot(cg, euler_residual(m, sol[1], Mz, cg), lw=0.8, label=f'M = {Mz:.2f}')
+for k, Mz in enumerate(np.linspace(lo + 0.1, hi - 0.1, 5)):
+    plot_policy(ax[2], cg, euler_residual(m, sol[1], Mz, cg), lw=0.8, color=f'C{k}', label=f'M = {Mz:.2f}')
+    for a in ax[:2]: a.axvline(Mz, color=f'C{k}', lw=0.8)     # the same wealth level in the value and consumption
 ax[2].axhline(0, color='k', lw=0.5)
 ax[2].set(ylim=(-0.15, 0.15), xlabel='consumption c', title='Euler residuals: several zeros'); ax[2].legend()
 for a in ax: a.grid(color='0.9')
@@ -677,14 +733,14 @@ nothing beyond the interpolation already done.
 :tags: [hide-input]
 
 Mc, cc, vc = upper_envelope(m, 1, M, c, v, ev0)             # the raw points of the figure above, cleaned
-fig, ax = plt.subplots(1, 2, figsize=(12, 4.5))
+fig, ax = plt.subplots(2, 1, figsize=(9, 8), layout='constrained')
 ax[0].plot(M, v, '.-', ms=4, lw=0.7, color='0.6', label='EGM points, in savings order')
 ax[0].plot(Mc, vc, 'o-', ms=3, lw=1, color='C3', label='after the upper envelope')
 ax[1].plot(M, c, '.-', ms=4, lw=0.7, color='0.6', label='EGM points, in savings order')
-ax[1].plot(Mc, cc, 'o-', ms=3, lw=1, color='C3', label='after the upper envelope')
-ax[0].set(xlim=(lo, hi), ylim=(np.interp(lo, M, v) - 0.03, np.interp(hi, M, v) + 0.03),
+plot_policy(ax[1], Mc, cc, marker='o', ms=3, lw=1, color='C3', label='after the upper envelope')
+ax[0].set(xlim=(lo, hi), ylim=fit((lo, hi), (M, v), (Mc, vc)),
           xlabel='wealth M', title='Value: the upper envelope and the secondary kink')
-ax[1].set(xlim=(lo, hi), ylim=(np.interp(lo, M, c) - 0.3, np.interp(hi, M, c) + 0.3),
+ax[1].set(xlim=(lo, hi), ylim=fit((lo, hi), (M, c), (Mc, cc)),
           xlabel='wealth M', title='Consumption: the jump at the secondary kink')
 for a in ax: a.grid(color='0.9'); a.legend()
 print(f'{M.size} endogenous points in, {Mc.size} out: {np.sum(~np.isin(Mc, M))} inserted at the kink')
@@ -695,6 +751,39 @@ The middle segment and the tails of the other two are gone, the value function h
 kink where the two surviving segments cross, and consumption jumps down at that point:
 the consumer who saves a little more lands above next period's retirement threshold, and
 behaves differently from there on.
+
+The whole of period $T-3$ after the envelope: the worker's value with both kinks, and
+the worker's consumption, which now drops twice:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+s3 = {'M': Mc, 'c': cc, 'v': vc, 'ev0': ev0}                  # the worker at T-3 after the upper envelope
+vW3 = value(m, s3, 1, Mg)
+kinks = np.unique(np.round(Mc[~np.isin(Mc, M)], 6))           # the secondary kinks: the points the envelope inserted
+thr = Mg[np.argmax((vW3 <= vR3) & (Mg > kinks.max()))]        # the retirement threshold at T-3: the primary kink
+c3 = np.where(vW3 > vR3, policy(m, s3, Mg), policy(m, sol[0][0], Mg))   # the worker's consumption: the choice on top
+fig, ax = plt.subplots(2, 1, figsize=(9, 8), layout='constrained')
+ax[0].plot(Mg, vR3, color='C0', label='retire')
+ax[0].plot(Mg, vW3, color='C2', label='work, after the upper envelope')
+plot_policy(ax[1], Mg, c3, color='C2', label='worker: retire or work')
+for a in ax:
+    for k in kinks: a.axvline(k, color='C3', ls='--', lw=1.5, label='secondary kink' if k == kinks[0] else None)
+    a.axvline(thr, color='k', lw=1, label='retirement threshold')
+    a.grid(color='0.9'); a.legend(loc='upper left')
+ax[0].set(xlim=(0, 10), ylim=(-1, 3.5), xlabel='wealth M', title='T-3: value, the primary and the secondary kink')
+ax[1].set(xlim=(0, 10), ylim=(0, 5), xlabel='wealth M', title='T-3: consumption drops at both kinks')
+print(f'secondary kink at M = {", ".join(f"{k:.2f}" for k in kinks)}, retirement threshold at M = {thr:.2f}')
+plt.show()
+```
+
+- The **secondary kink** at $M \approx 4.05$ is the image of next period's retirement
+  threshold. Savings from just below it land in the region where a worker still works at
+  $T-2$, savings from just above it in the region where a worker retires.
+- The **primary kink** at $M \approx 4.98$ is the retirement threshold of $T-3$ itself,
+  where the worker's and the retiree's values cross.
+- Consumption drops by about $0.3$ at each. One period further back each kink leaves its
+  own image, and the kinks accumulate, as the [full solution](#dcegm-full-algorithm) shows.
 
 Where it breaks:
 
@@ -787,18 +876,22 @@ def worker(m, sol_t, M):
 t0 = time.perf_counter()
 sol = solve_dcegm(m)
 print(f'DC-EGM solved {m.T} periods on {m.ngrid} grid points in {time.perf_counter() - t0:.3f} seconds')
-fig, ax = plt.subplots(1, 3, figsize=(16, 4.5))
-for t, col in zip(range(m.T - 1), plt.cm.viridis(np.linspace(0, 0.9, m.T - 1))):
-    c, P, V = worker(m, sol[t], Mg)
-    ax[0].plot(Mg, c, color=col, lw=0.9, label=f't = {t}')
-    ax[1].plot(Mg, V, color=col, lw=0.9)
-    ax[2].plot(Mg, P, color=col, lw=0.9)
-ax[0].set(ylim=(0, 8), xlabel='wealth M', title="Worker's consumption, t = 0 (dark) to T-2 (light)")
-ax[1].set(ylim=(-4, 10), xlabel='wealth M', title="Worker's value function")
-ax[2].set(xlabel='wealth M', title='Decision to keep working')
-ax[0].legend(fontsize=8)
-for a in ax: a.grid(color='0.9')
-plt.show()
+def plot_solution(m, sol, note='', panels=(0, 2, 1)):
+    '''Worker's consumption (0), value (2) and decision to keep working (1) in four periods, as separate figures'''
+    periods = ((8, 'tab:green'), (6, 'tab:red'), (4, 'tab:blue'), (2, 'tab:purple'))   # four periods
+    for i, title, ylim in ((0, "Worker's consumption", (0, 8)), (2, "Worker's value function", (-4, 10)),
+                           (1, 'Decision to keep working', (-0.05, 1.05))):   # worker() returns c, P, V
+        if i not in panels: continue
+        fig, ax = plt.subplots(figsize=(12, 6), layout='constrained')
+        for t, col in periods:
+            y = worker(m, sol[t], Mg)[i]
+            if i == 2: ax.plot(Mg, y, color=col, lw=1.5, label=f't = {t} (T-{m.T - t})')   # the value has no jumps
+            else: plot_policy(ax, Mg, y, color=col, lw=1.5, label=f't = {t} (T-{m.T - t})')
+        ax.set(ylim=ylim, xlabel='wealth M', title=title + note)
+        ax.legend(); ax.grid(color='0.9')
+        plt.show()
+
+plot_solution(m, sol)
 ```
 
 Properties of the full solution, all of them attributes of the model itself and not of
@@ -809,7 +902,7 @@ the method:
 2. consumption functions have **discontinuities**: the drop at the retirement threshold
    and, to the left of it, the smaller drops at the secondary kinks
 3. the discontinuities and kinks **propagate** through time and **accumulate**: the policy
-   in period $0$ carries the image of every future threshold, a snowball of jumps
+   in an early period carries the image of every later threshold, a snowball of jumps
 
 Any solution method has to deal with these complexities. A solver on a fixed grid sees
 them as noise.
@@ -868,26 +961,149 @@ retirement threshold is spread over a range of savings. However:
   and quadrature assumes a smooth integrand: more kinks appear from sloppy computation,
   and a careful implementation integrates over the continuous intervals separately
 
+The figures go through period $T-4$ step by step, the period that has two secondary drops
+and the primary one without shocks, as in the [full solution](#dcegm-full-algorithm).
+All of them use 200 quadrature nodes, for the reason the last figure shows.
+
 ```{code-cell} python3
 :tags: [hide-input]
 
-t = m.T - 4
-fig, ax = plt.subplots(1, 2, figsize=(12, 4.5))
-for sy, nq, ls in ((0, 5, '-'), (0.2, 5, '-'), (0.5, 5, '-'), (0.5, 30, ':')):
+plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.Dark2.colors)   # a darker palette for the rest of the page
+t = m.T - 4                                                   # the period of the figures
+zoom = dict(xlim=(3, 11), ylim=(1.6, 2.3), xlabel='wealth M', ylabel='consumption')
+
+def solve_income(sy, nq=200):
+    '''Solve the model with log-normal income of scale sy on nq quadrature nodes'''
     ms = retirement(sigma_y=sy, nquad=nq)
-    c, P, V = worker(ms, solve_dcegm(ms)[t], Mg)
-    ax[0].plot(Mg, c, ls, lw=1, label=f'σ_y = {sy}, {nq} nodes')
-    ax[1].plot(Mg, P, ls, lw=1)
-ax[0].set(xlim=(2, 9), ylim=(1.3, 2.6), xlabel='wealth M', title=f'Consumption of a worker, t = {t}')
-ax[1].set(xlabel='wealth M', title='Decision to keep working')
-ax[0].legend()
-for a in ax: a.grid(color='0.9')
+    return ms, solve_dcegm(ms)
+
+def drops(ms, sol_t):
+    '''Worker's consumption in one period, the last point of working, and the steepest decline below it'''
+    c, P, V = worker(ms, sol_t, Mg)
+    i = np.argmax(P < 0.5) - 1                                # the last grid point where the worker works
+    slope = np.diff(c[:i + 1]) / np.diff(Mg[:i + 1])
+    return c, i, Mg[np.argmin(slope)], slope.min()            # where consumption falls fastest, and how fast
+
+ms, ss = solve_income(0.12)
+c, i, k, s = drops(ms, ss[t])
+fig, ax = plt.subplots(figsize=(12, 5), layout='constrained')
+plot_policy(ax, Mg, c, color='C0', lw=1.5)
+ax.plot(Mg[i], c[i], 's', mfc='none', color='C0', ms=8)       # the last point of working
+ax.set(**zoom, title=f'T-4: optimal consumption with σ_y = {ms.sigma_y}')
+ax.grid(color='0.9')
 plt.show()
 ```
 
-With $\sigma_y = 0.5$ the secondary jumps have become smooth dips, and the primary drop
-at the retirement threshold is as sharp as before. With 5 quadrature nodes the dips carry
-small spurious kinks, one per node crossing the threshold: 30 nodes remove them.
+With $\sigma_y = 0.12$ the first secondary drop, at $M \approx 4.8$, has become a smooth
+dip. The second one, at $M \approx 5.7$, is still nearly vertical: it is the image of next
+period's retirement threshold. The primary drop at the threshold itself,
+$M \approx 6.6$, is as sharp as without shocks.
+
+The same shocks in the two periods before:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+fig, ax = plt.subplots(figsize=(12, 6), layout='constrained')
+for tt, col in ((t - 2, 'C2'), (t - 1, 'C1'), (t, 'C0')):
+    c, i, k, s = drops(ms, ss[tt])
+    plot_policy(ax, Mg, c, color=col, lw=1.5, label=f'T-{ms.T - tt}')
+    ax.plot(Mg[i], c[i], 's', mfc='none', color=col, ms=8, label='retirement threshold')
+    ax.axvline(k, color=col, ls='--', lw=1, label='steepest decline')
+    print(f'T-{ms.T - tt}: retirement threshold at M = {Mg[i]:.2f}, steepest decline at M = {k:.2f}, slope {s:.1f}')
+ax.set(**zoom, title=f'T-6 to T-4: optimal consumption with σ_y = {ms.sigma_y}')
+ax.legend(loc='lower right', ncols=3); ax.grid(color='0.9')
+plt.show()
+```
+
+Every period has one steep decline below its threshold, the image of next period's
+threshold, while the images of the older kinks are smoothed out. The images move out
+with the thresholds, and the further from the end, the less steep they are.
+
+A larger shock spreads the image of the next threshold over a wider range of wealth:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+def income_stage(sy):
+    '''Consumption and the choice-specific values in period t with income shocks of scale sy'''
+    ms, ss = solve_income(sy)
+    c, i, k, s = drops(ms, ss[t])
+    fig, ax = plt.subplots(2, 1, figsize=(12, 9.5), layout='constrained')
+    plot_policy(ax[0], Mg, c, color='C0', lw=1.5)
+    ax[0].plot(Mg[i], c[i], 's', mfc='none', color='C0', ms=8)
+    ax[1].plot(Mg, value(ms, ss[t][0], 0, Mg), color='C2', lw=1.5, label='retirement')
+    ax[1].plot(Mg, value(ms, ss[t][1], 1, Mg), color='C0', lw=1.5, label='work')
+    for a in ax:
+        if s < -1: a.axvline(k, color='C3', ls='--', lw=1.5, label='steepest decline')
+        a.axvline(Mg[i], color='C3', lw=1.5, label='retirement threshold')
+        a.grid(color='0.9')
+    ax[0].set(**zoom, title=f'T-4: optimal consumption with σ_y = {sy}')
+    ax[1].set(xlim=(0, 12), ylim=(-3, 3.5), xlabel='wealth M', ylabel='value', title=f'T-4: value functions with σ_y = {sy}')
+    ax[1].legend(loc='upper left')
+    print(f'steepest decline of consumption below the threshold: slope {s:.2f} at M = {k:.2f}')
+    plt.show()
+
+income_stage(0.16)
+```
+
+With $\sigma_y = 0.16$ consumption is continuous below the threshold, but still falls
+steeply at $M \approx 5.6$. The value functions show nothing of it at this scale: the
+primary kink, where the two values cross, is the one that stands out.
+
+A little more:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+income_stage(0.2)
+```
+
+With $\sigma_y = 0.2$ the secondary drops are gone, and the only discontinuity left is the
+primary drop at the retirement threshold.
+
+The same $\sigma_y = 0.2$ on the default 5 quadrature nodes:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+fig, ax = plt.subplots(figsize=(12, 5), layout='constrained')
+for nq, col in ((5, 'C1'), (200, 'C0')):
+    ms, ss = solve_income(0.2, nq)
+    c, i, k, s = drops(ms, ss[t])
+    plot_policy(ax, Mg, c, color=col, lw=1.5, label=f'{nq} quadrature nodes')
+ax.set(**zoom, title='T-4: optimal consumption with σ_y = 0.2')
+ax.legend(loc='lower right'); ax.grid(color='0.9')
+plt.show()
+```
+
+With 5 nodes the smooth dips turn into staircases of small jumps, one per node crossing
+next period's threshold. That is the sloppy computation of the last bullet above: the
+quadrature rule treats a discontinuous integrand as if it were smooth.
+
+```{note} Quadrature over a discontinuous integrand
+Next period's consumption rule $c_{t+1}(M)$ jumps at the retirement threshold and at every
+secondary kink, and so does the marginal utility of consumption that the Euler equation
+integrates. With savings $A$ and a random wage $\tilde y$ with density $f$ the expectation is
+
+$$
+\mathbb{E}\, u'\big(c_{t+1}(R A + \tilde y)\big) = \int u'\big(c_{t+1}(R A + y)\big) f(y)\, dy ,
+$$
+
+and the integrand jumps at every wage $y_k = M_k - R A$ that puts next period's wealth on a
+discontinuity $M_k$. Gauss–Hermite quadrature is accurate for smooth integrands, not for
+steps: the weighted sum jumps whenever a node crosses one of the $y_k$ as $A$ moves along the
+grid, and these are the stairs in the figure above.
+
+- **Remedy**: more quadrature nodes. The stairs get smaller and denser, but they never
+  disappear, and every node adds to the cost of the expectation at every grid point.
+- **Full solution**: split the support of the wage at the points $y_k$, which are known
+  from the solution of the next period, and apply quadrature separately on each segment.
+  The integrand is smooth on every segment, so a few nodes per segment are enough.
+```
+
+The figures of this section take the first route: with 200 nodes the stairs are too small
+to see at this scale.
 
 :::{div}
 :class: discussion
@@ -996,6 +1212,7 @@ With taste shocks DC-EGM becomes **simpler**:
 How far is the smoothed solution from the exact one? The paper gives a bound.
 
 ````{attention} Theorem (approximation with the logit smoother)
+(dcegm-logit-smoother)=
 
 Let $\sigma$ be the scale of the type 1 extreme value taste shocks for the discrete
 choices in a DC problem with $D$ choices. Then
@@ -1016,15 +1233,15 @@ towards the sharp problem if needed.
 ```{code-cell} python3
 :tags: [hide-input]
 
-fig, ax = plt.subplots(1, 3, figsize=(16, 4.5))
+fig, ax = plt.subplots(3, 1, figsize=(12, 14), layout='constrained')
 Mz = 0.5 * (lo + hi)                                          # a wealth level inside the zig-zag region
 for s in (0, 0.01, 0.05, 0.1):
     ms = retirement(sigma=s)
     ss = solve_dcegm(ms)
     c, P, V = worker(ms, ss[t], Mg)
-    ax[0].plot(Mg, policy(ms, ss[t][1], Mg), lw=1, label=f'σ = {s}')   # consumption conditional on working
-    ax[1].plot(Mg, P, lw=1)
-    ax[2].plot(cg, euler_residual(ms, ss[m.T - 2], Mz, cg), lw=1)
+    plot_policy(ax[0], Mg, policy(ms, ss[t][1], Mg), lw=1, label=f'σ = {s}')   # consumption conditional on working
+    plot_policy(ax[1], Mg, P, lw=1)
+    plot_policy(ax[2], cg, euler_residual(ms, ss[m.T - 2], Mz, cg), lw=1)
 ax[0].set(xlim=(2, 9), ylim=(1.3, 2.6), xlabel='wealth M', title=f'Consumption of a worker who keeps working, t = {t}')
 ax[1].set(xlabel='wealth M', title='Probability to keep working')
 ax[2].axhline(0, color='k', lw=0.5)
@@ -1034,7 +1251,7 @@ for a in ax: a.grid(color='0.9')
 plt.show()
 ```
 
-- **Consumption**: the left panel is the choice-specific policy $c_t(M, \mathbb{W})$,
+- **Consumption**: the top panel is the choice-specific policy $c_t(M, \mathbb{W})$,
   because with taste shocks the overall consumption is a lottery between the two
   choice-specific ones. Already with $\sigma = 0.01$ the secondary jumps turn into smooth
   dips, and with $\sigma = 0.1$ the policy is smooth everywhere
@@ -1057,6 +1274,41 @@ only guide to how far a given $\sigma$ is from the sharp problem.
 - Which parts of the course notation does $\sigma$ collide with, and which object in the
   Rust model of [Class 9](9_zurcher.md) plays its role?
 :::
+
+(dcegm-taste-full-solution)=
+### The full solution with taste shocks
+
+The figures of the [full algorithm](#dcegm-full-algorithm) once more, with the same four
+periods and settings, for a small and a normal scale of the taste shocks. Consumption is
+still that of the more likely choice, so the drop where working and retiring are equally
+likely stays by construction.
+
+```{code-cell} python3
+:tags: [hide-input]
+
+ms = retirement(sigma=0.01)                                   # a small scale of the taste shocks
+plot_solution(ms, solve_dcegm(ms), ', σ = 0.01')
+```
+
+With $\sigma = 0.01$ the solution is almost the one without shocks: the retirement
+thresholds stay at $M \approx 3.25$, $6.6$, $9.62$ and $12.35$, and the decision to keep
+working is still a step. The secondary drop next to each threshold has become a smooth dip,
+while the older ones further to the left are still jumps: two at $t = 2$ instead of six.
+
+A normal scale:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+ms = retirement(sigma=0.1)                                   # a normal scale of the taste shocks
+plot_solution(ms, solve_dcegm(ms), ', σ = 0.1')
+```
+
+With $\sigma = 0.1$ all secondary drops are gone, and the decision to keep working is a
+smooth logit curve. The point where the two choices are equally likely moves out, to
+$M \approx 7.16$ at $t = 6$ and $13.73$ at $t = 2$. Side by side with the figures without
+shocks, the two scales show the convergence of the [theorem](#dcegm-logit-smoother): the
+smaller $\sigma$, the closer the solution is to the one without shocks.
 
 (dcegm-simulation)=
 ## Simulation
@@ -1094,7 +1346,7 @@ ss = solve_dcegm(ms)
 M0 = np.random.default_rng(1).uniform(2, 20, 1000)            # initial wealth of 1000 workers
 Ms, Cs, Ds = simulate(ms, ss, M0, seed=2026)
 age = np.where((Ds == 0).any(axis=1), np.argmin(Ds, axis=1), ms.T)   # first period of retirement
-fig, ax = plt.subplots(1, 3, figsize=(16, 4.5))
+fig, ax = plt.subplots(3, 1, figsize=(12, 14), layout='constrained')
 for i in range(15):
     ax[0].plot(Ms[i], lw=0.8, color='C0'); ax[1].plot(Cs[i], lw=0.8, color='C1')
     if age[i] < ms.T:
@@ -1116,80 +1368,83 @@ smooth except for the drop at retirement, the one discontinuity that no shock re
 :class: discussion
 
 - Which moments of these simulated data would identify $\delta$, and which $\sigma$?
-- Keane's test of [Class 16](16_cons_practice.md#simulation-and-keanes-test) needs
-  $\beta R = 1$ and no shocks. What does a flat consumption path look like in this model?
 :::
 
-## Estimation with DC-EGM
+(dcegm-keane-test)=
+## Keane's test: make it flat
 
-We can now solve *many* problems of this type fast, and a fast solver is the inner loop
-of every estimator:
+Keane's test of [Class 16](16_cons_practice.md#simulation-and-keanes-test) carries over
+to the retirement model. Without shocks and with $\beta R = 1$ the Euler equation reads
+$u'(c_t) = u'(c_{t+1})$ wherever the credit constraint does not bind. The utility is
+additively separable in consumption and work, so this holds across the retirement
+decision too: every unconstrained path of consumption is flat, before and after retirement.
 
-1. a fast solver for important problems with discrete and continuous choice allows
-   calibration, structural estimation with your favorite method, and in particular
-   [NFXP](10_nfxp.md): the inner loop solves the model, the outer loop optimizes the
-   objective function
-2. the solver can be run repeatedly in some outer loop: for **individual heterogeneity**,
-   solving the model for each individual in the sample; for **unobserved heterogeneity**,
-   random effects; and for flexibility in the distributional assumptions
+```{code-cell} python3
+:tags: [hide-input]
 
-With taste shocks the discrete choices have logit probabilities, so maximum likelihood
-with discrete and continuous data is straightforward, as in the Monte Carlo experiments of
-{cite:t}`egm`. Without a likelihood, the simulator above is all that the method of
-simulated moments of the next class needs.
-
-How does EGM as an inner loop compare with [MPEC](10_nfxp.md), which avoids the inner
-loop altogether? {cite:t}`jorgensen2013StructuralEstimation` runs the comparison on the
-infinite horizon Deaton model, maximum likelihood on synthetic data with one structural
-parameter:
-
-| $\beta$ | | RMSE | Time |
-| :-- | :-- | --: | --: |
-| 0.70 | EGM | 0.002 | 0.1 sec |
-| | MPEC | 0.049 | 112.4 sec |
-| 0.95 | EGM | 0.006 | 1.9 sec |
-| | MPEC | 0.009 | 93.7 sec |
-| 0.99 | EGM | 0.000 | 5.0 sec |
-| | MPEC | 0.000 | 30.9 sec |
-
-Points to take home:
-
-- EGM and DC-EGM are fast and accurate solution methods, with no root-finding operations
-  in the regular case and an efficient treatment of the credit constraint
-- deterministic discrete-continuous problems are hard: kinks in the value functions,
-  discontinuous policy functions, and a snowball effect in the accumulation of kinks over
-  time
-- with extreme value taste shocks the problem is alleviated; the shocks can be structural
-  or added for smoothing, and they facilitate estimation with discrete choice data
-
-<!-- ````{warning} Practical task: the retirement model with DC-EGM
-
-(task-dcegm)=
-Pull the class code and open the notebook `dcegm.ipynb` in `session18-oct27/`:
-
-```bash
-cd sb-dse-code && git pull
-# first time: git clone https://github.com/fediskhakov/sb-dse-code.git
+mk = retirement(R=1 / 0.95)                                   # beta R = 1, no taste shocks, no income shocks
+sk = solve_dcegm(mk)
+plot_solution(mk, sk, ', βR = 1', panels=(0,))   # consumption only
 ```
 
-1. Fill in `egm_step`, `segments`, `envelope_lines`, `crossing` and `upper_envelope`
-   following the algorithm boxes, and
-   reproduce the figures of this page. Verify the solution against the
-   [analytic formula](#dcegm-analytic-check) with $R = 1$.
-2. Give the retiree a pension of $0.25\, y$ per period. How do the choice-specific value
-   functions and the retirement thresholds change? Does the secondary upper envelope
-   still have work to do?
-3. Switch to CRRA utility $u(c) = (c^\rho - 1)/\rho$ with $\rho = -1$ (risk aversion 2).
-   Which methods of the model object change, and what happens to the retirement
-   thresholds?
-4. Run the model with $\beta R = 1$, no shocks and $T = 25$, simulate a few workers and
-   check that consumption is flat *between* the discrete decisions, as
-   [Keane's test](15_cake_eating.md#keane-test) requires. How large is the drop at
-   retirement?
-5. [optional] Add a part-time work option with half the wage and half the disutility,
-   as a third discrete choice. Which parts of the code generalize to $D$ choices, and
-   which assume two?
-```` -->
+The optimal consumption looks like the one with $R = 1.05$: a primary drop at every
+retirement threshold, and secondary drops to the left of it that accumulate going back
+in time. Three workers who start with similar wealth:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+M0 = np.array([9.0, 10.0, 11.0])                              # three workers, not too far apart
+Mk, Ck, Dk = simulate(mk, sk, M0)
+age = np.where((Dk == 0).any(axis=1), np.argmin(Dk, axis=1), mk.T)   # first period of retirement
+fig, ax = plt.subplots(figsize=(12, 6), layout='constrained')
+for j, col in enumerate(('tab:green', 'tab:red', 'tab:blue')):
+    ax.plot(Ck[j], 'o-', color=col, lw=1.5, ms=4, label=f'M0 = {M0[j]:g}, retires at t = {age[j]}')
+    ax.plot(age[j], Ck[j, age[j]], 's', mfc='none', color=col, ms=10)   # the first period of retirement
+ax.set(ylim=(1.6, 2.1), xlabel='period', ylabel='consumption',
+       title="Keane's test: consumption of three simulated workers, βR = 1")
+ax.legend(); ax.grid(color='0.9')
+print(f'savings positive on all paths: {(Mk[:, :-1] - Ck[:, :-1] > 0).all()}, '
+      f'max |c_t / c_0 - 1| = {np.abs(Ck / Ck[:, :1] - 1).max():.1e}')
+plt.show()
+```
+
+All three paths are flat to machine precision, so the solver passes the test. The order
+of the paths is not the order of the initial wealth: the worker with $M_0 = 10$
+consumes less than the one with $M_0 = 9$, because the extra unit of wealth buys a
+retirement two periods earlier and costs two periods of wage income.
+
+This is a secondary drop of the consumption function at $t = 0$, seen in simulated
+data. Each worker trades consumption for leisure once, at the start of life, and keeps
+consumption constant from then on.
+
+The policy behind these paths is anything but simple: a primary drop at every retirement
+threshold and a growing number of secondary drops below it, period after period. Still, a
+rational worker navigates around all of them perfectly, and consumption is completely
+smooth over the life cycle: the jumps of the policy are exactly what keeps consumption
+flat when the retirement date changes with wealth.
+
+:::{div}
+:class: discussion
+
+- Which part of DC-EGM would a path that is *not* flat point to: the EGM step, the
+  upper envelope, or the simulator?
+- What happens to the test on a path where the credit constraint binds in some period?
+- With income shocks the paths are no longer flat. Which version of the test still applies?
+:::
+
+## Conclusion
+
+DC-EGM maintains the accuracy of the original EGM in models with discrete choices. The
+upper envelope removes the suboptimal endogenous points and places the kinks exactly, so
+the solution matches the [analytic one](#dcegm-analytic-check) to machine precision on
+most of the grid and passes Keane's test to machine precision.
+
+The cost of the discrete choice is one envelope scan per period, linear in the number of
+points, while the Euler equation is still inverted in closed form: the speed of EGM is
+kept as well.
+
+
 
 ````{note} References and additional resources
 
