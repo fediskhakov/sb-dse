@@ -656,6 +656,8 @@ q^\star = q^\star \, \Omega(P^\star) Q, \qquad 0 = ED(P^\star, q^\star) .
 $$
 ````
 
+Proof: Brouwer fixed point theorem on a continuous operator $P \mapsto P+ED(P)$ after establishing the compactness and convexity of the domain and co-domain.
+
 The theorem only gives existence. $q^\star$ is unique given the prices, but the
 uniqueness of $P^\star$ is not known, although the computations have shown no sign of
 multiplicity.
