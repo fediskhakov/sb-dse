@@ -64,6 +64,8 @@ project:
     - file: 18_dcegm.md
     - file: 19_msm.md
     - file: 20_msm_practice.md
+    - file: 21_eqb_cars.md
+    - file: 22_eqb_practice.md
     - file: bibliography.md
 
 site:

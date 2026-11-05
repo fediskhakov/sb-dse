@@ -475,6 +475,7 @@ Other estimation approaches:
 
 ````{tip} Example of policy analysis based on structural estimation
 
+(intro-eqb-cars-example)=
 {cite:t}`iruc2` 
 “Equilibrium Trade in Automobiles,” Journal of Political Economy
 

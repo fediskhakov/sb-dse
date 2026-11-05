@@ -93,8 +93,8 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Oct 29 | [Method of simulated moments](19_msm.md) |
 | Tue Nov 3 | [Simulation-based estimation of a consumption-savings-retirement model](20_msm_practice.md) |
 | | **Part IV — Equilibrium models** |
-| Thu Nov 5 | Micro-founded equilibrium models — equilibrium trade in used cars &nbsp;·&nbsp; **project proposal due** |
-| Tue Nov 10 | Implementation of the doubly NFXP estimation &nbsp;·&nbsp; **project clinic** |
+| Thu Nov 5 | [Micro-founded equilibrium model: equilibrium trade in automobiles](21_eqb_cars.md) &nbsp;·&nbsp; **project proposal due** |
+| Tue Nov 10 | [Successive approximations and Doubly-NFXP](22_eqb_practice.md) &nbsp;·&nbsp; **project clinic** |
 | | **Part V — Games** |
 | Thu Nov 12 | Static games of incomplete information and multiplicity of equilibria |
 | Tue Nov 17 | Mathematical programming with equilibrium constraints (MPEC) |
