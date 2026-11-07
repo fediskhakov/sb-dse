@@ -7,22 +7,9 @@ downloads:
     title: MyST Markdown
 ---
 
-<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
-
 Every estimator of the last two classes broke down somewhere when the game had several
 equilibria. Today we meet a class of dynamic games where all equilibria can be found, an
 algorithm that finds them, and a maximum likelihood estimator built on it.
-
-````{seealso} Key reading
-
-{cite:t}`rls` "Recursive lexicographical search: Finding all Markov perfect equilibria of
-finite state directional dynamic games", *The Review of Economic Studies* 83(2), 658–703.
-Directional dynamic games, state recursion and the RLS algorithm of this class.
-
-{cite:t}`leapfrogging_io` "The dynamics of Bertrand price competition with cost-reducing
-investments", *International Economic Review* 59(4), 1681–1731. The leapfrogging game used
-throughout, and what its full set of equilibria says about investment and competition.
-````
 
 (rls-intro)=
 ## Why all equilibria?
@@ -101,8 +88,10 @@ $$
 with the choice-specific values
 
 $$
-v^N_i(c_1, c_2, c) = r_i(c_1, c_2) + \beta EV_i(c_1, c_2, c \mid N), \qquad
-v^I_i(c_1, c_2, c) = r_i(c_1, c_2) - K(c) + \beta EV_i(c_1, c_2, c \mid I) .
+\begin{aligned}
+v^N_i(c_1, c_2, c) &= r_i(c_1, c_2) + \beta EV_i(c_1, c_2, c \mid N) , \\
+v^I_i(c_1, c_2, c) &= r_i(c_1, c_2) - K(c) + \beta EV_i(c_1, c_2, c \mid I) .
+\end{aligned}
 $$
 
 The expectation is where the rival enters. For firm 1,
@@ -132,10 +121,10 @@ A path of the game: both firms buy the technology $c = 2$, the state of the art 
 to 1, firm 1 invests and becomes the cost leader, the state of the art improves to 0, firm 2
 leapfrogs firm 1, and finally firm 1 invests and the game reaches $(0, 0, 0)$:
 
-```{image} _static/rls/dag3d_pic6.png
+```{image} _static/rls/dag3d_path.gif
 :width: 50%
 :align: center
-:alt: A path of the leapfrogging game through the pyramid
+:alt: A path of the leapfrogging game through the pyramid, step by step
 ```
 
 :::{div}
@@ -153,12 +142,14 @@ The game only falls through the pyramid: the state of the art never gets worse, 
 cost only falls when it invests. Every strategy profile $\sigma$ defines which transitions
 between points of the state space have positive probability, and these transitions induce
 a **strategy-specific partial order** on the state space. The pyramid of $n = 3$ flattened
-into a graph, with the transitions of one strategy profile:
+into a graph: the transitions from technological progress, those of a strategy of firm 1 that
+invests at all interior points, those of a strategy of firm 2 that invests at all edge
+points, and all the transitions of this strategy profile together:
 
-```{image} _static/rls/dag2d_trans_pic4.png
+```{image} _static/rls/dag2d_transitions.gif
 :width: 80%
 :align: center
-:alt: Transitions between the points of the state space under a strategy profile
+:alt: Transitions between the points of the state space, built up from technology and the strategies of the two firms
 ```
 
 Two conditions make a game directional:
@@ -189,10 +180,10 @@ states, then the states that become terminal, and so on: this **DAG recursion** 
 the state space into **stages**, totally ordered, so that the game never moves from a stage
 to an earlier one:
 
-```{image} _static/rls/dag2d_recr_pic20.png
+```{image} _static/rls/dag2d_recursion.gif
 :width: 80%
 :align: center
-:alt: Partition of the state space into stages by DAG recursion
+:alt: DAG recursion removing terminal states step by step and partitioning the state space into stages
 ```
 
 With the transitions drawn back in, every transition goes to the same stage or to a later
@@ -213,10 +204,10 @@ endogenous transition is the self-loop.
 games of the last stage, then of the stage before it using the solution of the later
 stages, and so on back to the apex.
 
-```{image} _static/rls/dag2d_strec_pic5.png
+```{image} _static/rls/dag2d_state_recursion.gif
 :width: 80%
 :align: center
-:alt: State recursion halfway through the stages
+:alt: State recursion solving the stages one by one from the terminal state back to the apex
 ```
 
 State recursion generalizes backward induction:
@@ -254,20 +245,12 @@ in total:
 With $\eta = 0$ the stage game at an interior point is a game of two firms choosing
 investment probabilities, and its equilibria are the intersections of two best response
 correspondences, step functions of the rival's probability. A stage game with three
-equilibria, firm 1 in red and firm 2 dotted black:
+equilibria on the left and one with five on the right, firm 1 in red and firm 2 dotted black:
 
-```{image} _static/rls/stage_eq_3a.png
-:width: 45%
+```{image} _static/rls/stage_eq_3_5.png
+:width: 72%
 :align: center
-:alt: Best response correspondences of a stage game with three equilibria
-```
-
-and one with five equilibria:
-
-```{image} _static/rls/stage_eq_5.png
-:width: 45%
-:align: center
-:alt: Best response correspondences of a stage game with five equilibria
+:alt: Best response correspondences of two stage games, with three equilibria on the left and five on the right
 ```
 
 In the leapfrogging game every stage game has 1, 3 or 5 equilibria. With $\eta > 0$ the
@@ -286,7 +269,7 @@ continuation values of the earlier stages, and therefore the set and even the **
 of equilibria there:
 
 ```{image} _static/rls/rls2d_pic1.png
-:width: 80%
+:width: 50%
 :align: center
 :alt: The number of stage equilibria at earlier stages depends on the later selections
 ```
@@ -347,12 +330,14 @@ equal to the number of stage equilibria found at that point under the current ES
 
 RLS is a **traversal of a tree**: the root is the terminal stage, every node a point of the
 state space, and every branch a choice of a stage equilibrium. Each leaf is one MPE of the
-game:
+game. The traversal with one new index per step, all the stage equilibria of a point
+appearing together, and the current path in blue, up to the red node from which it would go
+on:
 
-```{image} _static/rls/rls_tree_14.png
+```{image} _static/rls/rls_tree.gif
 :width: 70%
 :align: center
-:alt: The RLS tree of a small game
+:alt: The traversal of the RLS tree of a small game, step by step
 ```
 
 ````{attention} Theorem (decomposition, Iskhakov, Rust and Schjerning 2016)
@@ -426,6 +411,51 @@ game, in panel (a), and of the simultaneous move game, in panel (b), colored by 
 :alt: Equilibrium payoffs of the simultaneous move game
 ```
 
+How the payoff map changes with the parameters of the game, in four 30-second videos:
+
+- **investment cost**, simultaneous moves, $n = 4$: $k_1$ rises from 30 to 50, and the number
+  of equilibria falls from 28083 to 135
+- **technology**, simultaneous moves, $n = 4$: the parameter `beta_a` rises from 0 to 5, and
+  the number of equilibria rises from 38249 to 49649
+- **alternation of moves**, alternating moves, $n = 5$: the probability that firm 1 keeps the
+  move falls from 1 to 0, and the number of equilibria rises from 2 to 986
+- **discount factor**, alternating moves, $n = 5$: it rises from 0.80 to 0.997, and the number
+  of equilibria rises from 2 to 1858
+
+Click a picture to play the video, and click outside the video to close it:
+
+:::::{div}
+:class: video-thumbs
+
+````{dropdown} ![Payoff map as the investment cost changes](_static/video/eqb_sm_k1_n4.jpg) Investment cost
+
+```{image} _static/video/eqb_sm_k1_n4.mp4
+:alt: Video of the payoff map of the simultaneous move game as the investment cost rises
+```
+````
+
+````{dropdown} ![Payoff map as the technology parameter changes](_static/video/sm_beta_a_n4.jpg) Technology
+
+```{image} _static/video/sm_beta_a_n4.mp4
+:alt: Video of the payoff map of the simultaneous move game as the technology parameter rises
+```
+````
+
+````{dropdown} ![Payoff map as the alternation of moves changes](_static/video/eqb_tpm_n5.jpg) Alternation of moves
+
+```{image} _static/video/eqb_tpm_n5.mp4
+:alt: Video of the payoff map of the alternating move game as the alternation of moves changes
+```
+````
+
+````{dropdown} ![Payoff map as the discount factor changes](_static/video/eqb_df_n5.jpg) Discount factor
+
+```{image} _static/video/eqb_df_n5.mp4
+:alt: Video of the payoff map of the alternating move game as the discount factor rises
+```
+````
+:::::
+
 The 28.5 million equilibria of panel (b) also show why the homotopy method fails here: it
 follows the equilibrium as $\eta$ decreases from a high value with a unique equilibrium, but
 the correspondence bifurcates over and over, and it is not lower hemi-continuous. The value
@@ -472,10 +502,10 @@ Its main components:
 
 The search on the RLS tree, with pruned branches crossed out and the best record so far:
 
-```{image} _static/rls/nrls_tree_34.png
+```{image} _static/rls/nrls_tree.gif
 :width: 70%
 :align: center
-:alt: Branch and bound on the RLS tree
+:alt: Branch and bound on the RLS tree, step by step
 ```
 
 The partial likelihood of all expanded branches along the state space, from the terminal
@@ -542,6 +572,9 @@ When different markets play different equilibria, the path forward is grouped fi
 effects: markets are grouped by the equilibrium they play, either jointly with $\theta$ or
 by clustering in a first step.
 
+The [next class](26_nrls.md), a recorded lecture, covers the nested RLS estimator and the
+Monte Carlo evidence in more detail.
+
 :::{div}
 :class: discussion
 
@@ -563,4 +596,5 @@ by clustering in a first step.
 - 📖 {cite:t}`land1960AutomaticMethodSolving` "An Automatic Method of Solving Discrete Programming Problems"
 - 📖 {cite:t}`borkovsky2008UsersGuideSolving` "A user's guide to solving dynamic stochastic games using the homotopy method"
 - 📖 {cite:t}`aguirregabiriaImposingEquilibriumRestrictions2021` "Imposing equilibrium restrictions in the estimation of dynamic discrete games"
+- 📺 Australian Summer School in Dynamic Structural Econometrics (DSE) 2022 lecture by Fedor Iskhakov [YouTube video](https://youtu.be/ZBa1ZbOX97g?si=a1FMnRpdeklMV9Y2)
 ````

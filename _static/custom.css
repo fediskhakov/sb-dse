@@ -488,3 +488,56 @@ img.img-thin-border {
     padding-left: 3.6rem;
   }
 }
+
+/* Video thumbnails in a row. Each is a dropdown: its title is the thumbnail, and opening it shows
+   the video as a panel over the page. The backdrop belongs to the title, so clicking outside the
+   video closes the panel. */
+.video-thumbs {
+  display: flex;
+  gap: 2%;
+  margin: 1rem 0;
+}
+.video-thumbs details.myst-dropdown {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  overflow: visible;
+}
+.video-thumbs details.myst-dropdown > summary {
+  display: block;
+  list-style: none;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  font-size: 0.8rem;
+  font-weight: normal;
+  text-align: center;
+  cursor: pointer;
+}
+.video-thumbs details.myst-dropdown > summary:hover { box-shadow: none; }
+.video-thumbs details.myst-dropdown > summary::-webkit-details-marker { display: none; }
+.video-thumbs .myst-dropdown-header-icon { display: none; }
+.video-thumbs summary img { display: block; width: 100%; margin: 0 0 0.2rem 0; }
+.video-thumbs details[open] > summary::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.75);
+}
+.video-thumbs details[open] > .myst-dropdown-body {
+  position: fixed;
+  z-index: 1001;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90vw, 1100px);
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+.video-thumbs video { display: block; width: 100%; margin: 0; }
