@@ -134,8 +134,8 @@ plt.close(fig)
 
 (eqb-platform-model)=
 A **platform** is a product or a service with **network effects**
-{cite:p}`katz1985NetworkExternalitiesCompetition`: its value to a user grows with the
-number of other users:
+{cite:p}`katz1985NetworkExternalitiesCompetition`. 
+Its value to a user grows with the number of other users. For example:
 - game consoles
 - interface standards
 - social media

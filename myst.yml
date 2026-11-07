@@ -66,6 +66,10 @@ project:
     - file: 20_msm_practice.md
     - file: 21_eqb_cars.md
     - file: 22_eqb_practice.md
+    - file: 23_entry_games.md
+    - file: 24_mpec.md
+    - file: 25_rls.md
+    - file: 26_nrls.md
     - file: bibliography.md
 
 site:
