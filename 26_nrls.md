@@ -24,4 +24,6 @@ Econometrics; the link starts at 1:02:04, where the estimation part begins.
 - 📖 {cite:t}`nrls` "Structural estimation of dynamic directional games with multiple equilibria"
 - 📖 {cite:t}`rls` "Recursive lexicographical search: Finding all Markov perfect equilibria of finite state directional dynamic games"
 - 📖 {cite:t}`land1960AutomaticMethodSolving` "An Automatic Method of Solving Discrete Programming Problems"
+- 📺 Australian Summer School in Dynamic Structural Econometrics (DSE) 2022 lectures by John Rus, Bertel Schjerning and Fedor Iskhakov [YouTube video 1: introduction to leapfrogging](https://youtu.be/Mt4hon4ZuMU?si=rFY55Ariaf-Jvkq7), [YouTube video 2: setup and play](https://youtu.be/Lnx72TqRMa4?si=_2XfXXGs1V6YwFyt) and [YouTube video 3: solution and estimation](https://youtu.be/Lnx72TqRMa4?si=b0_6ZhKPTilVNTdp)
+
 ````
