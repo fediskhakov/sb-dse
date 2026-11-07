@@ -596,5 +596,5 @@ Monte Carlo evidence in more detail.
 - 📖 {cite:t}`land1960AutomaticMethodSolving` "An Automatic Method of Solving Discrete Programming Problems"
 - 📖 {cite:t}`borkovsky2008UsersGuideSolving` "A user's guide to solving dynamic stochastic games using the homotopy method"
 - 📖 {cite:t}`aguirregabiriaImposingEquilibriumRestrictions2021` "Imposing equilibrium restrictions in the estimation of dynamic discrete games"
-- 📺 Australian Summer School in Dynamic Structural Econometrics (DSE) 2022 lecture by Fedor Iskhakov [YouTube video](https://youtu.be/ZBa1ZbOX97g?si=a1FMnRpdeklMV9Y2)
+- 📺 Australian Summer School in Dynamic Structural Econometrics (DSE) 2022 lectures by John Rus, Bertel Schjerning and Fedor Iskhakov [YouTube video 1: introduction to leapfrogging](https://youtu.be/Mt4hon4ZuMU?si=rFY55Ariaf-Jvkq7), [YouTube video 2: setup and play](https://youtu.be/Lnx72TqRMa4?si=_2XfXXGs1V6YwFyt) and [YouTube video 3: solution and estimation](https://youtu.be/Lnx72TqRMa4?si=b0_6ZhKPTilVNTdp)
 ````
