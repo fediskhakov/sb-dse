@@ -1,5 +1,5 @@
 ---
-title: 📖 Static and dynamic entry games
+title: 📖 Dynamic entry games
 short_title: 📖 Entry games
 subtitle: Class 23 — Thursday, November 12
 downloads:
@@ -7,12 +7,10 @@ downloads:
     title: MyST Markdown
 ---
 
-<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
-
 Today the agents interact strategically: firms decide whether to be active in a market,
 and the profit of each depends on how many rivals are active. We set up the dynamic entry
-game of Aguirregabiria and Mira, review how it is estimated, and then use a static entry
-game to see what multiple equilibria do to every one of those estimators.
+game of Aguirregabiria and Mira, review how it is estimated, and see why multiple equilibria
+are a problem for every one of those estimators.
 
 ````{seealso} Key reading
 
@@ -20,6 +18,20 @@ game to see what multiple equilibria do to every one of those estimators.
 Discrete Games", *Econometrica* 75(1), 1–53. The dynamic entry game, its equilibrium
 conditions in the space of choice probabilities, the NPL estimator for games and the
 Chilean retail application of this class all come from this paper.
+
+{cite:t}`egesdal2015EstimatingDynamicDiscretechoice` "Estimating dynamic discrete-choice
+games of incomplete information", *Quantitative Economics* 6(3), 567–597. Maximum
+likelihood for the dynamic entry game by MPEC, and Monte Carlo evidence on how two-step,
+NPL and MPEC fare when the game has multiple equilibria.
+````
+
+````{note} Guest speaker: Bertel Schjerning
+
+Prof. Bertel Schjerning, University of Copenhagen,
+[schjerning.com](https://www.schjerning.com/), joins the class with a lecture on dynamic
+games.
+
+{button}`📄 Slides: Dynamic games (PDF) <https://github.com/bschjerning/dp_ucph/blob/main/4_dynamic_games/2_DynamicGames.pdf>`
 ````
 
 (games-intro)=
@@ -455,326 +467,78 @@ them runs into trouble when the model has several:
   Class 22](22_eqb_practice.md#eqb-sa-multiple), which converge only to equilibria that are
   stable under best responses
 
-The dynamic game is too large to see any of this directly. A static game with two firms
-shows all of it.
 
-(games-static)=
-## A static entry game
+(mpec-egesdal)=
+## Monte Carlo evidence
 
-The example is from {cite:t}`suEstimatingDiscretechoiceGames2014`. Two firms, $a$ and $b$,
-decide simultaneously whether to enter a market, $d_a, d_b \in \{0, 1\}$. The payoff of
-firm $a$ is
+{cite:t}`egesdal2015EstimatingDynamicDiscretechoice` compare the estimators on the full
+game of Aguirregabiria and Mira:
 
-$$
-u_a(d_a, d_b, x_a, \varepsilon_a) =
-\begin{cases}
-\big[\alpha + d_b (\beta - \alpha)\big] x_a + \varepsilon_{a1}, & d_a = 1, \\
-\varepsilon_{a0}, & d_a = 0,
-\end{cases}
-$$
+- $N = 5$ firms with fixed costs $\theta^{FC}_0 = (1.9, 1.8, 1.7, 1.6, 1.5)$ and entry cost
+  $\theta^{EC}_0 = 1$, the market size transition of the code above
+- **experiment 1**: $|\mathcal{S}| = 5$, with $(\theta^{RS}, \theta^{RN}) = (1, 2)$ in case 3
+  and $(2, 4)$ in case 4
+- **experiment 2**: $|\mathcal{S}| = 10$ and $15$, cases 5 and 6, with 4800 constraints and
+  4808 unknowns in the largest
+- $M = 400$ markets, $T = 10$ periods; 100 data sets per case in experiment 1 and 50 in
+  experiment 2; MPEC from 10 and 5 starting points; NPL and its modification NPL-$\Lambda$
+  with at most 100 iterations
+- MPEC is solved by KNITRO through AMPL, with exact derivatives and sparse matrices
 
-and the payoff of firm $b$ is symmetric. Here:
+The share of data sets for which each estimator converged:
 
-- $\alpha x_a$ is the monopoly profit of firm $a$, and $\beta x_a$ its duopoly profit
-- $x = (x_a, x_b)$ are the observed types of the firms, common knowledge
-- $\theta = (\alpha, \beta)$ are the structural parameters to estimate
-- $\varepsilon = (\varepsilon_{a0}, \varepsilon_{a1}, \varepsilon_{b0}, \varepsilon_{b1})$
-  are private information, observed by each firm about itself and by neither the
-  opponent nor the econometrician: a game of **incomplete information**, solved by a
-  **Bayesian Nash equilibrium**
-
-Each firm forms beliefs about the entry of the other, $p_a = \Pr\{d_a = 1\}$ and
-$p_b = \Pr\{d_b = 1\}$, and its expected payoff from entering is
-$[\alpha + p_b (\beta - \alpha)] x_a$. With i.i.d. EV1 shocks the best responses are logit:
-
-$$
-p_a = \frac{1}{1 + \exp\big[-\alpha x_a + p_b x_a (\alpha - \beta)\big]} \equiv \Psi_a(p_b, x_a; \theta),
-\qquad
-p_b = \frac{1}{1 + \exp\big[-\alpha x_b + p_a x_b (\alpha - \beta)\big]} \equiv \Psi_b(p_a, x_b; \theta) .
-$$
-
-The pair defines the equilibrium mapping $\Psi(p_a, p_b) = \big(\Psi_a(p_b), \Psi_b(p_a)\big)$
-on $[0, 1]^2$.
-
-````{attention} Definition (Bayesian Nash equilibrium of the entry game)
-A **Bayesian Nash equilibrium** is a pair of entry probabilities that are mutual best
-responses, $(p_a^\star, p_b^\star) = \Psi(p_a^\star, p_b^\star)$: the beliefs of each firm
-about the other are consistent with the other's behavior.
-````
-
-$\Psi$ is a continuous map of the square into itself, so by Brouwer's theorem an
-equilibrium exists. Uniqueness is another matter.
-
-(games-static-solution)=
-### Three equilibria
-
-The parameterization is a very contestable market:
-
-- monopoly profits $\alpha x_j = 5 x_j$, duopoly profits $\beta x_j = -11 x_j$: a firm makes
-  money alone and loses it in a duopoly
-- the firm types $(x_a, x_b) = (0.52, 0.22)$
-
-The equilibria are the intersections of the two best response curves:
-
-```{image} _static/games/br.png
+```{image} _static/games/dgame_converged.png
 :width: 80%
 :align: center
-:alt: Best response curves of firm a and firm b with three intersections
+:alt: Percentage of data sets solved by MLE, 2S-PML, NPL and NPL-Lambda
 ```
 
-There are three:
+The average time per run:
 
-- **equilibrium 1**, $(p_a, p_b) = (0.030, 0.730)$: firm $b$ is the likely entrant
-- **equilibrium 2**, $(0.616, 0.256)$: both firms enter with moderate probability
-- **equilibrium 3**, $(0.774, 0.165)$: firm $a$ is the likely entrant
-
-Substituting one best response into the other reduces the problem to one dimension, the
-fixed point of the **second-order best response** $p_a \mapsto \Psi_a(\Psi_b(p_a))$:
-
-```{image} _static/games/2br.png
+```{image} _static/games/dgame_cputime.png
 :width: 80%
 :align: center
-:alt: Second-order best response of firm a and the 45-degree line
+:alt: Solve time per run for the four estimators
 ```
 
-This is the picture of [Class 22](22_eqb_practice.md#eqb-network-strength) again: the
-curve crosses the 45-degree line three times. At equilibria 1 and 3 it crosses from above
-with slope below one, so they are **stable** under best response iterations; at
-equilibrium 2 the slope is above one, and it is **unstable**. Successive approximations on
-the best responses never find equilibrium 2.
+The estimates in experiment 1:
 
-:::{div}
-:class: discussion
-
-- Which equilibrium would you expect to see in the data, and why might a market play the
-  unstable one?
-- Can this game have more than three equilibria? What about a game with three firms?
-:::
-
-(games-static-ml)=
-## Maximum likelihood with multiple equilibria
-
-The Monte Carlo design of {cite:t}`suEstimatingDiscretechoiceGames2014`:
-
-- the data are generated by a single equilibrium: the two firms play the same equilibrium
-  $N = 1000$ times, with the types fixed at $(x_a, x_b) = (0.52, 0.22)$
-- the true parameters are $(\alpha_0, \beta_0) = (5, -11)$
-- the data are $X = \{d^n_a, d^n_b\}_{n=1}^{N}$, and the task is to recover $(\alpha, \beta)$
-
-The log-likelihood is that of two binary logits:
-
-$$
-\log \mathcal{L}(\alpha, \beta; X) = \sum_{n=1}^N \Big(d^n_a \log p_a(\alpha, \beta) + (1 - d^n_a) \log\big[1 - p_a(\alpha, \beta)\big]\Big)
-+ \sum_{n=1}^N \Big(d^n_b \log p_b(\alpha, \beta) + (1 - d^n_b) \log\big[1 - p_b(\alpha, \beta)\big]\Big) ,
-$$
-
-where $(p_a(\alpha, \beta), p_b(\alpha, \beta))$ solve the equilibrium equations.
-
-The nested fixed point estimator:
-
-1. **outer loop**: maximize $\log \mathcal{L}(\alpha, \beta; X)$ over $(\alpha, \beta)$
-2. **inner loop**: for the given $(\alpha, \beta)$, solve for **all** equilibria
-   $(p^k_a, p^k_b)$, $k = 1, \dots, K$, and keep the one with the highest likelihood,
-   $k^\star = \arg\max_k \log \mathcal{L}(p^k_a, p^k_b; X)$
-
-The likelihood as a function of $(\alpha, \beta)$, with data generated by equilibrium 1:
-
-```{image} _static/games/logl_eqb1.png
-:width: 80%
+```{image} _static/games/dgame_exp1.png
+:width: 90%
 :align: center
-:alt: NFXP log-likelihood surface, data from equilibrium 1
+:alt: Monte Carlo estimates in experiment 1, cases 3 and 4
 ```
 
-A smooth hill with the maximum near the true values. With data generated by
-equilibrium 2:
+and in experiment 2:
 
-```{image} _static/games/logl_eqb2.png
-:width: 80%
+```{image} _static/games/dgame_exp2.png
+:width: 90%
 :align: center
-:alt: NFXP log-likelihood surface with a cliff, data from equilibrium 2
+:alt: Monte Carlo estimates in experiment 2, 10 and 15 market sizes
 ```
 
-and by equilibrium 3:
+The findings:
 
-```{image} _static/games/logl_eqb3.png
-:width: 80%
-:align: center
-:alt: NFXP log-likelihood surface with a cliff, data from equilibrium 3
-```
+- maximum likelihood by MPEC converges for every data set and recovers the parameters,
+  at a cost that grows with the state space but stays within minutes
+- 2S-PML always converges and is the fastest, but $\theta^{RN}$ and $\theta^{RS}$ are badly
+  biased, in every case
+- NPL converges for about half of the data sets in cases 3 and 5 and for none in cases 4
+  and 6; NPL-$\Lambda$, which damps the best response update, does better, but is not
+  reliable either
+- open questions: MPEC for larger state spaces, and its reliability when the data come
+  from a model with many equilibria, which the directional dynamic games of the next
+  classes address
 
-The **likelihood cliffs**: for small $\alpha$ the game has a unique equilibrium, close to
-equilibrium 1, and it cannot fit data from equilibria 2 or 3. Where the other two
-equilibria appear, the likelihood jumps by thousands of log points. Therefore:
 
-- the likelihood is **discontinuous** in the parameters, and gradient-based optimizers fail
-  near the cliff
-- the true parameters are close to the edge of the region with three equilibria, so the
-  usual asymptotic theory, which needs a smooth likelihood around the truth, is in doubt
-- the cliff is not a bug of the estimator: it is what the model says
 
-The Monte Carlo results of NFXP with data from equilibrium 1, 1000 samples, true values in
-the titles:
+**We will formally set up and play with MPEC estimation in the next class.**
 
-```{image} _static/games/mc_eqb1_nfxp.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the NFXP estimates, equilibrium 1
-```
-
-With data from equilibrium 2:
-
-```{image} _static/games/mc_eqb2_nfxp.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the NFXP estimates, equilibrium 2
-```
-
-With data from equilibrium 3:
-
-```{image} _static/games/mc_eqb3_nfxp.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the NFXP estimates, equilibrium 3
-```
-
-When it finds all the equilibria at every trial value, NFXP works: the estimates of
-$(\alpha, \beta)$ and of the equilibrium probabilities are centered at the truth, for every
-equilibrium, including the unstable one. In this game finding all equilibria is easy; in a
-dynamic game it is not.
-
-:::{div}
-:class: discussion
-
-- Is the NFXP likelihood smooth in $(\alpha, \beta)$? Are the objective and the
-  constraints of MPEC smooth in $(\alpha, \beta, p_a, p_b)$?
-- Can we tell from the data which equilibrium was played?
-- Can we use the standard theorems for inference here?
-:::
-
-(games-static-two-step)=
-## Two-step and NPL estimators with multiple equilibria
-
-**Two-step methods** start from the estimated entry probabilities, here the frequencies
-$\hat p_a = \frac{1}{N} \sum_n \mathbf{1}\{d^n_a = 1\}$ and the same for $b$. Then either:
-
-- solve the two equilibrium equations $\hat p_a = \Psi_a(\hat p_b; \theta)$ and
-  $\hat p_b = \Psi_b(\hat p_a; \theta)$ for $(\alpha, \beta)$, or
-- maximize the pseudo-likelihood
-  $\log \mathcal{L}\big(\Psi_a(\hat p_b; \theta), \Psi_b(\hat p_a; \theta); X\big)$ over
-  $\theta$, which is 2S-PML, or
-- minimize the distance
-  $[\hat p - \Psi(\hat p; \theta)]' W [\hat p - \Psi(\hat p; \theta)]$, the asymptotic least
-  squares of {cite:t}`pesendorfer2008AsymptoticLeastSquares`
-
-What can go wrong: different first-stage estimators give different $\hat p$; if $\hat p$
-differs from the equilibrium probabilities, so does $\hat\theta$; and for a given $\hat p$
-the equilibrium equations may have no solution in $\theta$.
-
-The 2S-PML results with data from equilibria 1, 2 and 3:
-
-```{image} _static/games/mc_eqb1_pml2step.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the 2S-PML estimates, equilibrium 1
-```
-
-```{image} _static/games/mc_eqb2_pml2step.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the 2S-PML estimates, equilibrium 2
-```
-
-```{image} _static/games/mc_eqb3_pml2step.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the 2S-PML estimates, equilibrium 3
-```
-
-With 1000 observations of a single pair of CCPs the first stage is precise, and 2S-PML
-does well for all three equilibria. Its problems appear when there are many states and
-few observations per state, as in the dynamic game.
-
-````{attention} Algorithm (NPL in the static entry game)
-
-**Input:** the data $X$, the first-stage estimates $\hat p^0 = (\hat p^0_a, \hat p^0_b)$,
-a tolerance.
-
-**Steps:** for $k = 0, 1, \dots$
-
-1. **Pseudo-likelihood.** $(\alpha^{k+1}, \beta^{k+1}) = \arg\max_{\alpha, \beta}
-   \log \mathcal{L}\big(\Psi_a(\hat p^k_b; \alpha, \beta), \Psi_b(\hat p^k_a; \alpha, \beta); X\big)$.
-2. **Best response update.** $\hat p^{k+1}_a = \Psi_a(\hat p^k_b; \alpha^{k+1}, \beta^{k+1})$
-   and $\hat p^{k+1}_b = \Psi_b(\hat p^k_a; \alpha^{k+1}, \beta^{k+1})$.
-3. **Stop** when $(\alpha^k, \beta^k)$ and $\hat p^k$ no longer change.
-````
-
-The NPL results with data from equilibrium 1:
-
-```{image} _static/games/mc_eqb1_npl_np.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the NPL estimates, equilibrium 1
-```
-
-With data from equilibrium 2:
-
-```{image} _static/games/mc_eqb2_npl_np.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the NPL estimates, equilibrium 2
-```
-
-With data from equilibrium 3:
-
-```{image} _static/games/mc_eqb3_npl_np.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the NPL estimates, equilibrium 3
-```
-
-NPL breaks exactly where Class 22 predicts:
-
-- with data from equilibrium 1, which is stable, NPL is as good as maximum likelihood
-- with data from equilibrium 2, the unstable one, the iterations cannot stay near the
-  truth: $\hat\alpha$ ends near 0 or near 100, $\hat\beta$ anywhere between $-40$ and $40$,
-  and the probabilities at the wrong equilibria
-- with data from equilibrium 3, stable but close to the region where it disappears, about
-  a fifth of the samples end at equilibrium 1, $p_a = 0.03$
-
-The best response update in step 2 is successive approximations on $\Psi$, which repel
-from an unstable fixed point. {cite:t}`pesendorfer2010SequentialEstimationDynamic` make the
-point in general: NPL can be inconsistent when the data come from an equilibrium that is
-unstable under best responses.
-
-:::{div}
-:class: discussion
-
-- 2S-PML did well here. Why would it do worse in the dynamic game of the first half of
-  the class?
-- Which modification of the best response update in NPL would make it converge to
-  equilibrium 2? Recall the damping of
-  [Class 22](22_eqb_practice.md#eqb-damping).
-:::
-
-(games-conclusions)=
-## Conclusions
-
-- Maximum likelihood, by NFXP or MPEC, is statistically efficient but computationally
-  daunting: NFXP needs all equilibria at every trial value of the parameters.
-- Two-step estimators are fast, but inefficient and biased in small samples.
-- NPL bridges the two, but it is unsuitable when the data come from an equilibrium that is
-  unstable under best responses.
-- Even a static game is a hard estimation problem: multiple equilibria make the
-  likelihood discontinuous, which complicates both the computation and the inference,
-  and they raise the question of which equilibrium is in the data.
-- All these problems are amplified in dynamic games. The
-  [next class](24_mpec.md) estimates both games by MPEC.
 
 ````{note} References and additional resources
 
 (entry-games-references)=
 - 📖 {cite:t}`aguirregabiriaSequentialEstimationDynamic2007` "Sequential Estimation of Dynamic Discrete Games"
-- 📖 {cite:t}`suEstimatingDiscretechoiceGames2014` "Estimating discrete-choice games of incomplete information: Simple static examples"
 - 📖 {cite:t}`pesendorfer2010SequentialEstimationDynamic` "Sequential Estimation of Dynamic Discrete Games: A Comment"
 - 📖 {cite:t}`egesdal2015EstimatingDynamicDiscretechoice` "Estimating dynamic discrete-choice games of incomplete information"
 - 📖 {cite:t}`aguirregabiriaImposingEquilibriumRestrictions2021` "Imposing equilibrium restrictions in the estimation of dynamic discrete games"

@@ -1,28 +1,30 @@
 ---
-title: "🔬 Practice: MPEC for static and dynamic entry games"
+title: "🔬 Practice: Mathematical programming with equilibrium constraints (MPEC)"
 short_title: "🔬 MPEC"
 subtitle: Class 24 — Tuesday, November 17
 downloads:
   - file: 24_mpec.md
     title: MyST Markdown
+    
 kernelspec:
   name: python3
   display_name: Python 3
 ---
 
-<span class="tag wip">🚧 🚧 🚧 Not the final version 🚧 🚧 🚧</span>
-
-Maximum likelihood for a game needs all equilibria at every trial value of the parameters,
-as [Class 23](23_entry_games.md#games-static-ml) showed. Today we estimate the static and
-the dynamic entry games by MPEC, which writes the equilibrium conditions as constraints
-of the likelihood maximization and never solves the game for all equilibria.
+Today we estimate the static entry game of {cite:t}`suEstimatingDiscretechoiceGames2014` and
+see the [trouble with multiple equilibria from Class 23](23_entry_games.md#games-multiplicity)
+up close: the likelihood has cliffs, and MPEC avoids them by never solving for all equilibria.
 
 ````{seealso} Key reading
 
 {cite:t}`suConstrainedOptimizationApproaches2012` "Constrained Optimization Approaches to
 Estimation of Structural Models", *Econometrica* 80(5), 2213–2230. The MPEC formulation of
 a structural estimator, its equivalence with the nested fixed point algorithm, and the
-idea this class applies to the static and dynamic entry games.
+idea this class applies to the static entry game.
+
+{cite:t}`suEstimatingDiscretechoiceGames2014` "Estimating discrete-choice games of
+incomplete information: Simple static examples", *Quantitative Marketing and Economics*
+12(2), 167–207. The static entry game of this class, its multiple equilibria, and how MPEC and other estimators perform on it.
 ````
 
 ````{hint} Running the code for this lecture
@@ -49,76 +51,109 @@ Setting up the Python environment is covered in
 [](2_workflow.md#python-install).
 ````
 
+(mpec-idea)=
+## Maximum likelihood as constrained optimization
+
+The likelihood of a structural model depends on the parameters $\theta$ and on objects
+$\sigma$ the model determines, such as the expected value function of the bus model or the
+equilibrium choice probabilities of a game. The model ties them together by equations
+$G(\theta, \sigma) = 0$, so maximum likelihood is a constrained optimization problem:
+
+$$
+\begin{aligned}
+\max_{\theta, \sigma} \quad & \mathcal{L}(\theta, \sigma; \text{data}) \\
+\text{subject to} \quad & G(\theta, \sigma) = 0 .
+\end{aligned}
+$$
+
+There are two ways to solve it:
+
+- the [nested fixed point algorithm of Class 10](10_nfxp.md#nfxp-nested-loop) eliminates
+  $\sigma$: an inner loop solves $G(\theta, \sigma) = 0$ for $\sigma(\theta)$ at every trial
+  $\theta$, and the outer loop maximizes $\mathcal{L}(\theta, \sigma(\theta))$ over $\theta$
+  alone
+- **MPEC**, mathematical programming with equilibrium constraints
+  {cite:p}`suConstrainedOptimizationApproaches2012`, gives the whole problem to a
+  constrained optimizer: $\theta$ and $\sigma$ are unknowns together, and the constraints
+  have to hold only at the solution
+
+Both have the same solutions. In a game the difference matters: $G(\theta, \sigma) = 0$ can
+have several solutions, and the inner loop of NFXP has to find all of them at every trial
+$\theta$.
+
+(games-static)=
+## A static entry game
+
+The example is from {cite:t}`suEstimatingDiscretechoiceGames2014`. Two firms, $a$ and $b$,
+decide simultaneously whether to enter a market, $d_a, d_b \in \{0, 1\}$. The payoff of
+firm $a$ is
+
+$$
+u_a(d_a, d_b, x_a, \varepsilon_a) =
+\begin{cases}
+\big[\alpha + d_b (\beta - \alpha)\big] x_a + \varepsilon_{a1}, & d_a = 1, \\
+\varepsilon_{a0}, & d_a = 0,
+\end{cases}
+$$
+
+and the payoff of firm $b$ is symmetric. Here:
+
+- $\alpha x_a$ is the monopoly profit of firm $a$, and $\beta x_a$ its duopoly profit
+- $x = (x_a, x_b)$ are the observed types of the firms, common knowledge
+- $\theta = (\alpha, \beta)$ are the structural parameters to estimate
+- $\varepsilon = (\varepsilon_{a0}, \varepsilon_{a1}, \varepsilon_{b0}, \varepsilon_{b1})$
+  are private information, observed by each firm about itself and by neither the
+  opponent nor the econometrician: a game of **incomplete information**, solved by a
+  **Bayesian Nash equilibrium**
+
+Each firm forms beliefs about the entry of the other, $p_a = \Pr\{d_a = 1\}$ and
+$p_b = \Pr\{d_b = 1\}$, and its expected payoff from entering is
+$[\alpha + p_b (\beta - \alpha)] x_a$. With i.i.d. EV1 shocks the best responses are logit:
+
+$$
+\begin{aligned}
+p_a &= \frac{1}{1 + \exp\big[-\alpha x_a + p_b x_a (\alpha - \beta)\big]} \equiv \Psi_a(p_b, x_a; \theta), \\
+p_b &= \frac{1}{1 + \exp\big[-\alpha x_b + p_a x_b (\alpha - \beta)\big]} \equiv \Psi_b(p_a, x_b; \theta) .
+\end{aligned}
+$$
+
+The pair defines the equilibrium mapping $\Psi(p_a, p_b) = \big(\Psi_a(p_b), \Psi_b(p_a)\big)$
+on $[0, 1]^2$.
+
+````{attention} Definition (Bayesian Nash equilibrium of the entry game)
+A **Bayesian Nash equilibrium** is a pair of entry probabilities that are mutual best
+responses, $(p_a^\star, p_b^\star) = \Psi(p_a^\star, p_b^\star)$: the beliefs of each firm
+about the other are consistent with the other's behavior.
+````
+
+$\Psi$ is a continuous map of the square into itself, so by Brouwer's theorem an
+equilibrium exists. Uniqueness is another matter.
+
+The model object holds the parameters and the best responses. Substituting one best response
+into the other reduces the equilibrium to one equation in $p_a$, the fixed point of the
+**second-order best response** $p_a \mapsto \Psi_a(\Psi_b(p_a))$. Each best response falls
+with the rival's entry probability, so this map is increasing in $p_a$, and `equilibria`
+uses the [successive approximations and bracketing of Class 22](22_eqb_practice.md#eqb-all-equilibria):
+
+- successive approximations from $p_a = 0$ and from $p_a = 1$ converge to the lowest and the
+  highest equilibrium
+- `brentq` between the two finds the unstable one in the middle, so the method finds at most
+  three equilibria, enough for this game
+
+The option `method='grid'` switches to the one-dimensional method of
+[Class 22](22_eqb_practice.md#eqb-network-strength): a grid of sign changes refined by
+`brentq`.
+
 ```{code-cell} python3
 import time, warnings
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import brentq, minimize, root
+from matplotlib.colors import LightSource, Normalize
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
+from scipy.optimize import brentq, minimize
 warnings.simplefilter('ignore', RuntimeWarning)               # log(0) at trial points the optimizers reject
-```
+plt.rcParams['legend.frameon'] = False                        # no border around the legends
 
-(mpec-idea)=
-## Estimation as constrained optimization
-
-Every structural estimator of the course maximizes a criterion that depends on the
-parameters $\theta$ and on endogenous objects $\sigma$ the model determines: the expected
-value function of the bus model, the equilibrium prices of the car market, the choice
-probabilities of a game. The model ties them together by a system of equations
-$G(\theta, \sigma) = 0$.
-
-**MPEC**, mathematical programming with equilibrium constraints
-{cite:p}`suConstrainedOptimizationApproaches2012`, maximizes over both:
-
-$$
-\max_{\theta, \sigma} \ \mathcal{L}(\theta, \sigma; \text{data}) \quad \text{subject to} \quad G(\theta, \sigma) = 0 .
-$$
-
-The [nested fixed point algorithm of Class 10](10_nfxp.md#nfxp-nested-loop) solves the same
-problem by eliminating $\sigma$: when $G(\theta, \sigma) = 0$ has a unique solution
-$\sigma(\theta)$, the constrained problem reduces to $\max_\theta \mathcal{L}(\theta, \sigma(\theta))$.
-Rust's NFXP manual describes the algorithm exactly this way. Both formulations have the same
-solutions; they differ in how the computer gets there.
-
-What changes with MPEC:
-
-- the constraints have to hold only at the solution, not at every trial value of $\theta$:
-  no inner loop, and no inner loop tolerance
-- the objective and the constraints are smooth in $(\theta, \sigma)$ even when
-  $\sigma(\theta)$ is not, for example when the number of equilibria changes with $\theta$
-- the number of unknowns grows from $\dim \theta$ to $\dim \theta + \dim \sigma$, so MPEC
-  needs a solver for large constrained problems, such as KNITRO or IPOPT, with exact
-  derivatives and the **sparsity pattern** of the constraint Jacobian
-
-Where it has been applied:
-
-- the bus engine model {cite:p}`suConstrainedOptimizationApproaches2012`; with the
-  Newton–Kantorovich inner loop of [Class 9](9_zurcher.md), NFXP is as fast as MPEC
-  there {cite:p}`ecma_comment`
-- random coefficients demand {cite:p}`dube2012ImprovingNumericalPerformance`: the inner loop
-  of BLP inverts market shares by a contraction that is slow, and a loose inner tolerance
-  makes the outer gradient wrong and the optimizer stop at a point that is not a maximum;
-  MPEC adds the demand shocks as unknowns and the share equations as sparse constraints
-- games {cite:p}`suEstimatingDiscretechoiceGames2014,egesdal2015EstimatingDynamicDiscretechoice`,
-  where the inner loop of maximum likelihood would need all equilibria
-
-:::{div}
-:class: discussion
-
-- When does eliminating $\sigma$ make the problem easier, and when harder?
-- What does a constrained optimizer do at an intermediate iterate where the constraints
-  are violated? Is such an iterate meaningful economically?
-:::
-
-(mpec-static)=
-## MPEC for the static entry game
-
-The game of [Class 23](23_entry_games.md#games-static): two firms, entry payoff
-$[\alpha + p_{-j}(\beta - \alpha)] x_j$, logit best responses $\Psi_a$, $\Psi_b$. The model
-object holds the parameters and the best responses; `equilibria` finds all equilibria with
-the second-order best response, the one-dimensional trick of
-[Class 22](22_eqb_practice.md#eqb-network-strength).
-
-```{code-cell} python3
 class entry_game:
     '''Static entry game of Su (2014): two firms, entry payoff [alpha + p_other (beta - alpha)] x'''
 
@@ -135,22 +170,127 @@ class entry_game:
         '''Equilibrium mapping (p_a, p_b) -> (Psi_a(p_b), Psi_b(p_a))'''
         return np.array([self.br(p[1], self.x[0], theta), self.br(p[0], self.x[1], theta)])
 
-    def equilibria(self, theta=None, n=1001):
-        '''All equilibria, as roots of Psi_a(Psi_b(p_a)) - p_a bracketed on a grid and refined by brentq'''
-        g = lambda pa: self.br(self.br(pa, self.x[1], theta), self.x[0], theta) - pa
-        grid = np.linspace(0, 1, n)
-        gv = g(grid)                                          # vectorized: the whole grid at once
-        pa = [brentq(g, lo, hi, xtol=1e-14)
-              for lo, hi, glo, ghi in zip(grid[:-1], grid[1:], gv[:-1], gv[1:]) if glo * ghi < 0]
+    def equilibria(self, theta=None, method='sa', n=1001, tol=1e-13, maxiter=100000):
+        '''All equilibria, as fixed points of the increasing map phi(p_a) = Psi_a(Psi_b(p_a)):
+        method='sa'    successive approximations from both ends, brentq in between (at most three)
+        method='grid'  sign changes of phi(p_a) - p_a on a grid of n points, refined by brentq'''
+        phi = lambda pa: self.br(self.br(pa, self.x[1], theta), self.x[0], theta)
+        g = lambda pa: phi(pa) - pa
+        if method == 'grid':
+            grid = np.linspace(0, 1, n)
+            gv = g(grid)                                      # vectorized: the whole grid at once
+            pa = [brentq(g, lo, hi, xtol=1e-14)
+                  for lo, hi, glo, ghi in zip(grid[:-1], grid[1:], gv[:-1], gv[1:]) if glo * ghi < 0]
+            pa = sorted(pa + list(grid[gv == 0]))             # a root exactly on the grid shows no sign change
+        elif method == 'sa':
+            pa = []
+            for p in (0.0, 1.0):                              # from below: the lowest, from above: the highest
+                for _ in range(maxiter):                      # slow near a fold, where the slope is close to one
+                    p, p0 = phi(p), p
+                    if abs(p - p0) < tol: break
+                else:
+                    raise RuntimeError(f'Successive approximations failed to converge at theta = {theta}')
+                pa.append(p)
+            lo, hi = pa
+            if hi - lo < 1e-8:
+                pa = [lo]                                     # a unique equilibrium
+            elif g(lo + 1e-9) * g(hi - 1e-9) < 0:
+                pa = [lo, brentq(g, lo + 1e-9, hi - 1e-9, xtol=1e-14), hi]   # the unstable one in between
+        else:
+            raise ValueError(f'Unknown solver: {method}')
         return np.array([[q, self.br(q, self.x[1], theta)] for q in pa])
+```
 
+(games-static-solution)=
+### Three equilibria
+
+The parameterization is a very contestable market:
+
+- monopoly profits $\alpha x_j = 5 x_j$, duopoly profits $\beta x_j = -11 x_j$
+- a firm makes money alone and loses it in a duopoly
+- the firm types $(x_a, x_b) = (0.52, 0.22)$
+
+```{code-cell} python3
 game = entry_game()
 eq = game.equilibria()
 print('equilibria (p_a, p_b):', eq.round(4), sep='\n')
 ```
 
-The data are $N = 1000$ plays of one equilibrium, and the likelihood depends on them only
-through the number of entries of each firm:
+The equilibria are the intersections of the two best response curves:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+pv = np.linspace(0, 1, 101)
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(game.br(pv, game.x[0]), pv, color='red', lw=1, label='$\\psi_a(p_b)$')
+ax.plot(pv, game.br(pv, game.x[1]), color='blue', lw=1, label='$\\psi_b(p_a)$')
+ax.plot(eq[:, 0], eq[:, 1], 's', mfc='none', mec='black', ms=7)
+for pa, pb in eq:
+    ax.text(pa + 0.03, pb + 0.03, f'({pa:.3f},{pb:.3f})', va='bottom')
+ax.set(xlim=(0, 1), ylim=(0, 1), xlabel='$p_a$', ylabel='$p_b$', title='Best response functions, firm a and firm b')
+ax.legend(loc='upper right')
+plt.show()
+```
+
+There are three:
+
+- **equilibrium 1**, $(p_a, p_b) = (0.030, 0.730)$: firm $b$ is the likely entrant
+- **equilibrium 2**, $(0.616, 0.256)$: both firms enter with moderate probability
+- **equilibrium 3**, $(0.774, 0.165)$: firm $a$ is the likely entrant
+
+The second-order best response and the 45-degree line:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(pv, game.br(game.br(pv, game.x[1]), game.x[0]), color='blue', lw=1, label='$\\psi_a(\\psi_b(p_a))$')
+ax.plot(pv, pv, color='tab:green', lw=1)
+ax.plot(eq[:, 0], eq[:, 0], 's', mfc='none', mec='black', ms=7)
+for pa in eq[:, 0]:
+    ax.text(pa + 0.03, pa - 0.03, f'({pa:.3f})', va='bottom')
+ax.set(xlim=(0, 1), ylim=(0, 1), xlabel='$p_a$', ylabel='$\\psi_a(\\psi_b(p_a))$',
+       title='Second order best response function, firm a')
+ax.legend(loc='upper right')
+plt.show()
+```
+
+This is the picture of [Class 22](22_eqb_practice.md#eqb-network-strength) again: the
+curve crosses the 45-degree line three times. At equilibria 1 and 3 it crosses from above
+with slope below one, so they are **stable** under best response iterations; at
+equilibrium 2 the slope is above one, and it is **unstable**. Successive approximations on
+the best responses never find equilibrium 2, which is why `equilibria` brackets it.
+
+:::{div}
+:class: discussion
+
+- Which equilibrium would you expect to see in the data, and why might a market play the
+  unstable one?
+- Can this game have more than three equilibria? What about a game with three firms?
+:::
+
+(games-static-ml)=
+## Maximum likelihood with multiple equilibria
+
+The Monte Carlo design of {cite:t}`suEstimatingDiscretechoiceGames2014`:
+
+- the data are generated by a single equilibrium: the two firms play the same equilibrium
+  $N = 1000$ times, with the types fixed at $(x_a, x_b) = (0.52, 0.22)$
+- the true parameters are $(\alpha_0, \beta_0) = (5, -11)$
+- the data are $X = \{d^n_a, d^n_b\}_{n=1}^{N}$, and the task is to recover $(\alpha, \beta)$
+
+The log-likelihood is that of two binary logits:
+
+$$
+\begin{aligned}
+\log \mathcal{L}(\alpha, \beta; X) = {} & \sum_{n=1}^N \Big(d^n_a \log p_a(\alpha, \beta) + (1 - d^n_a) \log\big[1 - p_a(\alpha, \beta)\big]\Big) \\
+& + \sum_{n=1}^N \Big(d^n_b \log p_b(\alpha, \beta) + (1 - d^n_b) \log\big[1 - p_b(\alpha, \beta)\big]\Big) ,
+\end{aligned}
+$$
+
+where $(p_a(\alpha, \beta), p_b(\alpha, \beta))$ solve the equilibrium equations. It depends
+on the data only through the number of entries of each firm:
 
 ```{code-cell} python3
 def simulate(p, N=1000, seed=0):
@@ -168,9 +308,15 @@ for k, d in enumerate(data):
     print(f'equilibrium {k + 1}: true p = {eq[k].round(3)}, entry frequencies {d.mean(axis=0)}')
 ```
 
-The NFXP estimator of Class 23 for comparison: for every trial $(\alpha, \beta)$ it finds
-all equilibria and keeps the best one. The likelihood jumps, so it is maximized by
-Nelder–Mead, which needs no derivatives:
+The nested fixed point estimator:
+
+1. **outer loop**: maximize $\log \mathcal{L}(\alpha, \beta; X)$ over $(\alpha, \beta)$
+2. **inner loop**: for the given $(\alpha, \beta)$, solve for **all** equilibria
+   $(p^k_a, p^k_b)$, $k = 1, \dots, K$, and keep the one with the highest likelihood,
+   $k^\star = \arg\max_k \log \mathcal{L}(p^k_a, p^k_b; X)$
+
+The likelihood jumps, as we see next, so the outer loop uses Nelder–Mead, which needs no
+derivatives:
 
 ```{code-cell} python3
 def nfxp(d, game, theta0=(5, -11)):
@@ -183,16 +329,185 @@ for k, d in enumerate(data):
     print(f'equilibrium {k + 1}: NFXP (alpha, beta) = {r.x.round(3)}, log-likelihood {-r.fun:.2f}')
 ```
 
-The MPEC formulation of the same estimator has four unknowns, $(\alpha, \beta, p_a, p_b)$:
+(games-static-cliffs)=
+### Likelihood cliffs
+
+The log-likelihood of every equilibrium along $\alpha$, with $\beta = -11$ fixed, for the
+three data sets. The NFXP likelihood is the upper envelope:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+alphas = np.linspace(0.5, 10, 381)
+eqs = [game.equilibria((a, -11.0)) for a in alphas]           # all equilibria at every trial alpha
+fig, ax = plt.subplots(1, 3, figsize=(14, 4.5), layout='constrained')
+for k, d in enumerate(data):
+    for a, e in zip(alphas, eqs):
+        ax[k].plot([a] * len(e), [loglik(np.clip(p, 1e-12, 1 - 1e-12), d) for p in e], '.', color='0.6', ms=3)
+    env = np.array([max(loglik(np.clip(p, 1e-12, 1 - 1e-12), d) for p in e) for e in eqs])
+    jumps = np.flatnonzero(np.abs(np.diff(env)) > 100)       # the cliffs: the envelope switches to another equilibrium
+    for i, (lo, hi) in enumerate(zip(np.r_[0, jumps + 1], np.r_[jumps + 1, len(env)])):
+        ax[k].plot(alphas[lo:hi], env[lo:hi], color='tab:red', lw=2, label='NFXP: the best equilibrium' if i == 0 else None)
+    for j in jumps:                                           # dotted connection across each discontinuity
+        ax[k].plot(alphas[j:j + 2], env[j:j + 2], ':', color='tab:red', lw=2)
+    ax[k].axvline(5, color='black', lw=1, ls='--', label='true alpha')
+    ax[k].set(xlabel='alpha', title=f'data from equilibrium {k + 1}', ylim=(max(env) - 4000, max(env) + 200))
+    ax[k].grid(color='0.9')
+ax[0].plot([], [], '.', color='0.6', label='every equilibrium')
+ax[0].set(ylabel='log-likelihood'); ax[0].legend(loc='lower right')
+plt.show()
+```
+
+For $\alpha$ below about 4.8 the game has a unique equilibrium, close to equilibrium 1. It
+fits data from equilibrium 1, and it cannot fit data from equilibria 2 or 3. Where the other
+two equilibria appear, the NFXP likelihood jumps by about 2000 log points for the data from
+equilibrium 2 and by about 2700 for the data from equilibrium 3, just below the true
+$\alpha_0 = 5$.
+
+The likelihood over both parameters, on a $51 \times 51$ grid over the ranges used by
+{cite:t}`suEstimatingDiscretechoiceGames2014`. To separate the cliff from the true values,
+the data for these figures are generated at $(\alpha_0, \beta_0) = (5.5, -11)$, a little
+further from the cliff than $(5, -11)$. The faces that span a cliff are left out, so the
+discontinuities show as gaps rather than as walls:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+theta0 = (5.5, -11.0)                                         # further from the cliff than (5, -11)
+data3 = [simulate(e, seed=k) for k, e in enumerate(game.equilibria(theta0))]   # one data set from each equilibrium
+A, B = np.meshgrid(np.linspace(0, 10, 51), np.linspace(-16, -6, 51))   # the alpha and beta ranges of Su (2014)
+Z = np.empty((3,) + A.shape)
+for i, j in np.ndindex(A.shape):
+    e = game.equilibria((A[i, j], B[i, j]))                   # all equilibria at this trial (alpha, beta)
+    for k, d in enumerate(data3):                             # NFXP: the best equilibrium for each data set
+        Z[k, i, j] = max(loglik(np.clip(p, 1e-12, 1 - 1e-12), d) for p in e)
+
+def cliff_surface(ax, A, B, Z, jump=300, mesh=1):
+    '''Draw the surface Z(A, B) from its grid faces and mesh lines, both broken where they span a cliff'''
+    v = np.stack([A, B, Z], axis=-1)
+    faces = np.stack([v[:-1, :-1], v[:-1, 1:], v[1:, 1:], v[1:, :-1]], axis=2).reshape(-1, 4, 3)
+    faces = faces[np.ptp(faces[:, :, 2], axis=1) < jump]      # a face on the vertical wall spans the jump
+    norm = Normalize(np.percentile(Z, 2), Z.max())            # colors robust to a small low patch
+    ax.add_collection3d(Poly3DCollection(faces, facecolors=plt.cm.viridis(norm(faces[:, :, 2].mean(axis=1))), zorder=2,
+                                         edgecolor='none', shade=True, lightsource=LightSource(azdeg=225, altdeg=40)))
+    lines = np.concatenate([np.stack([v[::mesh, :-1], v[::mesh, 1:]], axis=2).reshape(-1, 2, 3),   # every mesh-th row
+                            np.stack([v[:-1, ::mesh], v[1:, ::mesh]], axis=2).reshape(-1, 2, 3)])  # every mesh-th column
+    lines = lines[np.abs(lines[:, 1, 2] - lines[:, 0, 2]) < jump]
+    ax.add_collection3d(Line3DCollection(lines, colors=(0, 0, 0, 0.6), linewidths=0.5, zorder=3))
+    return faces[:, :, 2].min()                               # the lowest point actually drawn
+
+for k in range(3):
+    fig = plt.figure(figsize=(11, 8))
+    ax = fig.add_subplot(projection='3d', computed_zorder=False)   # draw in zorder: floor, stem, surface, mesh, marker
+    z0, z1 = cliff_surface(ax, A, B, Z[k]), Z[k].max()
+    ax.contour(A, B, Z[k], zdir='z', offset=z0, levels=np.linspace(z0, z1, 60), cmap='viridis',
+               vmin=np.percentile(Z[k], 2), vmax=z1, linewidths=0.6, zorder=0)   # contours on the floor, in the colors of the surface
+    zt = max(loglik(np.clip(p, 1e-12, 1 - 1e-12), data3[k]) for p in game.equilibria(theta0))
+    ax.plot([theta0[0]] * 2, [theta0[1]] * 2, [z0, zt], '--', color='tab:red', lw=1.5, zorder=1)
+    ax.plot([theta0[0]], [theta0[1]], [zt], 'o', color='tab:red', mec='white', mew=1.5, ms=9, zorder=10,
+            label=f'true $(\\alpha, \\beta) = ({theta0[0]:g}, {theta0[1]:g})$')
+    ax.set(xlim=(0, 10), ylim=(-16, -6), zlim=(z0, z1), xlabel='$\\alpha$', ylabel='$\\beta$', zlabel='log-likelihood',
+           title=f'NFXP log-likelihood, data from equilibrium {k + 1}')
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.set_pane_color((1, 1, 1, 0)); axis._axinfo['grid']['color'] = (0, 0, 0, 0.1)
+    ax.set_box_aspect((1, 1, 0.75), zoom=0.9)
+    ax.zaxis.labelpad = 14                                    # keep the label clear of the tick labels
+    ax.view_init(elev=28, azim=-128)                          # the viewpoint of the figures in Su (2014)
+    ax.legend(loc='upper left')
+    plt.show()
+```
+
+With data from equilibrium 1 the surface is a smooth hill with the maximum near the true
+values, except at the back edge: on $\beta = -6$ the game has a single equilibrium for
+$\alpha$ between 6.2 and 6.6, the branch that fits the data disappears, and the likelihood
+drops by about 1000 log points. With data from equilibria 2 and 3 a cliff cuts across the
+surface, and the true values sit on its upper side: along $\beta = -11$ the cliff is at
+$\alpha \approx 4.8$, where the likelihood jumps by about 1700 and 3200 log points.
+
+These are the **likelihood cliffs**. Therefore:
+
+- the likelihood is **discontinuous** in the parameters, and gradient-based optimizers fail
+  near the cliff
+- the true parameters are close to the edge of the region with three equilibria, so the
+  usual asymptotic theory, which needs a smooth likelihood around the truth, is in doubt
+- the cliff is not a bug of the estimator: it is what the model says
+
+When it finds all the equilibria at every trial value, NFXP works: in the Monte Carlo
+experiments of {cite:t}`suEstimatingDiscretechoiceGames2014`, shown [next to those of MPEC
+below](#mpec-static), its estimates are centered at the truth for every equilibrium,
+including the unstable one. In this game finding all equilibria is easy; in larger games it
+is not.
+
+:::{div}
+:class: discussion
+
+- Is the NFXP likelihood smooth in $(\alpha, \beta)$? Are the objective and the
+  constraints of MPEC smooth in $(\alpha, \beta, p_a, p_b)$?
+- Can we tell from the data which equilibrium was played?
+- Can we use the standard theorems for inference here?
+:::
+
+(mpec-static)=
+## MPEC for the static entry game
+
+MPEC computes the same maximum likelihood estimator as NFXP, with the entry probabilities as
+unknowns next to the parameters. There are four unknowns, $z = (\alpha, \beta, p_a, p_b)$:
 
 $$
-\max_{\alpha, \beta, p_a, p_b} \ \log \mathcal{L}(p_a, p_b; X)
-\quad \text{subject to} \quad
-p_a = \Psi_a(p_b, x_a; \alpha, \beta), \quad p_b = \Psi_b(p_a, x_b; \alpha, \beta), \quad 0 \leqslant p_a, p_b \leqslant 1 .
+\begin{aligned}
+\max_{\alpha, \beta, p_a, p_b} \quad & \log \mathcal{L}(p_a, p_b; X) \\
+\text{subject to} \quad & p_a = \Psi_a(p_b, x_a; \alpha, \beta), \\
+& p_b = \Psi_b(p_a, x_b; \alpha, \beta), \\
+& 0 \leqslant p_a, p_b \leqslant 1 .
+\end{aligned}
 $$
 
-The objective depends on the probabilities only, and its gradient is that of two binary
-logits. SciPy's SLSQP handles equality constraints and bounds:
+Three things to see in this formulation:
+
+- the **objective depends on the probabilities only**: it is the likelihood of two binary
+  logits,
+
+  $$
+  \log \mathcal{L}(p_a, p_b; X) = \sum_{j \in \{a, b\}} \big[n_j \log p_j + (N - n_j) \log(1 - p_j)\big] ,
+  $$
+
+  with $n_j$ the number of entries of firm $j$; the parameters enter only through the
+  constraints
+- the **feasible set** is the graph of the equilibrium correspondence,
+  $\{(\theta, p) : p = \Psi(p; \theta)\}$. NFXP maximizes over the same set, first over
+  the equilibria at a given $\theta$, then over $\theta$, so the global maxima of the two
+  formulations coincide
+- the objective and the two constraints are **smooth** in $(\theta, p)$, although the
+  NFXP likelihood has cliffs: the graph of the correspondence is a smooth surface in four
+  dimensions, and the cliffs appear only when the surface is projected on $\theta$ and the
+  best equilibrium is picked at every point
+
+With the Lagrange multipliers $\lambda = (\lambda_a, \lambda_b)$, the Lagrangian is
+
+$$
+\mathcal{H}(\theta, p, \lambda) = \log \mathcal{L}(p; X) + \lambda' \big[\Psi(p; \theta) - p\big] ,
+$$
+
+and an interior solution satisfies the first-order conditions
+
+$$
+\begin{aligned}
+\nabla_\theta \Psi(p; \theta)' \lambda &= 0, \\
+\nabla_p \log \mathcal{L}(p; X) + \big[\nabla_p \Psi(p; \theta) - I\big]' \lambda &= 0, \\
+p - \Psi(p; \theta) &= 0 .
+\end{aligned}
+$$
+
+The matrix $I - \nabla_p \Psi$ appears, not its spectral radius: the conditions hold at
+equilibrium 2 as well as at equilibria 1 and 3. What MPEC needs is that $I - \nabla_p \Psi$
+is invertible at the solution, a **regular** equilibrium, and not that the equilibrium is
+stable under best responses. What it gives up is the guarantee of a global maximum: a local
+solver converges to a local maximum, which can be a point on the wrong sheet of the
+correspondence, another equilibrium. Several starting points are the remedy.
+
+The gradient of the objective is simple, $n_j / p_j - (N - n_j) / (1 - p_j)$ with respect
+to $p_j$ and zero with respect to $\theta$. SciPy's SLSQP handles the equality constraints
+and the bounds, with a finite difference Jacobian of the constraints:
 
 ```{code-cell} python3
 def mpec_static(d, game, z0):
@@ -214,34 +529,79 @@ for k, d in enumerate(data):
 ```
 
 MPEC reaches the NFXP estimates from every starting point, for all three equilibria,
-including the unstable equilibrium 2, in at most 40 iterations. It never solved the game:
+including the unstable equilibrium 2, in 12 to 41 iterations. It never solved the game:
 the probabilities and the parameters moved together, and the constraints were satisfied
 only at the end.
 
-The Monte Carlo results of {cite:t}`suEstimatingDiscretechoiceGames2014` for MPEC, 1000
-samples from each equilibrium, the same design as the NFXP results of Class 23:
+The Monte Carlo experiment of {cite:t}`suEstimatingDiscretechoiceGames2014`: 1000 samples
+of $N = 1000$ plays from each equilibrium. NFXP starts at the true parameters, and MPEC
+keeps the best of the three starting points above. The probabilities reported for NFXP are
+those of the best fitting equilibrium at the estimate:
 
-```{image} _static/games/mc_eqb1_mpec.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the MPEC estimates, equilibrium 1
+```{code-cell} python3
+def mc_static(k, R=1000):
+    '''R samples from equilibrium k estimated by NFXP and MPEC: array 2 x R x (alpha, beta, p_a, p_b)'''
+    out = np.empty((2, R, 4))
+    for r in range(R):
+        d = simulate(eq[k], seed=1000 * (k + 1) + r)
+        th = nfxp(d, game).x
+        e = game.equilibria(th)
+        out[0, r] = np.r_[th, e[np.argmax([loglik(np.clip(p, 1e-12, 1 - 1e-12), d) for p in e])]]
+        fits = [mpec_static(d, game, np.array(z0, dtype=float)) for z0 in starts]
+        out[1, r] = max((f for f in fits if f.success), key=lambda f: -f.fun, default=fits[-1]).x
+    return out
+
+t0 = time.time()
+mc = [mc_static(k) for k in range(3)]
+print(f'{3 * len(mc[0][0])} samples in {time.time() - t0:.0f} sec')
+for k in range(3):
+    print(f'equilibrium {k + 1}: MPEC away from the true p_a by more than 0.05 in '
+          f'{np.sum(np.abs(mc[k][1, :, 2] - eq[k][0]) > 0.05)} samples')
 ```
 
-```{image} _static/games/mc_eqb2_mpec.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the MPEC estimates, equilibrium 2
+NFXP on the left and MPEC on the right, the true values in the titles of the panels.
+Equilibrium 1, stable under best responses:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+def mc_hist(ax, v, title, bins):
+    '''Histogram of Monte Carlo estimates in the style of Su (2014)'''
+    ax.hist(v, bins=bins, color='#352a87', edgecolor='0.2', lw=0.5)
+    ax.set_title(title, fontweight='bold')
+
+def plot_mc(k):
+    '''NFXP and MPEC estimates for data from equilibrium k, side by side'''
+    fig = plt.figure(figsize=(16, 6.3), layout='constrained')
+    titles = ['True alpha=5.0', 'True beta=-11.0', f'True $p_a$={eq[k][0]:.3f}', f'True $p_b$={eq[k][1]:.3f}']
+    for sf, name, est in zip(fig.subfigures(1, 2, wspace=0.06), ('NFXP', 'MPEC'), mc[k]):
+        sf.suptitle(name, fontweight='bold', fontsize=18)
+        for j, ax in enumerate(sf.subplots(2, 2).flat):
+            mc_hist(ax, est[:, j], titles[j], 20)
+    plt.show()
+
+plot_mc(0)
 ```
 
-```{image} _static/games/mc_eqb3_mpec.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the MPEC estimates, equilibrium 3
+Equilibrium 2, unstable:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+plot_mc(1)
 ```
 
-The distributions are those of NFXP, centered at the truth for every equilibrium. Unlike
-NPL in [Class 23](23_entry_games.md#games-static-two-step), MPEC does not care whether the
-equilibrium in the data is stable under best responses.
+Equilibrium 3, stable:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+plot_mc(2)
+```
+
+The two estimators give the same distributions, centered at the truth for every
+equilibrium. MPEC does not care whether the equilibrium in the data is stable under best
+responses.
 
 :::{div}
 :class: discussion
@@ -255,31 +615,74 @@ equilibrium in the data is stable under best responses.
 (mpec-markets)=
 ## Many markets
 
+Real data come from many markets, observed separately. The same game is played in each, but
+not the same equilibrium:
+
+- **markets differ** in the observed types of the firms $x^m = (x^m_a, x^m_b)$, so each
+  market is its own game, with its own equilibrium mapping $\Psi(p; x^m, \theta)$
+- **the number of equilibria differs** across markets: the same $(\alpha, \beta)$ give one
+  equilibrium in some markets and three in others
+- **the equilibrium played differs** across markets: each market plays one equilibrium in
+  all its observations, but which one is not tied to the other markets
+- **the structural parameters are common**: the estimator imposes the same $(\alpha, \beta)$
+  in every market, and this restriction is what ties the markets together and lets the
+  data of all of them identify $\theta$
+
 The design of {cite:t}`suEstimatingDiscretechoiceGames2014` with many markets:
 
 - 25 markets with the types $(x^m_a, x^m_b)$ on a grid of 5 points in $[0.12, 0.87]$ for
   each firm, and the same $(\alpha_0, \beta_0) = (5, -11)$
-- in each market the equilibrium that generates the data is drawn at random, so different
-  markets play different equilibria
+- in each market the equilibrium that generates the data is drawn at random among the
+  equilibria of that market
 - $T = 50$ observations per market
 
-Most markets have three equilibria. Over a finer grid of types:
+At the true parameters 19 of the 25 markets have three equilibria and 6 have one. Over a
+finer grid of types:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+xg = np.linspace(0.04, 0.96, 24)                              # a finer grid of types for both firms
+XA, XB = np.meshgrid(xg, xg)
+NE = np.vectorize(lambda xa, xb: len(entry_game(x=(xa, xb)).equilibria()))(XA, XB)
+fig = plt.figure(figsize=(9, 6.5))
+ax = fig.add_subplot(projection='3d')
+st = ax.stem(XA.ravel(), XB.ravel(), NE.ravel(), linefmt='--', markerfmt='o', basefmt=' ')
+st.stemlines.set(color='blue', lw=0.6)
+st.markerline.set(color='blue', ms=6)
+ax.set(xlim=(0, 1), ylim=(0, 1), zlim=(0, 5), xlabel='$x_a$', ylabel='$x_b$', zlabel='# of Equilibria')
+for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+    axis.set_pane_color((1, 1, 1, 0)); axis._axinfo['grid'].update(linestyle=':', color=(0, 0, 0, 0.4))
+ax.view_init(elev=30, azim=-127.5)                            # the default viewpoint of MATLAB
+plt.show()
+```
+
+````{note} Numerical glitch in published paper
+:class: dropdown
+
+The same figure in {cite:t}`suEstimatingDiscretechoiceGames2014`:
 
 ```{image} _static/games/neqb.png
 :width: 70%
 :align: center
-:alt: Number of equilibria as a function of the types of the two firms
+:alt: Number of equilibria as a function of the types of the two firms, the figure of the published paper
 ```
+````
 
 The NFXP likelihood is a sum over markets, so its inner loop picks the best equilibrium
 in each market separately. The MPEC formulation has the probabilities of every market
 as unknowns, $2 + 2M$ of them:
 
 $$
-\max_{\alpha, \beta, \{p^m_a, p^m_b\}} \ \sum_{m=1}^M \log \mathcal{L}(p^m_a, p^m_b; X^m)
-\quad \text{subject to} \quad
-p^m_a = \Psi_a(p^m_b, x^m_a; \alpha, \beta), \ p^m_b = \Psi_b(p^m_a, x^m_b; \alpha, \beta), \ m = 1, \dots, M .
+\begin{aligned}
+\max_{\alpha, \beta, \{p^m_a, p^m_b\}} \quad & \sum_{m=1}^M \log \mathcal{L}(p^m_a, p^m_b; X^m) \\
+\text{subject to} \quad & p^m_a = \Psi_a(p^m_b, x^m_a; \alpha, \beta), \\
+& p^m_b = \Psi_b(p^m_a, x^m_b; \alpha, \beta), \quad m = 1, \dots, M .
+\end{aligned}
 $$
+
+The probabilities of each market have to be an equilibrium of that market's game, any one
+of its equilibria; the markets are linked only through the common $(\alpha, \beta)$.
 
 ```{code-cell} python3
 xs = np.linspace(0.12, 0.87, 5)
@@ -299,10 +702,11 @@ def nfxp_markets(d, markets, theta0=(5, -11)):
     return minimize(lambda th: -ll(th), theta0, method='Nelder-Mead', options=dict(xatol=1e-6, fatol=1e-8))
 ```
 
-The MPEC estimator stacks the constraints of all markets:
+The MPEC estimator stacks the constraints of all markets. It keeps the parameters in a box,
+$\alpha \in [0, 20]$ and $\beta \in [-20, 20]$, so that an iteration cannot run away:
 
 ```{code-cell} python3
-def mpec_markets(d, markets, z0):
+def mpec_markets(d, markets, z0, theta_bounds=((0, 20), (-20, 20))):
     '''MPEC with many markets: unknowns z = (alpha, beta, p^1_a, p^1_b, ..., p^M_a, p^M_b)'''
     M = len(markets)
     n1 = d.sum(axis=0); n0 = d.shape[0] - n1                  # entries by market and firm, M x 2
@@ -310,7 +714,7 @@ def mpec_markets(d, markets, z0):
     obj = lambda z: -np.sum(n1 * np.log(P(z)) + n0 * np.log(1 - P(z)))
     jac = lambda z: np.r_[0, 0, -(n1 / P(z) - n0 / (1 - P(z))).ravel()]
     con = lambda z: np.concatenate([P(z)[m] - g.Psi(P(z)[m], z[:2]) for m, g in enumerate(markets)])
-    bounds = [(None, None)] * 2 + [(1e-8, 1 - 1e-8)] * 2 * M
+    bounds = list(theta_bounds) + [(1e-8, 1 - 1e-8)] * 2 * M
     return minimize(obj, z0, jac=jac, constraints=[{'type': 'eq', 'fun': con}], bounds=bounds,
                     method='SLSQP', options=dict(ftol=1e-10, maxiter=1000))
 
@@ -343,27 +747,58 @@ plt.show()
 
 Both estimators start at the true parameters. NFXP stays close to them in every sample;
 MPEC lands in a **local maximum** in some samples, with the probabilities of some markets
-at an equilibrium other than the one that generated the data. The results of
-{cite:t}`suEstimatingDiscretechoiceGames2014`, 25 markets with $T = 50$, and 2 markets with
-$T = 625$:
+at an equilibrium other than the one that generated the data.
 
-```{image} _static/games/mc_t50m25_mpec_true.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the MPEC estimates with 25 markets
+The experiment of {cite:t}`suEstimatingDiscretechoiceGames2014` with MPEC alone: 100
+samples of 25 markets with $T = 50$. MPEC starts at the true parameters and the entry
+frequencies:
+
+```{code-cell} python3
+def mc_markets(T, M=None, R=100, seed=0):
+    '''R samples of MPEC estimates (alpha, beta): the 25 markets of the grid if M is None,
+    otherwise M markets with the types of both firms drawn from the grid in every sample'''
+    rng = np.random.default_rng(seed)
+    est = np.empty((R, 2))
+    for r in range(R):
+        mk = markets if M is None else [entry_game(x=rng.choice(xs, size=2)) for _ in range(M)]
+        P0, d = simulate_markets(mk, T=T, seed=1000 + r)
+        z0 = np.r_[5, -11, d.mean(axis=0).ravel().clip(0.01, 0.99)]   # the truth and the frequencies
+        est[r] = mpec_markets(d, mk, z0).x[:2]
+    return est
+
+def plot_mc_markets(est):
+    '''Distribution of the MPEC estimates in the style of Su (2014)'''
+    fig, ax = plt.subplots(2, 1, figsize=(10, 7.5), layout='constrained')
+    for j, title in enumerate(('True alpha=5.0', 'True beta=-11.0')):
+        mc_hist(ax[j], est[:, j], title, 60)
+    plt.show()
+
+est25 = mc_markets(T=50)
+plot_mc_markets(est25)
 ```
 
-```{image} _static/games/mc_t625m2_mpec_true.png
-:width: 80%
-:align: center
-:alt: Monte Carlo distribution of the MPEC estimates with 2 markets
+With 2 markets and $T = 625$, the types of the two markets drawn at random in every sample:
+
+```{code-cell} python3
+:tags: [hide-input]
+
+est2 = mc_markets(T=625, M=2)
+plot_mc_markets(est2)
 ```
+
+:::{div}
+:class: discussion
+
+- How many variables are in the constrained optimization problem?
+- How would you choose starting values for MPEC with many markets?
+- With $M = 25$ markets of three equilibria each, how many combinations of equilibria are
+  there? What does that say about the number of local maxima?
+:::
 
 The trade-off between the two estimators:
 
 - **NFXP** has 2 unknowns and can tell which equilibrium each market plays, but it needs
-  all equilibria in every market at every trial value: easy here, very hard in a dynamic
-  game
+  all equilibria in every market at every trial value: easy here, very hard in larger games
 - **MPEC** has $2 + 2M$ unknowns and never solves the game, but every market adds
   equilibria in which the optimizer can get stuck, and with many markets the local maxima
   multiply
@@ -372,321 +807,31 @@ The trade-off between the two estimators:
 The implementations here use SLSQP with finite difference constraint Jacobians. Su used
 AMPL and KNITRO, with exact derivatives and sparse linear algebra, and more starting points.
 
-:::{div}
-:class: discussion
 
-- How would you choose starting values for MPEC with many markets?
-- With $M = 25$ markets of three equilibria each, how many combinations of equilibria are
-  there? What does that say about the number of local maxima?
-:::
+(mpec-conclusions)=
+## Conclusions
 
-(mpec-dynamic)=
-## MPEC for the dynamic entry game
+- Maximum likelihood, by NFXP or MPEC, is statistically efficient but computationally
+  demanding: NFXP needs all equilibria at every trial value of the parameters.
+- Multiple equilibria make the NFXP likelihood discontinuous, with cliffs where the number
+  of equilibria changes, which complicates both the computation and the inference, and they
+  raise the question of which equilibrium is in the data.
+- MPEC computes the maximum likelihood estimator without solving for all equilibria, from a
+  smooth problem, and does not care about stability; its risk is local maxima, which
+  multiply with the number of markets.
 
-The MPEC formulation of the [dynamic entry game](23_entry_games.md#games-equilibrium-conditions)
-of Aguirregabiria and Mira has the choice probabilities $\mathbf{P}$ and the value
-functions $\mathbf{V}$ of all players as unknowns, and Systems I and II as constraints:
 
-$$
-\max_{\theta, \mathbf{P}, \mathbf{V}} \ \sum_{i=1}^N \sum_{m=1}^M \sum_{t=1}^T \log P_i(\bar a^{mt}_i \mid \bar x^{mt})
-\quad \text{subject to} \quad
-\mathbf{V} = \Psi^V(\mathbf{V}, \mathbf{P}, \theta), \quad
-\mathbf{P} = \Psi^P(\mathbf{V}, \mathbf{P}, \theta) .
-$$
+The [next class](25_rls.md) talks about a class of **dynamic games** in which all equilibria can be found.
 
-The size of the problem with $N$ firms and $L$ market sizes: $|\mathcal{X}| = L \cdot 2^N$
-states, and $2 N |\mathcal{X}|$ constraints. The game of the paper, with $N = 5$ and
-$L = 5$, has 160 states and 1600 constraints; with $L = 15$ it has 4800.
+- We will see that MPEC may be confused in more complex models, and so we build yet a more specified estimator for that class of dynamic games.
 
-The code below uses $N = 3$ firms and $L = 5$ market sizes, 40 states, so that SciPy can
-handle it in class. The fixed cost is common to all firms, and
-$\theta = (\theta^{RS}, \theta^{RN}, \theta^{FC}, \theta^{EC})$. The first part of the
-model object enumerates the action profiles and computes the expected payoffs and the
-transitions given $\mathbf{P}$:
-
-```{code-cell} python3
-class dynamic_entry:
-    '''Dynamic entry game of Aguirregabiria and Mira (2007): N symmetric firms, L market sizes'''
-
-    def __init__(self, N=3, L=5, beta=0.95, theta=(1.0, 2.0, 1.7, 1.0)):
-        self.N, self.L, self.beta = N, L, beta
-        self.theta = np.array(theta, dtype=float)             # (RS, RN, FC, EC)
-        self.A = np.array([[(k >> i) & 1 for i in range(N)] for k in range(2**N)])   # action profiles, 2^N x N
-        self.nA, self.X = 2**N, L * 2**N                      # states x = (s, a_prev): s major, a_prev minor
-        self.s = np.repeat(np.arange(1, L + 1), self.nA)      # market size at each state
-        self.aprev = np.tile(self.A, (L, 1))                  # last period's actions at each state, X x N
-        self.fS = 0.6 * np.eye(L) + 0.2 * np.eye(L, k=1) + 0.2 * np.eye(L, k=-1)
-        self.fS[0, 0] = self.fS[-1, -1] = 0.8                 # market size transition of Egesdal, Lai and Su
-        self.rivals = self.A.sum(axis=1)[:, None] - self.A    # active rivals of firm i in each profile, 2^N x N
-
-    def profiles(self, P):
-        '''Probability of every action profile at every state, X x 2^N, given P (N x X) the entry probabilities'''
-        return np.prod(np.where(self.A[None] == 1, P.T[:, None, :], 1 - P.T[:, None, :]), axis=2)
-
-    def payoff(self, P, theta):
-        '''Expected payoff of entry pi_i(1|x), N x X, averaging over the rivals; staying out pays zero'''
-        RS, RN, FC, EC = theta
-        Elog = self.profiles(P) @ np.log(1 + self.rivals)     # E log(1 + active rivals), X x N
-        return (RS * self.s[:, None] - RN * Elog - FC - EC * (1 - self.aprev)).T
-
-    def transition(self, P):
-        '''Transition of the common state F(x'|x), X x X: next market size times next action profile'''
-        return (self.fS[self.s - 1][:, :, None] * self.profiles(P)[:, None, :]).reshape(self.X, self.X)
-```
-
-The second part holds the two equilibrium systems and the simulator. $\Gamma$ solves System
-I for $\mathbf{V}$ given $\mathbf{P}$, a linear system, as in the
-[two-step estimator of Class 23](23_entry_games.md#games-two-step):
-
-```{code-cell} python3
-class dynamic_entry(dynamic_entry):
-
-    def flow(self, P, theta):
-        '''Expected flow payoff including the shocks: sum_a P_i(a|x) [pi_i(a|x) + gamma - log P_i(a|x)]'''
-        return P * (self.payoff(P, theta) + np.euler_gamma - np.log(P)) + (1 - P) * (np.euler_gamma - np.log(1 - P))
-
-    def Psi_V(self, V, P, theta):
-        '''System I, the Bellman equations: right hand side, N x X'''
-        return self.flow(P, theta) + self.beta * V @ self.transition(P).T
-
-    def Psi_P(self, V, P, theta):
-        '''System II, the logit best responses given the rivals' P and the own continuation values'''
-        EV = np.einsum('xt,ita->ixa', self.fS[self.s - 1], V.reshape(self.N, self.L, self.nA))  # E_s' V_i(s', a')
-        Pa = self.profiles(P)
-        cont = [np.einsum('xa,ixa->ix', Pa, EV * (self.A == ai).T[:, None, :]) / (P if ai else 1 - P)
-                for ai in (0, 1)]                             # E V_i(x') given own action a_i, rivals from P
-        return 1 / (1 + np.exp(-(self.payoff(P, theta) + self.beta * (cont[1] - cont[0]))))
-
-    def Gamma(self, P, theta):
-        '''V given P: System I is linear in V'''
-        return np.linalg.solve(np.eye(self.X) - self.beta * self.transition(P), self.flow(P, theta).T).T
-
-    def simulate(self, P, M=400, T=10, seed=0):
-        '''Data from M markets over T periods: counts n[i, x, a] of firm i choosing a at state x'''
-        rng = np.random.default_rng(seed)
-        s, a = rng.integers(self.L, size=M), np.zeros((M, self.N), dtype=int)   # all firms start out of the market
-        n = np.zeros((self.N, self.X, 2))
-        for t in range(T):
-            x = s * self.nA + a @ (2 ** np.arange(self.N))    # index of the state (s, a_prev)
-            a = (rng.uniform(size=(M, self.N)) < P[:, x].T).astype(int)
-            for i in range(self.N): np.add.at(n[i], (x, a[:, i]), 1)
-            s = np.array([rng.choice(self.L, p=self.fS[k]) for k in s])
-        return n
-```
-
-To generate data we need one equilibrium at the true parameters. Successive approximations
-on the best responses, $\mathbf{P} \leftarrow \Psi^P(\Gamma(\mathbf{P}), \mathbf{P})$, are the
-natural solver; Newton's method on the same fixed point is the robust one:
-
-```{code-cell} python3
-def solve_mpe(g, method='newton', tol=1e-12, maxiter=2000):
-    '''An MPE of the game g at its true parameters, by successive approximations or Newton (scipy root)'''
-    BR = lambda P: g.Psi_P(g.Gamma(P, g.theta), P, g.theta)   # best response to P, with V solved from System I
-    P = np.full((g.N, g.X), 0.5)
-    if method == 'newton':
-        r = root(lambda p: p - BR(p.reshape(g.N, g.X)).ravel(), P.ravel(), method='hybr', tol=tol)
-        return r.x.reshape(g.N, g.X)
-    for k in range(maxiter):
-        P1 = BR(P)
-        if np.max(np.abs(P1 - P)) < tol: return P1
-        P = P1
-    raise RuntimeError(f'Successive approximations failed to converge in {maxiter} iterations')
-
-def br_radius(g, P, h=1e-6):
-    '''Spectral radius of the Jacobian of the best response map at P, by central differences'''
-    BR = lambda p: g.Psi_P(g.Gamma(p.reshape(g.N, g.X), g.theta), p.reshape(g.N, g.X), g.theta).ravel()
-    J = np.array([(BR(P.ravel() + h * e) - BR(P.ravel() - h * e)) / (2 * h) for e in np.eye(P.size)]).T
-    return np.max(np.abs(np.linalg.eigvals(J)))
-```
-
-Two cases from {cite:t}`egesdal2015EstimatingDynamicDiscretechoice`: the strength of the
-market size and of the competition effect doubled, $(\theta^{RS}, \theta^{RN}) = (1, 2)$
-and $(2, 4)$:
-
-```{code-cell} python3
-games = {case: dynamic_entry(theta=(*rsrn, 1.7, 1.0)) for case, rsrn in (('case 3', (1, 2)), ('case 4', (2, 4)))}
-P_true = {}
-for case, g in games.items():
-    P_true[case] = solve_mpe(g, 'newton')
-    V = g.Gamma(P_true[case], g.theta)
-    resid = np.abs(g.Psi_P(V, P_true[case], g.theta) - P_true[case]).max()
-    print(f'{case}: theta = {g.theta}, residual {resid:.1e}, spectral radius of the best response map {br_radius(g, P_true[case]):.3f}')
-    try:
-        solve_mpe(g, 'sa'); print('  successive approximations converge')
-    except RuntimeError as e:
-        print('  ', e)
-```
-
-In case 4 the equilibrium is **unstable under best responses**: the spectral radius is
-above one, and successive approximations, which converged in case 3, never find it. This
-is equilibrium 2 of the static game again, now in 120 dimensions.
-
-The three estimators of the game: 2S-PML and NPL from
-[Class 23](23_entry_games.md#games-two-step), and MPEC with the $3 \times 40$ probabilities
-and the $3 \times 40$ values as unknowns, 244 in total:
-
-```{code-cell} python3
-def ll_counts(P, n):
-    '''Log-likelihood from the counts n[i, x, a]'''
-    return np.sum(n[..., 1] * np.log(P) + n[..., 0] * np.log(1 - P))
-
-def pml(n, Phat, g, theta0):
-    '''Pseudo-likelihood step: theta maximizing the likelihood of Psi_P(Gamma(theta, Phat), Phat, theta)'''
-    f = lambda th: -ll_counts(np.clip(g.Psi_P(g.Gamma(Phat, th), Phat, th), 1e-10, 1 - 1e-10), n)
-    return minimize(f, theta0, method='BFGS').x
-
-def npl(n, Phat, g, theta0, K=100, tol=1e-8):
-    '''NPL iterations: pseudo-likelihood step, then a best response update of the CCPs'''
-    P, th = Phat, theta0
-    for k in range(K):
-        th = pml(n, P, g, th)
-        P1 = g.Psi_P(g.Gamma(P, th), P, th)
-        if np.max(np.abs(P1 - P)) < tol: return th, k + 1
-        P = P1
-    return th, None                                           # no convergence in K iterations
-
-def mpec(n, Phat, g, theta0):
-    '''MPEC: maximize the likelihood over (theta, P, V) subject to Systems I and II'''
-    N, X = g.N, g.X
-    split = lambda z: (z[:4], z[4:4 + N * X].reshape(N, X), z[4 + N * X:].reshape(N, X))
-    obj = lambda z: -ll_counts(split(z)[1], n)
-    jac = lambda z: np.r_[np.zeros(4), -(n[..., 1] / split(z)[1] - n[..., 0] / (1 - split(z)[1])).ravel(), np.zeros(N * X)]
-    def con(z):
-        th, P, V = split(z)
-        return np.r_[(V - g.Psi_V(V, P, th)).ravel(), (P - g.Psi_P(V, P, th)).ravel()]
-    z0 = np.r_[theta0, Phat.ravel(), g.Gamma(Phat, theta0).ravel()]   # start from the first stage CCPs
-    bounds = [(None, None)] * 4 + [(1e-6, 1 - 1e-6)] * N * X + [(None, None)] * N * X
-    r = minimize(obj, z0, jac=jac, constraints=[{'type': 'eq', 'fun': con}], bounds=bounds,
-                 method='SLSQP', options=dict(maxiter=500, ftol=1e-10))
-    return r.x[:4], r.success
-```
-
-One data set of $M = 400$ markets observed for $T = 10$ periods for each case, the sample
-size of the paper. The first stage CCPs are the frequencies, smoothed to stay inside
-$(0, 1)$:
-
-```{code-cell} python3
-for case, g in games.items():
-    n = g.simulate(P_true[case], seed=1)
-    Phat = (n[..., 1] + 0.5) / (n.sum(axis=-1) + 1)           # smoothed frequency estimator of the CCPs
-    t0 = time.time(); th_pml = pml(n, Phat, g, np.ones(4)); t1 = time.time()
-    th_npl, k = npl(n, Phat, g, th_pml); t2 = time.time()
-    th_mpec, ok = mpec(n, Phat, g, th_pml); t3 = time.time()
-    print(f'{case}, truth (RS, RN, FC, EC) = {g.theta}')
-    print(f'  2S-PML {th_pml.round(3)}  {t1 - t0:5.1f} sec')
-    print(f'  NPL    {th_npl.round(3)}  {t2 - t1:5.1f} sec, ' + (f'converged in {k} iterations' if k else 'did not converge'))
-    print(f'  MPEC   {th_mpec.round(3)}  {t3 - t2:5.1f} sec, success {ok}')
-```
-
-The results reproduce the findings of the paper on a smaller game:
-
-- 2S-PML is fast but biased: $\theta^{RS}$ and $\theta^{RN}$, the two parameters that
-  depend on the rivals' behavior, are both underestimated
-- NPL corrects the bias when it converges, in case 3, and does not converge in case 4,
-  where the equilibrium in the data is unstable under the best response update
-- MPEC recovers the parameters in both cases, from the 2S-PML starting values
-
-:::{div}
-:class: discussion
-
-- Which entries of the constraint Jacobian are not zero? Sketch its sparsity pattern for
-  the constraints of System I and of System II.
-- MPEC started from the 2S-PML estimates. Would it still find the right equilibrium in
-  case 4 from a poor start?
-:::
-
-(mpec-egesdal)=
-## Monte Carlo evidence
-
-{cite:t}`egesdal2015EstimatingDynamicDiscretechoice` compare the estimators on the full
-game of Aguirregabiria and Mira:
-
-- $N = 5$ firms with fixed costs $\theta^{FC}_0 = (1.9, 1.8, 1.7, 1.6, 1.5)$ and entry cost
-  $\theta^{EC}_0 = 1$, the market size transition of the code above
-- **experiment 1**: $|\mathcal{S}| = 5$, with $(\theta^{RS}, \theta^{RN}) = (1, 2)$ in case 3
-  and $(2, 4)$ in case 4
-- **experiment 2**: $|\mathcal{S}| = 10$ and $15$, cases 5 and 6, with 4800 constraints and
-  4808 unknowns in the largest
-- $M = 400$ markets, $T = 10$ periods; 100 data sets per case in experiment 1 and 50 in
-  experiment 2; MPEC from 10 and 5 starting points; NPL and its modification NPL-$\Lambda$
-  with at most 100 iterations
-- MPEC is solved by KNITRO through AMPL, with exact derivatives and sparse matrices
-
-The share of data sets for which each estimator converged:
-
-```{image} _static/games/dgame_converged.png
-:width: 80%
-:align: center
-:alt: Percentage of data sets solved by MLE, 2S-PML, NPL and NPL-Lambda
-```
-
-The average time per run:
-
-```{image} _static/games/dgame_cputime.png
-:width: 80%
-:align: center
-:alt: Solve time per run for the four estimators
-```
-
-The estimates in experiment 1:
-
-```{image} _static/games/dgame_exp1.png
-:width: 90%
-:align: center
-:alt: Monte Carlo estimates in experiment 1, cases 3 and 4
-```
-
-and in experiment 2:
-
-```{image} _static/games/dgame_exp2.png
-:width: 90%
-:align: center
-:alt: Monte Carlo estimates in experiment 2, 10 and 15 market sizes
-```
-
-The findings:
-
-- maximum likelihood by MPEC converges for every data set and recovers the parameters,
-  at a cost that grows with the state space but stays within minutes
-- 2S-PML always converges and is the fastest, but $\theta^{RN}$ and $\theta^{RS}$ are badly
-  biased, in every case
-- NPL converges for about half of the data sets in cases 3 and 5 and for none in cases 4
-  and 6; NPL-$\Lambda$, which damps the best response update, does better, but is not
-  reliable either
-- open questions: MPEC for larger state spaces, and its reliability when the data come
-  from a model with many equilibria, which the directional dynamic games of the next
-  classes address
-
-````{warning} Practical task: a Monte Carlo study of the dynamic entry game
-
-(task-mpec-practice)=
-Pull the class code and open the notebook `mpec.ipynb` in `session24-nov17/`:
-
-```bash
-cd sb-dse-code && git pull
-# first time: git clone https://github.com/fediskhakov/sb-dse-code.git
-```
-
-1. Run 20 data sets for each of the two cases and report the mean and the standard
-   deviation of the 2S-PML, NPL and MPEC estimates, the share of NPL runs that converge,
-   and the run times.
-2. Start MPEC in case 4 from five random starting values instead of the 2S-PML estimates.
-   How often does it reach the same maximum, and is the equilibrium the one in the data?
-3. Write the Jacobian of the constraints of System I analytically, plot the sparsity
-   pattern of the full constraint Jacobian with `plt.spy`, and compare the run time of
-   SLSQP with the exact and the finite difference Jacobians.
-4. Increase the number of firms to $N = 4$ and then $N = 5$ with firm-specific fixed costs,
-   as in the paper. How do the run times of the three estimators grow?
-````
 
 ````{note} References and additional resources
 
 (mpec-references)=
 - 📖 {cite:t}`suConstrainedOptimizationApproaches2012` "Constrained Optimization Approaches to Estimation of Structural Models"
-- 📖 {cite:t}`egesdal2015EstimatingDynamicDiscretechoice` "Estimating dynamic discrete-choice games of incomplete information", MPEC for the dynamic entry game and the Monte Carlo comparison of this class
+- 📖 {cite:t}`suEstimatingDiscretechoiceGames2014` "Estimating discrete-choice games of incomplete information: Simple static examples"
 - 📖 {cite:t}`dube2012ImprovingNumericalPerformance` "Improving the Numerical Performance of Static and Dynamic Aggregate Discrete Choice Random Coefficients Demand Estimation", MPEC for BLP demand estimation
 - 📖 {cite:t}`ecma_comment` "Constrained optimization approaches to estimation of structural models: Comment"
-- 📖 {cite:t}`suEstimatingDiscretechoiceGames2014` "Estimating discrete-choice games of incomplete information: Simple static examples"
-- 📖 {cite:t}`aguirregabiriaSequentialEstimationDynamic2007` "Sequential Estimation of Dynamic Discrete Games"
 - 📄 SciPy documentation of constrained minimization with SLSQP and trust-constr [docs.scipy.org/doc/scipy/tutorial/optimize.html](https://docs.scipy.org/doc/scipy/tutorial/optimize.html#constrained-minimization-of-multivariate-scalar-functions-minimize)
 ````

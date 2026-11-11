@@ -16,7 +16,7 @@ algorithm that finds them, and a maximum likelihood estimator built on it.
 
 - Maximum likelihood for a game, by NFXP or by MPEC, needs to search over **all**
   equilibria at every trial value of the parameters, as
-  [Class 23](23_entry_games.md#games-static-ml) showed; anything less risks the wrong
+  [Class 24](24_mpec.md#games-static-cliffs) showed; anything less risks the wrong
   equilibrium and a likelihood cliff.
 - In general no algorithm finds all equilibria of a dynamic game: successive
   approximations find only stable ones, homotopy follows one path, MPEC finds local optima.

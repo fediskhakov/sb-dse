@@ -96,7 +96,7 @@ The plan below is provisional and will be adjusted as we go.
 | Thu Nov 5 | [Micro-founded equilibrium model: equilibrium trade in automobiles](21_eqb_cars.md) &nbsp;·&nbsp; **project proposal due** |
 | Tue Nov 10 | [Successive approximations and Doubly-NFXP](22_eqb_practice.md) &nbsp;·&nbsp; **project clinic** |
 | | **Part V — Games** |
-| Thu Nov 12 | [Static and dynamic entry games](23_entry_games.md) |
+| Thu Nov 12 | [Dynamic entry games](23_entry_games.md) |
 | Tue Nov 17 | [Mathematical programming with equilibrium constraints (MPEC)](24_mpec.md) |
 | Thu Nov 19 | [Directional dynamic games — finding *all* equilibria](25_rls.md) |
 | Tue Nov 24 | [Estimation of directional dynamic games](26_nrls.md) (recorded) |

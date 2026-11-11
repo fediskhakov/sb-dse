@@ -668,8 +668,8 @@ good idea. The possible approaches:
   but there is **no guarantee**: nothing tells that the starting values covered the basin of
   attraction of every equilibrium.
 - **Piecewise linear approximation.** In a game of two players every equilibrium is an
-  intersection of the two best response curves, as [Class 23](23_entry_games.md) shows for an
-  entry game. Approximate each curve by a polyline, take the intersections of the segments as
+  intersection of the two best response curves, as [Class 24](24_mpec.md#games-static-solution)
+  shows for an entry game. Approximate each curve by a polyline, take the intersections of the segments as
   candidate equilibria, and add points near the candidates until they stop moving. This
   handles any number of equilibria where the curves cross rather than touch, in two
   dimensions. It becomes numerically unstable when the best responses are close to 0 or 1,
