@@ -31,7 +31,7 @@ Prof. Bertel Schjerning, University of Copenhagen,
 [schjerning.com](https://www.schjerning.com/), joins the class with a lecture on dynamic
 games.
 
-{button}`📄 Slides: Dynamic games (PDF) <https://github.com/bschjerning/dp_ucph/blob/main/4_dynamic_games/2_DynamicGames.pdf>`
+{button}`📄 Slides: Dynamic games (PDF) <_static/pdf/2_DynamicGames.pdf>`
 ````
 
 (games-intro)=
