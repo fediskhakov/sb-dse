@@ -222,13 +222,13 @@ The equilibria are the intersections of the two best response curves:
 :tags: [hide-input]
 
 pv = np.linspace(0, 1, 101)
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(6.5, 6.5))
 ax.plot(game.br(pv, game.x[0]), pv, color='red', lw=1, label='$\\psi_a(p_b)$')
 ax.plot(pv, game.br(pv, game.x[1]), color='blue', lw=1, label='$\\psi_b(p_a)$')
 ax.plot(eq[:, 0], eq[:, 1], 's', mfc='none', mec='black', ms=7)
 for pa, pb in eq:
     ax.text(pa + 0.03, pb + 0.03, f'({pa:.3f},{pb:.3f})', va='bottom')
-ax.set(xlim=(0, 1), ylim=(0, 1), xlabel='$p_a$', ylabel='$p_b$', title='Best response functions, firm a and firm b')
+ax.set(xlim=(0, 1), ylim=(0, 1), aspect='equal', xlabel='$p_a$', ylabel='$p_b$', title='Best response functions, firm a and firm b')
 ax.legend(loc='upper right')
 plt.show()
 ```
@@ -244,13 +244,13 @@ The second-order best response and the 45-degree line:
 ```{code-cell} python3
 :tags: [hide-input]
 
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(6.5, 6.5))
 ax.plot(pv, game.br(game.br(pv, game.x[1]), game.x[0]), color='blue', lw=1, label='$\\psi_a(\\psi_b(p_a))$')
 ax.plot(pv, pv, color='tab:green', lw=1)
 ax.plot(eq[:, 0], eq[:, 0], 's', mfc='none', mec='black', ms=7)
 for pa in eq[:, 0]:
     ax.text(pa + 0.03, pa - 0.03, f'({pa:.3f})', va='bottom')
-ax.set(xlim=(0, 1), ylim=(0, 1), xlabel='$p_a$', ylabel='$\\psi_a(\\psi_b(p_a))$',
+ax.set(xlim=(0, 1), ylim=(0, 1), aspect='equal', xlabel='$p_a$', ylabel='$\\psi_a(\\psi_b(p_a))$',
        title='Second order best response function, firm a')
 ax.legend(loc='upper right')
 plt.show()
@@ -265,8 +265,7 @@ the best responses never find equilibrium 2, which is why `equilibria` brackets 
 :::{div}
 :class: discussion
 
-- Which equilibrium would you expect to see in the data, and why might a market play the
-  unstable one?
+- Which equilibrium would you expect to see in the data?
 - Can this game have more than three equilibria? What about a game with three firms?
 :::
 
@@ -441,8 +440,8 @@ is not.
 :::{div}
 :class: discussion
 
-- Is the NFXP likelihood smooth in $(\alpha, \beta)$? Are the objective and the
-  constraints of MPEC smooth in $(\alpha, \beta, p_a, p_b)$?
+- Is the NFXP likelihood smooth in $(\alpha, \beta)$? 
+- Are the objective and the constraints of MPEC smooth in $(\alpha, \beta, p_a, p_b)$?
 - Can we tell from the data which equilibrium was played?
 - Can we use the standard theorems for inference here?
 :::
@@ -498,15 +497,17 @@ p - \Psi(p; \theta) &= 0 .
 \end{aligned}
 $$
 
-The matrix $I - \nabla_p \Psi$ appears, not its spectral radius: the conditions hold at
-equilibrium 2 as well as at equilibria 1 and 3. What MPEC needs is that $I - \nabla_p \Psi$
+- The matrix $I - \nabla_p \Psi$ appears, not its spectral radius: the conditions hold at
+equilibrium 2 as well as at equilibria 1 and 3. 
+- What MPEC needs is that $I - \nabla_p \Psi$
 is invertible at the solution, a **regular** equilibrium, and not that the equilibrium is
-stable under best responses. What it gives up is the guarantee of a global maximum: a local
-solver converges to a local maximum, which can be a point on the wrong sheet of the
-correspondence, another equilibrium. Several starting points are the remedy.
+stable under best responses. 
+- What it gives up is the guarantee of a global maximum: a local
+solver converges to a local maximum, which can be a point on the **wrong sheet of the
+correspondence**, another equilibrium. Several starting points are the simplest remedy.
 
 The gradient of the objective is simple, $n_j / p_j - (N - n_j) / (1 - p_j)$ with respect
-to $p_j$ and zero with respect to $\theta$. SciPy's SLSQP handles the equality constraints
+to $p_j$ and zero with respect to $\theta$. SciPy's SLSQP contstrained optimizer handles the equality constraints
 and the bounds, with a finite difference Jacobian of the constraints:
 
 ```{code-cell} python3
@@ -630,7 +631,7 @@ not the same equilibrium:
 
 The design of {cite:t}`suEstimatingDiscretechoiceGames2014` with many markets:
 
-- 25 markets with the types $(x^m_a, x^m_b)$ on a grid of 5 points in $[0.12, 0.87]$ for
+- $M = 25$ markets with the types $(x^m_a, x^m_b)$ on a grid of 5 points in $[0.12, 0.87]$ for
   each firm, and the same $(\alpha_0, \beta_0) = (5, -11)$
 - in each market the equilibrium that generates the data is drawn at random among the
   equilibria of that market
